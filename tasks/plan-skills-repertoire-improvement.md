@@ -284,6 +284,7 @@ Every skill's `description` and `When to Use`/`Not for` must have valid `→ ski
 - [x] **TASK-026**: Retirar `local-email` y su driver (hecho 2026-11-15)
 - [x] **TASK-027**: Eliminar `skills/data-linkml/` huérfano (hecho 2026-11-15)
 - [x] **TASK-028**: Instaladores y matriz de instalación con conteo derivado del catálogo (hecho 2026-11-15)
+- [ ] **TASK-028b**: Nota `Removed` de `local-email` en `CHANGELOG.md` junto al bump a `8.1.0` (D8). El gate `check-bump` exige versión por delante del tag cuando cambia `CHANGELOG.md`, así que la entrada viaja con el PR de release, no con el de la retirada.
 
 ### 3.7 validation-tooling
 

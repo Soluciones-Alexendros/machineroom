@@ -197,6 +197,12 @@ changelog.
 (el índice se regenera), así que no hay breaking real. `8.1.0` con entradas `Added` /
 `Changed` / `Removed` describe el incremento con precisión.
 
+**Estado verificado del gate.** `tools/version/cut_tag.py` incluye `CHANGELOG.md` en
+`RELEASE_PATHS`: cualquier PR que toque el changelog exige `package.json` por delante
+del último tag (`check-bump`). Por eso la retirada se integró **sin** entrada de
+changelog y la nota `Removed` viaja con el PR de release (TASK-028b). Publicar `8.1.0`
+es una autorización aparte: mergear la retirada no corta tag.
+
 ---
 
 ## Siguiente paso
