@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "Single Pi model allowlist for the orchestrator, the subagent adapter and the Pi extension. Globs follow Pi: * does not cross /.",
+  "defaultModel": "opencode-go/deepseek-v4.1-flash",
+  "patterns": [
+    "opencode-go/deepseek-v4.1-flash",
+    "opencode-go/deepseek-v4-pro",
+    "opencode/*free*",
+    "nvidia/*nemotron*"
+  ]
+}

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Materialize the machine runtime at $HOME/.machineroom (real directory, not a symlink).
+# Materialize the machine runtime at $HOME/.machineroom from a verified release.
+# `sync` refuses that path: the development checkout stays in the working tree.
 # Migrates a legacy $HOME/.autoworkspace once (D2/H2: no two runtimes).
 set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -17,8 +18,10 @@ LEGACY_RUNTIME_NAME=".autoworkspace"
 usage() {
   cat <<EOF
 Usage:
-  bash scripts/runtime-sync.sh sync [--from CHECKOUT] [--dry-run] [--json]
   bash scripts/runtime-sync.sh install --version X.Y.Z [--dry-run] [--json]
+  bash scripts/runtime-sync.sh sync [--from CHECKOUT] [--dry-run] [--json]
+    Refused for \$HOME/.machineroom. That directory is a verified release,
+    not a copy of the development checkout.
 EOF
 }
 
@@ -70,12 +73,11 @@ migrate_legacy
 if [[ "$CMD" == "sync" ]]; then
   FROM=$(cd "$FROM" && pwd)
   if [[ "$DRY_RUN" == true ]]; then
+    echo "ERROR: home runtime only accepts a verified release (bash scripts/runtime-sync.sh install --version X.Y.Z); the development checkout stays in the working tree" >&2
     if [[ "$JSON_OUT" == true ]]; then
-      printf '{"status":"simulated","action":"sync","from":"%s","runtime":"%s"}\n' "$FROM" "$RUNTIME"
-    else
-      echo "dry-run: would sync payload from $FROM into $RUNTIME"
+      printf '{"status":"failed","action":"sync","runtime":"%s"}\n' "$RUNTIME"
     fi
-    exit 0
+    exit 1
   fi
   export MR_SYNC_FROM="$FROM"
   export MR_SYNC_RUNTIME="$RUNTIME"
@@ -96,7 +98,7 @@ except InstallFailure as exc:
     print(format_failure(exc.component, exc.function, exc.detail), file=sys.stderr)
     if json_out:
         print(json.dumps({"status": "failed", "action": "sync", "runtime": str(runtime), "failures": [exc.to_dict()]}))
-    raise SystemExit(1) from exc
+    raise SystemExit(1) from None
 print(json.dumps({"status": "ok", "action": "sync", "runtime": str(runtime), **manifest}))
 PY
 )
@@ -151,14 +153,39 @@ gh attestation verify "$ARCHIVE" -R "$REPOSITORY"
 PYTHONPATH="$ROOT/tools" python3 -m harness.bootstrap "$ARCHIVE" "$WORK/extracted"
 PACKAGE="$WORK/extracted/machineroom-${VERSION}"
 [[ -d "$PACKAGE" && ! -L "$PACKAGE" ]]
-RESULT=$(PYTHONPATH="$ROOT/tools" python3 - <<PY
-from pathlib import Path
-from harness.runtime import sync_payload
+set +e
+RESULT=$(PYTHONPATH="$ROOT/tools" JSON_OUT="$JSON_OUT" \
+  MR_INSTALL_PACKAGE="$PACKAGE" MR_INSTALL_RUNTIME="$RUNTIME" MR_INSTALL_VERSION="$VERSION" \
+  python3 - <<'PY'
 import json
-manifest = sync_payload(Path("$PACKAGE"), Path("$RUNTIME"), origin="release:$VERSION")
-print(json.dumps({"status": "ok", "action": "install", "runtime": "$RUNTIME", **manifest}))
+import os
+import sys
+from pathlib import Path
+
+from harness.runtime import InstallFailure, format_failure, install_verified_runtime
+
+package = Path(os.environ["MR_INSTALL_PACKAGE"])
+runtime = Path(os.environ["MR_INSTALL_RUNTIME"])
+version = os.environ["MR_INSTALL_VERSION"]
+json_out = os.environ.get("JSON_OUT") == "true"
+try:
+    manifest = install_verified_runtime(package, runtime, version)
+except InstallFailure as exc:
+    print(format_failure(exc.component, exc.function, exc.detail), file=sys.stderr)
+    if json_out:
+        print(json.dumps({"status": "failed", "action": "install", "runtime": str(runtime), "failures": [exc.to_dict()]}))
+    raise SystemExit(1) from None
+print(json.dumps({"status": "ok", "action": "install", "runtime": str(runtime), **manifest}))
 PY
 )
+RC=$?
+set -e
+if [[ "$RC" -ne 0 ]]; then
+  if [[ "$JSON_OUT" == true && -n "$RESULT" ]]; then
+    echo "$RESULT"
+  fi
+  exit "$RC"
+fi
 if [[ "$JSON_OUT" == true ]]; then
   echo "$RESULT"
 else

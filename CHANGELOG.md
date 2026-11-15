@@ -6,6 +6,22 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+### Changed
+
+- `$HOME/.machineroom` accepts only a verified release
+  (`scripts/runtime-sync.sh install --version X.Y.Z`). A development checkout
+  is refused, the manifest records `release:<version>` instead of a temporary
+  extract path, and that install rewrites user hooks before the directory swap.
+  The development checkout stays the working tree.
+- Pi calls share one model scope (`extensions/machineroom/model-scope.json`):
+  default `opencode-go/deepseek-v4.1-flash`; keep that model,
+  `opencode-go/deepseek-v4-pro`, `opencode/*free*` and `nvidia/*nemotron*`.
+  `kimi-coding` and the other opencode-go models are rejected before spawn.
+- The shell prefilter lives in `deny-list.json`. `.cursor/hooks.json` copies that
+  string and the Pi extension loads it.
+- Pi RPC discovery and subagent spawn retry a connection that dies before
+  producing output, with backoff. Timeouts and partial output are not retried.
+
 ## [8.0.0] - 2026-11-10
 
 BREAKING: the product, repository, machine runtime and project state directory

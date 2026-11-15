@@ -21,6 +21,7 @@ if str(WORKSPACE_ROUTER) not in sys.path:
 
 from contracts.plan import load_plan  # noqa: E402
 from harness.cursor import CursorSubagentAdapter  # noqa: E402
+from harness.model_scope import resolve_pi_model  # noqa: E402
 from harness.pi import PiSubagentAdapter  # noqa: E402
 from status_bump import activate_plan, load_status  # noqa: E402
 
@@ -36,7 +37,7 @@ def _default_verifier(task: Mapping[str, Any]) -> Verifier:
 
 def _build_adapter(name: str) -> SubagentAdapter:
     if name == "pi":
-        model = os.environ.get("MR_PI_MODEL", "kimi-coding/k3.1-pro")
+        model = resolve_pi_model(os.environ.get("MR_PI_MODEL"))
         inner: SubagentAdapter = PiSubagentAdapter(model=model)
     else:
         if os.environ.get("MR_CURSOR_FORCE", "0") == "1":

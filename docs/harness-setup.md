@@ -4,12 +4,13 @@
 
 ## Machine runtime (`~/.machineroom`)
 
-User-scope installs (`--user`) never link into a development checkout. They read a real directory at `$HOME/.machineroom` (not a symlink) that holds the harness payload: `skills/`, `.cursor/` (agents, hooks, rules, `hooks.json`), `extensions/machineroom/` and `package.json`.
+User-scope installs (`--user`) never link into a development checkout. They read a real directory at `$HOME/.machineroom` (not a symlink). That directory is a verified release downloaded from the repository. The development checkout stays in the working tree and is not copied there.
 
 ```bash
-bash scripts/runtime-sync.sh sync --from /path/to/checkout   # copy payload from a checkout
-bash scripts/runtime-sync.sh install --version 7.1.2         # verified release extract
+bash scripts/runtime-sync.sh install --version 8.0.0
 ```
+
+`sync` refuses to fill `$HOME/.machineroom`. The installed copy records `release:<version>` and rewrites user hooks to `python3 hooks/...`. The version must be a published release; it is not the unpublished working tree.
 
 Then install Cursor and Pi user links (relative paths into the runtime):
 
@@ -105,10 +106,10 @@ Pi loads project skills from `.pi/skills/` and user skills from `~/.pi/agent/ski
 
 After install or update of user-level skills, run `/reload` (or start a new Pi session) so `<available_skills>` picks up the catalog.
 
-Quickstart (sync the runtime once, then install project and user surfaces; the last line is the idempotent user rerun):
+Quickstart (install a published release into the home runtime, then install project and user surfaces; the last line is the idempotent user rerun):
 
 ```bash
-bash scripts/runtime-sync.sh sync
+bash scripts/runtime-sync.sh install --version 8.0.0
 bash scripts/install-pi.sh
 bash scripts/install-pi.sh --user --yes --json
 bash scripts/install.sh --harness pi --target /tmp/ai-pi --yes --json | jq .installed

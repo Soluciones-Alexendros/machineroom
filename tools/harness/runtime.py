@@ -1,10 +1,17 @@
-"""Machine runtime under ``$HOME/.machineroom`` (shared Cursor/Pi catalog)."""
+"""Machine runtime under ``$HOME/.machineroom`` (shared Cursor/Pi catalog).
+
+The operator home accepts only a verified release (``release:<version>``).
+The development checkout stays in the working tree. Any other destination
+may still receive an ``origin="sync"`` payload, which is how tests fill a
+temporary runtime.
+"""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -16,7 +23,16 @@ LEGACY_RUNTIME_DIRNAME = naming.LEGACY_RUNTIME_DIRNAME
 MANIFEST_NAME = ".runtime-manifest.json"
 PAYLOAD_DIRS = ("skills", f"extensions/{naming.EXTENSION_DIR}")
 PAYLOAD_CURSOR = (".cursor/agents", ".cursor/hooks", ".cursor/rules")
-PAYLOAD_FILES = ("package.json", ".cursor/hooks.json")
+PAYLOAD_FILES = (
+    "package.json",
+    ".cursor/hooks.json",
+    # User hooks resolve into this runtime, which has no checkout. The shell
+    # gate imports this module, so the engine has to travel with the payload.
+    "tools/execution/__init__.py",
+    "tools/execution/deny_list.py",
+)
+_SEMVER = re.compile(r"\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.-]+)?")
+_RELEASE_ORIGIN = re.compile(rf"^release:({_SEMVER.pattern})$")
 
 
 class InstallFailure(ValueError):  # noqa: N818  # plan contract name (component/function/detail)
@@ -93,7 +109,7 @@ def require_runtime(home: Path | None = None) -> Path:
         raise InstallFailure(
             "runtime",
             "require_runtime",
-            f"runtime missing: {root} (run scripts/runtime-sync.sh sync first)",
+            f"runtime missing: {root} (run scripts/runtime-sync.sh install --version X.Y.Z)",
         )
     if not (root / "skills").is_dir() or not (root / "package.json").is_file():
         raise InstallFailure("runtime", "require_runtime", f"runtime incomplete: {root}")
@@ -148,13 +164,76 @@ def _verify_payload_tree(root: Path, *, function: str) -> None:
             raise InstallFailure(relative, function, f"payload missing file: {path}")
 
 
+def _is_home_runtime(destination: Path) -> bool:
+    """True when ``destination`` is the operator home runtime, even if it does not exist yet."""
+    home_runtime = Path.home() / RUNTIME_DIRNAME
+    dest = destination.resolve() if destination.exists() else destination.absolute()
+    expected = home_runtime.resolve() if home_runtime.exists() else home_runtime.absolute()
+    return dest == expected
+
+
+def _require_home_release(source: Path, origin: str) -> str:
+    """Return the stable release id, or refuse before any copy into the home runtime."""
+    match = _RELEASE_ORIGIN.fullmatch(origin)
+    if match is None:
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            "home runtime only accepts a verified release "
+            "(bash scripts/runtime-sync.sh install --version X.Y.Z); "
+            "the development checkout stays in the working tree",
+        )
+    version = match.group(1)
+    git_marker = source / ".git"
+    if git_marker.exists() or git_marker.is_symlink():
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            f"development checkout refused: {source}; home runtime accepts only a verified release",
+        )
+    package_path = source / "package.json"
+    try:
+        document = json.loads(package_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise InstallFailure("package.json", "sync_payload", f"unreadable package.json: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise InstallFailure("package.json", "sync_payload", f"invalid package.json: {exc}") from exc
+    if not isinstance(document, dict):
+        raise InstallFailure("package.json", "sync_payload", "package.json must be an object")
+    packaged = document.get("version")
+    if not isinstance(packaged, str) or packaged != version:
+        raise InstallFailure(
+            "package.json",
+            "sync_payload",
+            f"release version {version} does not match package.json version {packaged}",
+        )
+    return origin
+
+
+def install_verified_runtime(source: Path, destination: Path, version: str) -> dict[str, Any]:
+    """Install one verified release extract. A home install rewrites user hooks before the swap."""
+    if _SEMVER.fullmatch(version) is None:
+        raise InstallFailure(
+            "runtime",
+            "install_verified_runtime",
+            f"version is not an exact SemVer release: {version}",
+        )
+    return sync_payload(source, destination, origin=f"release:{version}")
+
+
 def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branches for atomic sync
     source: Path,
     destination: Path,
     *,
     origin: str,
 ) -> dict[str, Any]:
-    """Copy the harness payload into a real ``~/.machineroom`` directory."""
+    """Copy the harness payload into a real runtime directory.
+
+    When ``destination`` is ``$HOME/.machineroom``, ``origin`` must be
+    ``release:<version>``, the source must not be a development checkout, and
+    ``package.json`` must carry that same version. The recorded source is the
+    release id, not a temporary extract path.
+    """
     source = source.resolve()
     if destination.is_symlink():
         raise InstallFailure("runtime", "sync_payload", f"runtime destination is a symlink: {destination}")
@@ -168,6 +247,9 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
     for privileged in ("/", "/etc", "/usr", "/var", "/root"):
         if destination == Path(privileged):
             raise InstallFailure("runtime", "sync_payload", f"privileged runtime rejected: {destination}")
+    stable_source: str | None = None
+    if _is_home_runtime(destination):
+        stable_source = _require_home_release(source, origin)
 
     staging = destination.parent / f"{RUNTIME_DIRNAME}-staging-{os.getpid()}"
     if staging.exists():
@@ -194,6 +276,8 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
 
+        if stable_source is not None:
+            write_user_hooks_config(staging)
         _verify_payload_tree(staging, function="sync_payload")
 
         version = json.loads((staging / "package.json").read_text(encoding="utf-8"))["version"]
@@ -203,7 +287,7 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
             "version": str(version),
             "digest": digest,
             "origin": origin,
-            "source": str(source),
+            "source": stable_source if stable_source is not None else str(source),
         }
         (staging / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 

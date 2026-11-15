@@ -45,6 +45,17 @@ function toRule(raw: unknown): Rule {
   return { id, pattern: new RegExp(pattern, "i"), message };
 }
 
+/** Prefilter shared with `.cursor/hooks.json`. Missing or invalid means fail closed. */
+export function loadMatcher(root: string): RegExp {
+  const policyPath = path.join(root, POLICY_RELATIVE);
+  const raw = JSON.parse(fs.readFileSync(policyPath, "utf8")) as {
+    matcher?: unknown;
+  };
+  const matcher = String(raw?.matcher ?? "").trim();
+  if (!matcher) throw new Error("deny list needs matcher");
+  return new RegExp(matcher, "i");
+}
+
 /** Load and validate the shared policy from a repository or runtime root. */
 export function loadPolicy(root: string): Policy {
   const policyPath = path.join(root, POLICY_RELATIVE);

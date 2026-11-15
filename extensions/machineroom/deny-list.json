@@ -1,6 +1,7 @@
 {
   "version": 1,
-  "description": "Shared shell gate data (Cursor hook + Pi extension). Deny beats ask beats allow.",
+  "description": "Shared shell gate data (Cursor hook + Pi extension). Deny beats ask beats allow. matcher is the single prefilter; .cursor/hooks.json copies it.",
+  "matcher": "\\b(?:apt-get|sshd|apt|dnf|pacman|systemctl|mkfs|shutdown|reboot|iptables|nft|ufw|curl|wget|nc|sudo)\\b|(?:^|[^\\.\\w])(?:ssh|scp)\\b|\\brm\\s+-rf\\b|\\bdd\\s+if=",
   "deny": [
     {
       "id": "package-manager",
@@ -39,7 +40,7 @@
     },
     {
       "id": "remote-shell",
-      "pattern": "\\b(ssh|scp)\\b",
+      "pattern": "(?:^|[^\\.\\w])(ssh|scp)\\b",
       "message": "ssh/scp is denied. Use run_registered with the matching local-* skill."
     },
     {

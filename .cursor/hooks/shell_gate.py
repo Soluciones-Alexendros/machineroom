@@ -3,7 +3,7 @@
 
 The policy lives in ``extensions/machineroom/deny-list.json`` and is shared with
 the Pi extension, so the two harnesses cannot drift. This script does not execute
-the received command. Stdlib only. Always exit 0 with JSON: ``failClosed`` on the
+the received command. Always exit 0 with JSON: ``failClosed`` on the
 hook definition covers a real crash, and internal errors answer ``deny``.
 """
 
@@ -16,7 +16,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from execution.deny_list import DenyListError, decide_command, load_policy  # noqa: E402
+try:
+    from execution.deny_list import DenyListError, decide_command, load_policy
+except ImportError as exc:  # runtime payload missing the engine
+    DenyListError = None  # type: ignore[misc, assignment]
+    decide_command = None  # type: ignore[misc, assignment]
+    load_policy = None  # type: ignore[misc, assignment]
+    _IMPORT_ERROR: ImportError | None = exc
+else:
+    _IMPORT_ERROR = None
 
 
 def _deny(user_message: str, agent_message: str) -> dict[str, str]:
@@ -35,6 +43,11 @@ def decide(payload: dict[str, object]) -> dict[str, str]:
         return _deny(
             "Shell gate: command must be a string.",
             "beforeShellExecution command was not a string; denied.",
+        )
+    if _IMPORT_ERROR is not None or load_policy is None or decide_command is None:
+        return _deny(
+            "Shell gate: policy engine unavailable.",
+            f"execution.deny_list import failed: {_IMPORT_ERROR}. Denied; fix the runtime payload.",
         )
     try:
         policy = load_policy(ROOT)

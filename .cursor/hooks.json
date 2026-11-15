@@ -11,7 +11,7 @@
         "command": "python3 .cursor/hooks/shell_gate.py",
         "failClosed": true,
         "timeout": 10,
-        "matcher": "\\b(?:apt-get|sshd|apt|dnf|pacman|systemctl|mkfs|shutdown|reboot|iptables|nft|ufw|curl|wget|nc|ssh|scp|sudo)\\b|\\brm\\s+-rf\\b|\\bdd\\s+if="
+        "matcher": "\\b(?:apt-get|sshd|apt|dnf|pacman|systemctl|mkfs|shutdown|reboot|iptables|nft|ufw|curl|wget|nc|sudo)\\b|(?:^|[^\\.\\w])(?:ssh|scp)\\b|\\brm\\s+-rf\\b|\\bdd\\s+if="
       }
     ]
   }

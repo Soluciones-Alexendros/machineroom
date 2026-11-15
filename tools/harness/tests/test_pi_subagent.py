@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import stat
 import sys
 import threading
@@ -9,9 +10,12 @@ import time
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
+from harness.model_scope import ModelScopeError  # noqa: E402
 from harness.pi import PiSubagentAdapter  # noqa: E402
 from orchestrator.model import RunContext  # noqa: E402
 from orchestrator.ports import AdapterResult  # noqa: E402
@@ -89,6 +93,53 @@ def test_timeout_kills_process_and_requires_reconciliation(tmp_path: Path) -> No
     assert result.outcome == "cancelled"
     assert "reconciliation" in result.detail
     assert time.monotonic() - started < 4  # noqa: PLR2004  # timeout bound
+
+
+def test_spawn_failure_retries_then_succeeds(tmp_path: Path) -> None:
+    """A process that exits before producing output is retried. A model error is not."""
+    counter = tmp_path / "starts"
+    path = tmp_path / "pi-flaky"
+    path.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json, pathlib, sys\n"
+        f"counter = pathlib.Path({str(counter)!r})\n"
+        "n = int(counter.read_text()) if counter.exists() else 0\n"
+        "n += 1\n"
+        "counter.write_text(str(n))\n"
+        "if n < 3:\n"
+        "    sys.exit(2)\n"
+        "print(json.dumps({'type': 'message_end', 'message': {'role': 'assistant', "
+        "'content': [{'type': 'text', 'text': 'ok'}], 'stopReason': 'stop'}}))\n",
+        encoding="utf-8",
+    )
+    path.chmod(path.stat().st_mode | stat.S_IXUSR)
+    delays: list[float] = []
+    adapter = PiSubagentAdapter(binary=str(path), attempts=3, retry_sleep=delays.append)
+    result = adapter.execute(_task(write=False), _context(tmp_path))
+    assert result.outcome == "succeeded", result.detail
+    assert counter.read_text(encoding="utf-8") == "3"
+    assert delays == [0.2, 0.4]
+    with pytest.raises(ModelScopeError):
+        PiSubagentAdapter(binary=str(path), model="kimi-coding/k3.1-pro")
+
+
+def test_default_model_is_passed_to_the_child(tmp_path: Path) -> None:
+    recorded = tmp_path / "argv.json"
+    path = tmp_path / "pi-args"
+    path.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json, pathlib, sys\n"
+        f"pathlib.Path({str(recorded)!r}).write_text(json.dumps(sys.argv[1:]))\n"
+        "print(json.dumps({'type': 'message_end', 'message': {'role': 'assistant', "
+        "'content': [{'type': 'text', 'text': 'ok'}], 'stopReason': 'stop'}}))\n",
+        encoding="utf-8",
+    )
+    path.chmod(path.stat().st_mode | stat.S_IXUSR)
+    adapter = PiSubagentAdapter(binary=str(path))
+    result = adapter.execute(_task(write=False), _context(tmp_path))
+    assert result.outcome == "succeeded", result.detail
+    argv = json.loads(recorded.read_text(encoding="utf-8"))
+    assert argv[-3:-1] == ["--model", "opencode-go/deepseek-v4.1-flash"]
 
 
 def test_cancellation_kills_process_group(tmp_path: Path) -> None:

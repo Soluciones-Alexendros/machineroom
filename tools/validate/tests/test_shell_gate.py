@@ -167,6 +167,8 @@ def test_hook_matcher_skips_ordinary_text() -> None:
         "git status",
         "git commit -m 'update chapter adapter'",
         "echo curly",
+        "echo ~/.ssh/config",
+        "python3 -c \"open('/home/user/.ssh/config')\"",
         "python -m pytest tools/validate/tests/test_shell_gate.py",
         "npm test",
     ]

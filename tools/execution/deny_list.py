@@ -57,6 +57,7 @@ class Policy:
     help_or_version: re.Pattern[str]
     tmp_prefixes: tuple[str, ...]
     rm_rf: re.Pattern[str]
+    matcher: re.Pattern[str]
 
 
 def deny_list_path(root: Path) -> Path:
@@ -77,6 +78,16 @@ def _rule(raw: Any, function: str) -> Rule:
     except re.error as exc:
         raise DenyListError(function, f"invalid regex in rule {rule_id!r}: {exc}") from exc
     return Rule(rule_id, compiled, message)
+
+
+def _compile_matcher(raw: dict[str, Any], function: str) -> re.Pattern[str]:
+    matcher_source = str(raw.get("matcher", "")).strip()
+    if not matcher_source:
+        raise DenyListError(function, "deny list needs matcher")
+    try:
+        return re.compile(matcher_source, re.IGNORECASE)
+    except re.error as exc:
+        raise DenyListError(function, f"invalid matcher: {exc}") from exc
 
 
 def load_policy(root: Path) -> Policy:
@@ -115,6 +126,7 @@ def load_policy(root: Path) -> Policy:
         help_or_version=help_pattern,
         tmp_prefixes=tuple(prefixes),
         rm_rf=rm_rf_rule.pattern,
+        matcher=_compile_matcher(raw, function),
     )
 
 

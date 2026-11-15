@@ -30,6 +30,16 @@ Levels beyond A:
 - **B (native discovery/load):** Customize → Skills lists all 17; `/plan-continue` routes. Human IDE only → **`not_run` in CI**.
 - **C (shell gate in IDE):** an agent-proposed host-mutating shell (e.g. `apt-get upgrade`) is `deny` or `ask`. The `beforeShellExecution` matcher is whole-word, so it covers host mutation and outbound network only; ordinary commands (`python`, `git`, `npm`, `pytest`) stay open even when their text contains substrings such as `chapter`, `adapter` or `curly`. Human IDE only → **`not_run` in CI**.
 
+## Pi model scope
+
+Product calls (orchestrator, `PiSubagentAdapter`, and the extension's `mr_subagent`)
+pass `--model` from `extensions/machineroom/model-scope.json`. The default is
+`opencode-go/deepseek-v4.1-flash`. The keep set is that model,
+`opencode-go/deepseek-v4-pro`, free OpenCode models (`opencode/*free*`) and NVIDIA
+Nemotron models (`nvidia/*nemotron*`). `MR_PI_MODEL` may select another kept model.
+A reference outside the scope fails before a process starts. Interactive Pi still
+applies the same keep set through the operator's `enabledModels`.
+
 ## Permissions
 
 Loading a skill does not authorize Bash, network, secrets, or paths outside the project. Product restrictions (`DenyProvider`, `run_registered`, evidence binding) remain even when the harness can load the skill file.

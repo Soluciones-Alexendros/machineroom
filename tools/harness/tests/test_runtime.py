@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -43,8 +44,40 @@ def test_sync_payload_copies_harness_payload(tmp_path: Path) -> None:
     assert (runtime / "skills" / "plan-continue" / "SKILL.md").is_file()
     assert (runtime / ".cursor" / "agents" / "mr-verifier.md").is_file()
     assert (runtime / "extensions" / "machineroom" / "index.ts").is_file()
+    assert (runtime / "tools" / "execution" / "deny_list.py").is_file()
     assert manifest["origin"] == "sync"
     assert (runtime / ".runtime-manifest.json").is_file()
+
+
+def test_runtime_shell_gate_decides_without_checkout_pythonpath(tmp_path: Path) -> None:
+    """The installed hook must decide from the runtime copy, not the checkout."""
+    home = tmp_path / "home"
+    home.mkdir()
+    runtime = _runtime(home)
+    hook = runtime / ".cursor" / "hooks" / "shell_gate.py"
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env["PYTHONSAFEPATH"] = "1"
+    proc = subprocess.run(
+        [sys.executable, str(hook)],
+        input=json.dumps({"command": "ssh host.example"}),
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert json.loads(proc.stdout)["permission"] == "deny"
+    proc_path = subprocess.run(
+        [sys.executable, str(hook)],
+        input=json.dumps({"command": "echo ~/.ssh/config"}),
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    assert proc_path.returncode == 0, proc_path.stderr
+    assert json.loads(proc_path.stdout)["permission"] != "deny"
 
 
 def test_user_scope_relative_links_from_runtime(tmp_path: Path) -> None:
