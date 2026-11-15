@@ -51,13 +51,13 @@ Dominios vivos:
 | Dominio | Skills                                                   |
 | ------- | -------------------------------------------------------- |
 | plan    | plan-specification, plan-continue, plan-validators       |
-| local   | local-maintenance, local-security, local-email           |
+| local   | local-maintenance, local-security                        |
 | project | project-architecture, project-libraries, project-publish |
 | web     | web-compliance, web-owasp, web-performance               |
 | role    | role-back, role-clean-code, role-design, role-front      |
 
 Retiradas, solo en el changelog: `system-health`, `system-maintenance`,
-`system-security`, `system-proton`, `plan-validation`, `project-testing`,
+`system-security`, `system-proton`, `local-email`, `plan-validation`, `project-testing`,
 `project-hooks`.
 
 ## Code Style

@@ -157,17 +157,6 @@ intents:
         "tests integrados",
         "qa",
       ]
-  proton:
-    skills: [local-email]
-    patterns:
-      [
-        "proton mail",
-        "proton pass",
-        "pass-cli",
-        "bridge imap",
-        "email",
-        "correo",
-      ]
   libraries:
     skills: [project-libraries]
     patterns: ["dependencias", "cve", "sca", "sbom", "typosquatting"]

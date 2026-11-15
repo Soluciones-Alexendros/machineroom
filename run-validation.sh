@@ -75,12 +75,11 @@ if [ "$FULL" = 1 ] || [ "$ONLY_SMOKE" = 1 ]; then
 fi
 
 if [ "$FULL" = 1 ] || [ "$ONLY_PYTEST" = 1 ]; then
-  echo "[7] Pytest tools/ + skills (install + Proton included)"
+  echo "[7] Pytest tools/ + skills (install + execution included)"
   python3 -m pytest tools/ \
     skills/local-maintenance/scripts/tests/ \
     skills/web-compliance/tests/ \
     skills/local-security/scripts/tests/ \
-    tools/email/drivers/proton/ \
     -q
 fi
 
