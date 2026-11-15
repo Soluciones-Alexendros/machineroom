@@ -48,10 +48,42 @@ assert_rel_links() {
   test "$n" = 17
 }
 
+# A home runtime is a verified release, not the development checkout.
+RELEASE_STAGE="$TMP/release-stage"
+PYTHONPATH="$ROOT/tools" python3 - "$ROOT" "$RELEASE_STAGE" <<'PY'
+import json
+import shutil
+import sys
+from pathlib import Path
+
+from harness.runtime import PAYLOAD_CURSOR, PAYLOAD_DIRS, PAYLOAD_FILES
+
+root = Path(sys.argv[1])
+stage = Path(sys.argv[2])
+for relative in (*PAYLOAD_DIRS, *PAYLOAD_CURSOR):
+    shutil.copytree(root / relative, stage / relative, symlinks=False)
+for relative in PAYLOAD_FILES:
+    target = stage / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(root / relative, target)
+version = json.loads((stage / "package.json").read_text(encoding="utf-8"))["version"]
+(stage / ".release-version").write_text(version + "\n", encoding="utf-8")
+PY
+
 prepare_runtime() {
   local home="$1"
   mkdir -p "$home"
-  HOME="$home" bash "$ROOT/scripts/runtime-sync.sh" sync --from "$ROOT" --json >/dev/null
+  HOME="$home" PYTHONPATH="$ROOT/tools" python3 - "$RELEASE_STAGE" "$home" <<'PY'
+import sys
+from pathlib import Path
+
+from harness.runtime import install_verified_runtime
+
+stage = Path(sys.argv[1])
+home = Path(sys.argv[2])
+version = (stage / ".release-version").read_text(encoding="utf-8").strip()
+install_verified_runtime(stage, home / ".machineroom", version)
+PY
   test -d "$home/.machineroom/skills"
 }
 

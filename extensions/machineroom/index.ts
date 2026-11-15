@@ -1,10 +1,18 @@
-import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { decideWithFallback } from "./gates.ts";
+import {
+  SPAWN_ATTEMPTS,
+  backoffMs,
+  buildSubagentArgs,
+  runPiOnce,
+  shouldRetrySpawn,
+  spawnResult,
+} from "./call.ts";
+import { decideWithFallback, loadMatcher } from "./gates.ts";
+import { loadModelScope, resolveSubagentModel } from "./model-scope.ts";
 
 const STATUS_COMMAND = "/mr-status";
 const SUBAGENT_TOOL = "mr_subagent";
@@ -27,7 +35,6 @@ const DEFAULT_ALLOWED_SKILLS = [
   "role-front",
 ] as const;
 
-const OUTPUT_CAP = 50 * 1024;
 const DEFAULT_TIMEOUT_SECONDS = 300;
 
 function allowedSkills(env: NodeJS.ProcessEnv = process.env): Set<string> {
@@ -51,24 +58,6 @@ function allowedCwd(candidate: string, parent: string): boolean {
   );
 }
 
-function finalText(events: any[]): string {
-  for (let index = events.length - 1; index >= 0; index -= 1) {
-    const message = events[index]?.message;
-    if (
-      events[index]?.type === "message_end" &&
-      message?.role === "assistant"
-    ) {
-      const text = (message.content ?? [])
-        .filter((part: any) => part?.type === "text")
-        .map((part: any) => part.text)
-        .join("");
-      if (text.length <= OUTPUT_CAP) return text;
-      return text.slice(0, OUTPUT_CAP) + "\n[output truncated]";
-    }
-  }
-  return "";
-}
-
 function rejected(detail: string) {
   return {
     content: [{ type: "text", text: detail }],
@@ -83,9 +72,6 @@ function rejected(detail: string) {
   };
 }
 
-const MATCHER =
-  /\b(?:apt-get|sshd|apt|dnf|pacman|systemctl|mkfs|shutdown|reboot|iptables|nft|ufw|curl|wget|nc|ssh|scp|sudo)\b|\brm\s+-rf\b|\bdd\s+if=/i;
-
 function policyRoot(): string {
   // Installed layout: <runtime>/extensions/machineroom/index.ts
   const extensionDir = path.dirname(
@@ -94,13 +80,28 @@ function policyRoot(): string {
   return path.resolve(extensionDir, "..", "..");
 }
 
+function shellPrefilter(command: string): {
+  kind: "skip" | "enter" | "closed";
+  reason: string;
+} {
+  try {
+    const matched = loadMatcher(policyRoot()).test(command);
+    return { kind: matched ? "enter" : "skip", reason: "" };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    return { kind: "closed", reason: `shell gate: ${detail}` };
+  }
+}
+
 export default function machineroom(pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
     if (event.toolName !== "bash") return undefined;
     const command = String(
       (event.input as { command?: unknown })?.command ?? ""
     );
-    if (!MATCHER.test(command)) return undefined;
+    const gate = shellPrefilter(command);
+    if (gate.kind === "skip") return undefined;
+    if (gate.kind === "closed") return { block: true, reason: gate.reason };
     const decision = decideWithFallback(command, policyRoot());
     if (decision.permission === "allow") return undefined;
     if (decision.permission === "deny") {
@@ -121,7 +122,18 @@ export default function machineroom(pi: ExtensionAPI) {
 
   pi.on("user_bash", async (event, ctx) => {
     const command = String((event as { command?: unknown })?.command ?? "");
-    if (!MATCHER.test(command)) return undefined;
+    const gate = shellPrefilter(command);
+    if (gate.kind === "skip") return undefined;
+    if (gate.kind === "closed") {
+      return {
+        result: {
+          output: `${gate.reason}\n`,
+          exitCode: 1,
+          cancelled: true,
+          truncated: false,
+        },
+      };
+    }
     const decision = decideWithFallback(command, policyRoot());
     if (decision.permission === "allow") return undefined;
     return {
@@ -175,90 +187,44 @@ export default function machineroom(pi: ExtensionAPI) {
         fs.realpathSync(fileURLToPath(import.meta.url))
       );
       const worker = path.join(extensionDir, "agents", "worker.md");
-      const args = [
-        "--mode",
-        "json",
-        "-p",
-        "--no-session",
-        "--tools",
-        tools.join(","),
-        "--append-system-prompt",
+      let model: string;
+      try {
+        model = resolveSubagentModel(
+          process.env.MR_PI_MODEL,
+          loadModelScope(policyRoot())
+        );
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        return rejected(detail);
+      }
+      const args = buildSubagentArgs({
+        tools,
         worker,
-        `/skill:${params.skill}\n\nExecute exactly this task packet:\n${params.task}`,
-      ];
-      const events: any[] = [];
-      const child = spawn("pi", args, {
-        cwd,
-        shell: false,
-        detached: process.platform !== "win32",
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-      let stderr = "";
-      let parseError = "";
-      let timedOut = false;
-      let aborted = false;
-      let stdoutBuffer = "";
-      const processLine = (line: string) => {
-        if (!line.trim()) return;
-        try {
-          events.push(JSON.parse(line));
-        } catch {
-          parseError = "invalid Pi JSONL";
-        }
-      };
-      child.stderr.on("data", (chunk) => {
-        stderr += chunk.toString();
-      });
-      child.stdout.on("data", (chunk) => {
-        stdoutBuffer += chunk.toString();
-        const lines = stdoutBuffer.split("\n");
-        stdoutBuffer = lines.pop() ?? "";
-        for (const line of lines) processLine(line);
+        skill: params.skill,
+        task: params.task,
+        model,
       });
       const timeoutMs =
         (params.timeout_seconds ?? DEFAULT_TIMEOUT_SECONDS) * 1000;
-      const timer = setTimeout(() => {
-        timedOut = true;
-        if (child.pid && process.platform !== "win32")
-          process.kill(-child.pid, "SIGKILL");
-        else child.kill("SIGKILL");
-      }, timeoutMs);
-      const onAbort = () => {
-        aborted = true;
-        if (child.pid && process.platform !== "win32")
-          process.kill(-child.pid, "SIGKILL");
-        else child.kill("SIGKILL");
-      };
-      signal?.addEventListener("abort", onAbort, { once: true });
-      const exitCode = await new Promise<number>((resolve) => {
-        child.on("error", () => resolve(1));
-        child.on("close", (code) => {
-          if (stdoutBuffer.trim()) processLine(stdoutBuffer);
-          resolve(code ?? 1);
-        });
-      });
-      clearTimeout(timer);
-      signal?.removeEventListener("abort", onAbort);
-      const modelFailed = events.some((event) =>
-        ["error", "aborted"].includes(event?.message?.stopReason)
-      );
-      const failed =
-        parseError || modelFailed || timedOut || aborted || exitCode !== 0;
-      const result = {
-        outcome:
-          timedOut || aborted ? "cancelled" : failed ? "failed" : "succeeded",
-        exitCode,
-        output: finalText(events),
-        detail: parseError
-          ? `mr_subagent parse: ${parseError}`
-          : `mr_subagent execute: ${stderr.slice(0, 2000)}`,
-        reconciliationRequired: timedOut || aborted,
-      };
-      return {
-        content: [{ type: "text", text: JSON.stringify(result) }],
-        details: result,
-        isError: result.outcome !== "succeeded",
-      };
+      let state: Awaited<ReturnType<typeof runPiOnce>> | undefined;
+      for (let attempt = 0; attempt < SPAWN_ATTEMPTS; attempt += 1) {
+        state = await runPiOnce(args, cwd, timeoutMs, signal);
+        if (
+          !shouldRetrySpawn({
+            attempt,
+            attempts: SPAWN_ATTEMPTS,
+            timedOut: state.timedOut,
+            aborted: state.aborted,
+            stdout: state.stdout,
+            exitCode: state.exitCode,
+          })
+        ) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, backoffMs(attempt)));
+      }
+      if (!state) return rejected("mr_subagent execute: no spawn result");
+      return spawnResult(state);
     },
   });
 }

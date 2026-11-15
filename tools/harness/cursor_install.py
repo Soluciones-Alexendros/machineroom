@@ -339,7 +339,7 @@ def install_full(  # noqa: C901  # user/project scope + link/verify branches
             raise InstallFailure(
                 "runtime",
                 "install_full",
-                f"runtime missing: {sibling} (run scripts/runtime-sync.sh sync first)",
+                f"runtime missing: {sibling} (run scripts/runtime-sync.sh install --version X.Y.Z)",
             )
         source_root = sibling.resolve()
     else:

@@ -50,7 +50,9 @@ def test_policy_file_is_shipped_with_the_extension() -> None:
 def test_policy_loads_with_compiled_patterns() -> None:
     policy = load_policy(ROOT)
     assert all(isinstance(rule.pattern, re.Pattern) for rule in policy.deny)
-    assert policy.rm_rf.pattern is policy.rm_rf.pattern
+    assert isinstance(policy.matcher, re.Pattern)
+    assert policy.matcher.search("ssh host")
+    assert policy.matcher.search("echo ~/.ssh/config") is None
 
 
 @pytest.mark.parametrize(
@@ -88,6 +90,13 @@ def test_network_and_unmatched_ask(command: str) -> None:
     assert _hook({"command": command})["permission"] == "ask"
 
 
+def test_dot_ssh_path_is_not_the_ssh_command() -> None:
+    policy = load_policy(ROOT)
+    decision = decide_command("python3 -c \"p='~/.ssh/config'\"", policy)
+    assert decision["permission"] != "deny"
+    assert _hook({"command": "ssh user@host"})["permission"] == "deny"
+
+
 def test_malformed_payloads_are_fail_closed() -> None:
     assert _hook({})["permission"] == "deny"
     assert _hook({"command": 42})["permission"] == "deny"
@@ -104,6 +113,8 @@ def test_python_and_hook_agree_on_the_whole_matrix() -> None:
         "git status",
         "systemctl status",
         "npm test",
+        "echo ~/.ssh/config",
+        "ssh host",
     ]
     for command in commands:
         engine = decide_command(command, policy)
@@ -125,6 +136,39 @@ def test_invalid_json_is_a_structured_failure(tmp_path: Path) -> None:
     target.write_text("{not-json", encoding="utf-8")
     with pytest.raises(DenyListError, match="invalid JSON"):
         load_policy(tmp_path)
+
+
+def test_shell_matcher_is_the_single_formula() -> None:
+    """Cursor and the loaded policy share one prefilter string. Pi must not copy it."""
+    raw = json.loads(POLICY.read_text(encoding="utf-8"))
+    hooks = json.loads((ROOT / ".cursor" / "hooks.json").read_text(encoding="utf-8"))
+    hook_matcher = hooks["hooks"]["beforeShellExecution"][0]["matcher"]
+    assert raw["matcher"] == hook_matcher
+    policy = load_policy(ROOT)
+    assert policy.matcher.pattern == hook_matcher
+    source = (ROOT / "extensions" / "machineroom" / "index.ts").read_text(encoding="utf-8")
+    assert "apt-get|sshd" not in source
+    for command in ("echo ~/.ssh/config", "ssh host", "sshd", "git status"):
+        assert bool(policy.matcher.search(command)) == bool(re.compile(hook_matcher).search(command))
+
+
+def test_missing_matcher_is_a_structured_failure(tmp_path: Path) -> None:
+    target = deny_list_path(tmp_path)
+    target.parent.mkdir(parents=True)
+    target.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "deny": [{"id": "rm-rf", "pattern": r"\brm\s+-rf\b", "message": "no"}],
+                "network": {"id": "outbound-network", "pattern": r"\bcurl\b", "message": "ask"},
+                "allow": {"helpOrVersion": "--help", "tmpPrefixes": ["/tmp/machineroom-"]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(DenyListError, match="matcher") as caught:
+        load_policy(tmp_path)
+    assert caught.value.function == "load_policy"
 
 
 def test_rule_without_rm_rf_is_rejected(tmp_path: Path) -> None:

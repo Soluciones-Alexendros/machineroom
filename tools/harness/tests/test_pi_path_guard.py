@@ -101,3 +101,89 @@ def test_path_guard_missing_export_is_not_silently_accepted() -> None:
     # Guard against the extension losing its pure decision entry point.
     text = PATH_GUARD.read_text(encoding="utf-8")
     assert "export function decidePath" in text
+
+
+def _verdicts(tmp_path: Path, home: Path, paths: list[str], *, cwd: str, has_ui: bool = False) -> list[str]:
+    node = _node()
+    work = home / "Work"
+    script = tmp_path / "cwd-matrix.mjs"
+    script.write_text(
+        "import { decidePath } from "
+        f'"{PATH_GUARD.as_posix()}";\n'
+        f"const home = {json.dumps(str(home))};\n"
+        f"const work = {json.dumps(str(work))};\n"
+        f"const cwd = {json.dumps(cwd)};\n"
+        f"const hasUI = {'true' if has_ui else 'false'};\n"
+        f"const paths = {json.dumps(paths)};\n"
+        "console.log(JSON.stringify(paths.map((p) => decidePath(p, { home, work, cwd, hasUI }).verdict)));\n",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(
+        [node, "--experimental-strip-types", str(script)],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    verdicts: list[str] = json.loads(proc.stdout.strip().splitlines()[-1])
+    return verdicts
+
+
+def test_launch_directory_is_open_and_credentials_stay_blocked(tmp_path: Path) -> None:
+    """A session launched in a directory may write that tree, including children."""
+    home = tmp_path / "home"
+    launch = home / "Projects" / "app"
+    paths = [
+        str(launch / "src" / "main.ts"),
+        str(launch / "node_modules" / "pkg" / "index.js"),
+        str(launch / ".env"),
+        str(home / "Work" / "notes.txt"),
+        str(home / ".machineroom" / "extensions" / "machineroom" / "path-guard.ts"),
+        str(home / ".ssh" / "id_rsa"),
+        str(home / ".pi" / "agent" / "auth.json"),
+        str(home / "other" / "file.txt"),
+    ]
+    verdicts = _verdicts(tmp_path, home, paths, cwd=str(launch))
+    assert verdicts == [
+        "allow",  # file inside the launch directory
+        "allow",  # subdirectory, even a normally protected segment
+        "allow",  # project .env inside the launch directory
+        "allow",  # ~/Work stays open from any launch directory
+        "block",  # runtime is outside the launch directory
+        "block",  # credential store, even if someone launches in $HOME
+        "block",  # credential file
+        "block",  # sibling of the launch directory, no UI
+    ]
+
+
+def test_home_launch_opens_its_tree_except_credentials(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    paths = [
+        str(home / ".machineroom" / "extensions" / "machineroom" / "path-guard.ts"),
+        str(home / ".config" / "hypr" / "bindings.lua"),
+        str(home / ".pi" / "agent" / "extensions" / "path-guard.ts"),
+        str(home),
+        str(home / ".ssh" / "id_rsa"),
+        str(home / ".pi" / "agent" / "mcp-auth.json"),
+    ]
+    verdicts = _verdicts(tmp_path, home, paths, cwd=str(home))
+    assert verdicts == [
+        "allow",
+        "allow",
+        "allow",
+        "block",  # the home directory inode itself
+        "block",
+        "block",
+    ]
+
+
+def test_symlink_into_credentials_stays_blocked(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    work = home / "Work"
+    secret = home / ".ssh"
+    secret.mkdir(parents=True)
+    (secret / "id_rsa").write_text("secret", encoding="utf-8")
+    work.mkdir()
+    link = work / "id_rsa"
+    link.symlink_to(secret / "id_rsa")
+    verdicts = _verdicts(tmp_path, home, [str(link)], cwd=str(work))
+    assert verdicts == ["block"]

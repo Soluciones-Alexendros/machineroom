@@ -166,7 +166,7 @@ if [[ "$COMPONENTS" == "full" ]]; then
   if [[ "$USER_MODE" == true ]]; then
     RUNTIME_SOURCE="${HOME}/.machineroom"
     if [[ ! -d "$RUNTIME_SOURCE/skills" ]]; then
-      echo "ERROR: runtime missing: $RUNTIME_SOURCE (run scripts/runtime-sync.sh sync first)" >&2
+      echo "ERROR: runtime missing: $RUNTIME_SOURCE (run scripts/runtime-sync.sh install --version X.Y.Z)" >&2
       exit 1
     fi
     FULL_ARGS=(--source "$RUNTIME_SOURCE" --target "$FULL_TARGET" --user)

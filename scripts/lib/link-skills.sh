@@ -139,7 +139,7 @@ if [ "$USER_INSTALL" = 1 ]; then
       if [ "$HARNESS" = "cursor" ]; then
         TARGET="${USER_TARGET:-${HOME}/.cursor/skills}"
       fi
-      emit_failure "runtime" "link-skills" "runtime missing: $RUNTIME_HOME (run scripts/runtime-sync.sh sync first)"
+      emit_failure "runtime" "link-skills" "runtime missing: $RUNTIME_HOME (run scripts/runtime-sync.sh install --version X.Y.Z)"
       exit 1
     fi
   else

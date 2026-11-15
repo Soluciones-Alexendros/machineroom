@@ -11,7 +11,7 @@ if ! command -v pi >/dev/null 2>&1; then
   echo "not_run: pi binary missing" >&2
   exit 3
 fi
-MR_PI_MODEL="${MR_PI_MODEL:-opencode-go/beam-free}"
+MR_PI_MODEL="${MR_PI_MODEL:-opencode-go/deepseek-v4.1-flash}"
 export MR_PI_MODEL
 if ! pi auth check --model "$MR_PI_MODEL" --json >/tmp/mr-pi-auth.json 2>&1; then
   echo "not_run: pi model auth not ready for $MR_PI_MODEL" >&2
@@ -30,7 +30,6 @@ REPO="$TMP/repo"
 git worktree add --detach "$REPO" HEAD >/dev/null
 git -C "$REPO" config commit.gpgsign false
 
-export MR_PI_MODEL="${MR_PI_MODEL:-kimi-coding/k3.1-pro}"
 uv run --project tools --frozen python - "$REPO" "$ROOT" <<'PY'
 import hashlib
 import subprocess
@@ -46,6 +45,7 @@ sys.path.insert(0, str(ROOT / "tools" / "workspace-router"))
 
 from execution.evidence import load_evidence
 from execution.ops import OpResult
+from harness.model_scope import resolve_pi_model
 from harness.pi import PiSubagentAdapter
 from orchestrator.runner import WorktreeAdapter
 from orchestrator.scheduler import Scheduler
@@ -88,7 +88,7 @@ def verifier_for(task):
 
 adapter = WorktreeAdapter(
     repo,
-    PiSubagentAdapter(model=__import__("os").environ.get("MR_PI_MODEL", "kimi-coding/k3.1-pro"), timeout=180),
+    PiSubagentAdapter(model=resolve_pi_model(__import__("os").environ.get("MR_PI_MODEL")), timeout=180),
     verifier_for,
 )
 summary = Scheduler(repo, adapter=adapter, max_parallel=1).run()
