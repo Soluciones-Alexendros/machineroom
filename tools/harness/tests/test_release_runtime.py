@@ -100,9 +100,7 @@ def test_home_release_version_must_match_package(tmp_path: Path, monkeypatch: py
     assert not (home / ".machineroom").exists()
 
 
-def test_home_release_records_stable_source_and_rewrites_hooks(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_home_release_records_stable_source_and_rewrites_hooks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))

@@ -84,7 +84,7 @@ function canonicalize(absolute: string): string {
 
 export function decidePath(
   requested: string,
-  options: PathGuardOptions = {},
+  options: PathGuardOptions = {}
 ): PathDecision {
   const home = options.home ?? homedir();
   const work = options.work ?? resolve(home, "Work");
@@ -119,7 +119,7 @@ export function decidePath(
     secretDirs.some((dir) => target === dir || target.startsWith(dir + sep))
   ) {
     return block(
-      "protected credential path; do not retry with variants, ask the operator",
+      "protected credential path; do not retry with variants, ask the operator"
     );
   }
 
@@ -127,7 +127,7 @@ export function decidePath(
   const openedByLaunch = launch !== "" && inside(launch, target);
   const openedByWork = inside(work, target);
   const openedByPrefix = allowPrefixes.some((prefix) =>
-    target.startsWith(resolve(prefix)),
+    target.startsWith(resolve(prefix))
   );
   if (openedByLaunch || openedByWork || openedByPrefix) {
     return { verdict: "allow" };
@@ -139,24 +139,24 @@ export function decidePath(
     resolve(home, ".config", "hypr"),
   ];
   const confirmFiles = new Set(
-    CONFIRM_FILES.map((parts) => resolve(home, ...parts)),
+    CONFIRM_FILES.map((parts) => resolve(home, ...parts))
   );
 
   if (HARD_SEGMENTS.some((segment) => target.split(sep).includes(segment))) {
     return block(
-      "protected path segment; do not retry with ~, .. or symlinks, ask the operator",
+      "protected path segment; do not retry with ~, .. or symlinks, ask the operator"
     );
   }
   if (hardDirs.some((dir) => target === dir || target.startsWith(dir + sep))) {
     return block(
-      "protected path; do not retry with variants, ask the operator",
+      "protected path; do not retry with variants, ask the operator"
     );
   }
   if (confirmFiles.has(target)) {
     return confirm("editing a configuration file");
   }
   return confirm(
-    "path outside the launch directory and ~/Work requires confirmation",
+    "path outside the launch directory and ~/Work requires confirmation"
   );
 }
 
@@ -180,7 +180,7 @@ export default function (pi: ExtensionAPI) {
     }
     const ok = await ctx.ui.confirm(
       "Write outside the launch directory and ~/Work?",
-      requested,
+      requested
     );
     if (!ok)
       return {
