@@ -6,6 +6,8 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [8.0.1] - 2026-11-15
+
 ### Changed
 
 - `$HOME/.machineroom` accepts only a verified release
@@ -21,6 +23,10 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
   string and the Pi extension loads it.
 - Pi RPC discovery and subagent spawn retry a connection that dies before
   producing output, with backoff. Timeouts and partial output are not retried.
+- A Pi subagent spawn settles once. The process launch lives in
+  `extensions/machineroom/call.ts`.
+- The path guard allows writes inside the launch directory and its
+  subdirectories. Secret directories stay blocked.
 
 ## [8.0.0] - 2026-11-10
 
