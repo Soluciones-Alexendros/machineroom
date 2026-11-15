@@ -3,6 +3,7 @@
 set -euo pipefail
 echo "HARNESS_MATRIX: cursor,pi"
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+SKILL_COUNT=$(find "$ROOT/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d " ")
 TMP=$(mktemp -d)
 # /tmp/.pi/skills and /tmp/.cursor/skills are only removed if this run found them absent.
 PI_LEAK_ABSENT=0
@@ -28,7 +29,7 @@ assert_abs_links() {
       *) echo "FAIL not absolute $link -> $target"; exit 1 ;;
     esac
   done
-  test "$n" = 17
+  test "$n" = "$SKILL_COUNT"
 }
 
 assert_rel_links() {
@@ -45,7 +46,7 @@ assert_rel_links() {
       *Work/machineroom*) echo "FAIL checkout path in link $link -> $target"; exit 1 ;;
     esac
   done
-  test "$n" = 17
+  test "$n" = "$SKILL_COUNT"
 }
 
 # A home runtime is a verified release, not the development checkout.
@@ -205,8 +206,8 @@ bash "$ROOT/scripts/package-standalone-skill.sh" --skill local-maintenance --dry
 
 # --- 7.0.1: --target . resolves to DEFAULT_TARGET (not repo root) ---
 DOT_JSON=$(bash "$ROOT/scripts/install-cursor.sh" --target . --yes --json)
-echo "$DOT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".cursor/skills"), d; assert "/.cursor/skills/" not in d["target"].rstrip("/") + "/" or True'
-test "$(find "$ROOT/.cursor/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "17"
+echo "$DOT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".cursor/skills"), d; assert "/.cursor/skills/" not in d["target"].rstrip("/") + "/" or True' "$SKILL_COUNT"
+test "$(find "$ROOT/.cursor/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "$SKILL_COUNT"
 # must not create skill symlinks in repo root
 test ! -L "$ROOT/local-maintenance"
 
@@ -214,37 +215,37 @@ test ! -L "$ROOT/local-maintenance"
 FLAT="$TMP/test-cursor-json"
 mkdir -p "$FLAT"
 JSON1=$(bash "$ROOT/scripts/install-cursor.sh" --target "$FLAT" --yes --json)
-echo "$JSON1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17 and d["changed"]==17 and d["skipped"]==0, d'
+echo "$JSON1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]) and d["changed"]==int(sys.argv[1]) and d["skipped"]==0, d' "$SKILL_COUNT"
 JSON2=$(bash "$ROOT/scripts/install-cursor.sh" --target "$FLAT" --yes --json)
-echo "$JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17 and d["changed"]==0 and d["skipped"]==17, d'
-test "$(find "$FLAT" -maxdepth 1 -type l | wc -l | tr -d " ")" = "17"
+echo "$JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]) and d["changed"]==0 and d["skipped"]==int(sys.argv[1]), d' "$SKILL_COUNT"
+test "$(find "$FLAT" -maxdepth 1 -type l | wc -l | tr -d " ")" = "$SKILL_COUNT"
 
 # --- 7.0.1: AI wrapper nests under harness skills dir ---
 AI_C="$TMP/ai-cursor"
 AI_P="$TMP/ai-pi"
 WRAP_C=$(bash "$ROOT/scripts/install.sh" --harness cursor --target "$AI_C" --yes --json)
-echo "$WRAP_C" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".cursor/skills"), d'
-test "$(find "$AI_C/.cursor/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "17"
+echo "$WRAP_C" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".cursor/skills"), d' "$SKILL_COUNT"
+test "$(find "$AI_C/.cursor/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "$SKILL_COUNT"
 WRAP_P=$(bash "$ROOT/scripts/install.sh" --harness pi --target "$AI_P" --yes --json)
-echo "$WRAP_P" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".pi/skills"), d'
-test "$(find "$AI_P/.pi/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "17"
+echo "$WRAP_P" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".pi/skills"), d' "$SKILL_COUNT"
+test "$(find "$AI_P/.pi/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "$SKILL_COUNT"
 
 # dry-run --json: zero writes, planned counts
 DRY_T="$TMP/dry-json-dest"
 DRY_OUT=$(bash "$ROOT/scripts/install-cursor.sh" --target "$DRY_T" --dry-run --json)
-echo "$DRY_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["dry_run"] is True and d["installed"]==17 and d["changed"]==17, d'
+echo "$DRY_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["dry_run"] is True and d["installed"]==int(sys.argv[1]) and d["changed"]==int(sys.argv[1]), d' "$SKILL_COUNT"
 test ! -e "$DRY_T"
 test ! -e "$DRY_T/.machineroom-install-manifest.json"
 
 # --- 7.0.2: wrapper --target . anchors to the checkout, even from /tmp ---
 WRAP_DOT_PI=$(cd /tmp && bash "$ROOT/scripts/install.sh" --harness pi --target . --yes --json)
-echo "$WRAP_DOT_PI" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==17, d; assert d["target"]==root+"/.pi/skills", d' "$ROOT"
+echo "$WRAP_DOT_PI" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==int(sys.argv[2]), d; assert d["target"]==root+"/.pi/skills", d' "$ROOT" "$SKILL_COUNT"
 assert_abs_links "$ROOT/.pi/skills"
 if [ "$PI_LEAK_ABSENT" = 1 ]; then test ! -e /tmp/.pi/skills; fi
 test ! -L "$ROOT/local-maintenance"
 
 WRAP_DOT_C=$(cd /tmp && bash "$ROOT/scripts/install.sh" --harness cursor --target . --yes --json)
-echo "$WRAP_DOT_C" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==17, d; assert d["target"]==root+"/.cursor/skills", d' "$ROOT"
+echo "$WRAP_DOT_C" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==int(sys.argv[2]), d; assert d["target"]==root+"/.cursor/skills", d' "$ROOT" "$SKILL_COUNT"
 if [ "$CURSOR_LEAK_ABSENT" = 1 ]; then test ! -e /tmp/.cursor/skills; fi
 
 # Relative skills path from /tmp still lands in the checkout.
@@ -257,29 +258,29 @@ fi
 
 # Public installer --target . from /tmp still uses the checkout default.
 PUB_DOT=$(cd /tmp && bash "$ROOT/scripts/install-pi.sh" --target . --yes --json)
-echo "$PUB_DOT" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==17, d; assert d["target"]==root+"/.pi/skills", d' "$ROOT"
+echo "$PUB_DOT" | python3 -c 'import json,sys; d=json.load(sys.stdin); root=sys.argv[1]; assert d["installed"]==int(sys.argv[2]), d; assert d["target"]==root+"/.pi/skills", d' "$ROOT" "$SKILL_COUNT"
 
 # Pi flat idempotency + absolute symlinks
 PI_FLAT="$TMP/test-pi"
 PI_JSON1=$(bash "$ROOT/scripts/install-pi.sh" --target "$PI_FLAT" --yes --json)
-echo "$PI_JSON1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17 and d["changed"]==17 and d["skipped"]==0, d'
+echo "$PI_JSON1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]) and d["changed"]==int(sys.argv[1]) and d["skipped"]==0, d' "$SKILL_COUNT"
 PI_JSON2=$(bash "$ROOT/scripts/install-pi.sh" --target "$PI_FLAT" --yes --json)
-echo "$PI_JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17 and d["changed"]==0 and d["skipped"]==17, d'
+echo "$PI_JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]) and d["changed"]==0 and d["skipped"]==int(sys.argv[1]), d' "$SKILL_COUNT"
 assert_abs_links "$PI_FLAT"
 
 # Wrapper pi idempotency
 AI_PI2="$TMP/ai-pi-idem"
 WRAP_PI1=$(bash "$ROOT/scripts/install.sh" --harness pi --target "$AI_PI2" --yes --json)
-echo "$WRAP_PI1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".pi/skills"), d'
+echo "$WRAP_PI1" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".pi/skills"), d' "$SKILL_COUNT"
 WRAP_PI2=$(bash "$ROOT/scripts/install.sh" --harness pi --target "$AI_PI2" --yes --json)
-echo "$WRAP_PI2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17 and d["changed"]==0 and d["skipped"]==17, d'
+echo "$WRAP_PI2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]) and d["changed"]==0 and d["skipped"]==int(sys.argv[1]), d' "$SKILL_COUNT"
 assert_abs_links "$AI_PI2/.pi/skills"
 assert_abs_links "$AI_C/.cursor/skills"
 
 # Pi dry-run creates nothing
 DRY_PI="$TMP/dry-pi"
 DRY_PI_OUT=$(bash "$ROOT/scripts/install-pi.sh" --target "$DRY_PI" --dry-run --json)
-echo "$DRY_PI_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["dry_run"] is True and d["installed"]==17, d'
+echo "$DRY_PI_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["dry_run"] is True and d["installed"]==int(sys.argv[1]), d' "$SKILL_COUNT"
 test ! -e "$DRY_PI"
 
 # --user requires ~/.machineroom; dry-run writes no harness links
@@ -292,7 +293,7 @@ test ! -e "$HOME_DRY/.pi/agent/skills"
 HOME_REAL="$TMP/home-real"
 prepare_runtime "$HOME_REAL"
 USER_REAL=$(HOME="$HOME_REAL" bash "$ROOT/scripts/install-pi.sh" --user --yes --json)
-echo "$USER_REAL" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".pi/agent/skills"), d'
+echo "$USER_REAL" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".pi/agent/skills"), d' "$SKILL_COUNT"
 assert_rel_links "$HOME_REAL/.pi/agent/skills"
 test -L "$HOME_REAL/.pi/agent/extensions/machineroom.ts"
 case "$(readlink -- "$HOME_REAL/.pi/agent/extensions/machineroom.ts")" in
@@ -310,7 +311,7 @@ fi
 IGN_PUB="$TMP/ignored-public"
 BOTH_ERR="$TMP/both-public.err"
 BOTH_OUT=$(HOME="$HOME_REAL" bash "$ROOT/scripts/install-pi.sh" --user --target "$IGN_PUB" --yes --json 2>"$BOTH_ERR")
-echo "$BOTH_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".pi/agent/skills"), d'
+echo "$BOTH_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".pi/agent/skills"), d' "$SKILL_COUNT"
 grep -q "WARN: --user overrides --target" "$BOTH_ERR"
 test ! -e "$IGN_PUB"
 
@@ -319,7 +320,7 @@ prepare_runtime "$HOME_WRAP"
 IGN_WRAP="$TMP/ignored-wrap"
 WRAP_ERR="$TMP/wrap-user.err"
 WRAP_USER=$(HOME="$HOME_WRAP" bash "$ROOT/scripts/install.sh" --harness pi --target "$IGN_WRAP" --user --yes --json 2>"$WRAP_ERR")
-echo "$WRAP_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".pi/agent/skills"), d'
+echo "$WRAP_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".pi/agent/skills"), d' "$SKILL_COUNT"
 grep -q "WARN: --user overrides --target; ignoring --target" "$WRAP_ERR"
 test ! -e "$IGN_WRAP"
 assert_rel_links "$HOME_WRAP/.pi/agent/skills"
@@ -329,7 +330,7 @@ CUR_ERR="$TMP/cursor-user.err"
 HOME_CURSOR="$TMP/home-cursor"
 prepare_runtime "$HOME_CURSOR"
 CUR_USER=$(HOME="$HOME_CURSOR" bash "$ROOT/scripts/install-cursor.sh" --user --target "$IGN_CURSOR" --yes --json 2>"$CUR_ERR")
-echo "$CUR_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==17, d; assert d["target"].endswith(".cursor/skills"), d'
+echo "$CUR_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".cursor/skills"), d' "$SKILL_COUNT"
 grep -q "WARN: --user overrides --target" "$CUR_ERR"
 test ! -e "$IGN_CURSOR"
 assert_rel_links "$HOME_CURSOR/.cursor/skills"
@@ -337,24 +338,24 @@ assert_rel_links "$HOME_CURSOR/.cursor/skills"
 # Cursor full component mode: project root, dry-run, idempotence and uninstall.
 FULL="$TMP/full-cursor"
 FULL_DRY=$(bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --dry-run --yes --json)
-echo "$FULL_DRY" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["components"]=="full" and d["installed"]==24 and d["dry_run"] is True, d'
+echo "$FULL_DRY" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["components"]=="full" and d["installed"]==int(sys.argv[1])+7 and d["dry_run"] is True, d' "$SKILL_COUNT"
 test ! -e "$FULL"
 FULL_JSON=$(bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --yes --json)
-echo "$FULL_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==24 and d["changed"]==24, d'
+echo "$FULL_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1])+7 and d["changed"]==int(sys.argv[1])+7, d' "$SKILL_COUNT"
 assert_abs_links "$FULL/.cursor/skills"
 test -L "$FULL/.cursor/rules/machineroom.mdc"
 test -L "$FULL/.cursor/agents/mr-verifier.md"
 test -L "$FULL/.cursor/hooks.json"
 test -L "$FULL/.cursor/hooks/shell_gate.py"
 FULL_JSON2=$(bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --yes --json)
-echo "$FULL_JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==24, d'
+echo "$FULL_JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==int(sys.argv[1])+7, d' "$SKILL_COUNT"
 bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --uninstall --yes --json >/dev/null
 test ! -e "$FULL/.cursor/skills/plan-continue"
 # User-scope full install: relative links from ~/.machineroom, no project rule.
 FULL_USER_HOME="$TMP/home-full"
 prepare_runtime "$FULL_USER_HOME"
 FULL_USER=$(HOME="$FULL_USER_HOME" bash "$ROOT/scripts/install.sh" --harness cursor --components full --user --yes --json)
-echo "$FULL_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["scope"]=="user", d; assert d["installed"]==23, d; assert d["omitted"]==["rules/machineroom.mdc"], d; assert d["notes"], d'
+echo "$FULL_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["scope"]=="user", d; assert d["installed"]==int(sys.argv[1])+6, d; assert d["omitted"]==["rules/machineroom.mdc"], d; assert d["notes"], d' "$SKILL_COUNT"
 USER_CURSOR="$FULL_USER_HOME/.cursor"
 test -L "$USER_CURSOR/skills/plan-continue"
 test -L "$USER_CURSOR/agents/mr-verifier.md"
@@ -367,7 +368,7 @@ case "$(readlink -- "$USER_CURSOR/hooks.json")" in
 esac
 python3 -c 'import json,sys; data=json.load(open(sys.argv[1])); cmds=[e["command"] for v in data["hooks"].values() for e in v]; assert cmds, data; assert not any(".cursor/hooks/" in c for c in cmds), cmds; assert all(c.startswith("python3 hooks/") for c in cmds), cmds' "$USER_CURSOR/hooks.json"
 FULL_USER2=$(HOME="$FULL_USER_HOME" bash "$ROOT/scripts/install.sh" --harness cursor --components full --user --yes --json)
-echo "$FULL_USER2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==23, d'
+echo "$FULL_USER2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==int(sys.argv[1])+6, d' "$SKILL_COUNT"
 HOME="$FULL_USER_HOME" bash "$ROOT/scripts/install.sh" --harness cursor --components full --user --uninstall --yes --json >/dev/null
 test ! -e "$USER_CURSOR/hooks.json"
 test ! -e "$USER_CURSOR/agents/mr-verifier.md"

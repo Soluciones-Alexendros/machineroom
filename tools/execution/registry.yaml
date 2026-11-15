@@ -1,56 +1,6 @@
 schema_version: 1
 dialect: machineroom.execution.registry
 tools:
-  - tool_id: local-email
-    skill: local-email
-    entrypoint: tools/email/drivers/proton
-    description: Execution tool for skill local-email
-    execution_kind: script
-    distribution: standalone
-    shared_dependencies: []
-    system_requirements:
-      binaries: []
-      network: true
-    operations:
-      - id: read_mail
-        effect: communicate-external
-        dry_run: "yes"
-        idempotency: "yes"
-        approval_required: false
-        recovery_required: false
-        description: local-email:read_mail
-      - id: search_mail
-        effect: communicate-external
-        dry_run: "yes"
-        idempotency: "yes"
-        approval_required: false
-        recovery_required: false
-        description: local-email:search_mail
-      - id: send_mail
-        effect: communicate-external
-        dry_run: "no"
-        idempotency: "no"
-        approval_required: true
-        recovery_required: false
-        description: local-email:send_mail
-      - id: proton_send
-        effect: communicate-external
-        dry_run: "no"
-        idempotency: "no"
-        approval_required: true
-        recovery_required: false
-        timeout_seconds: 120
-        description: local-email:proton_send
-      - id: access_secret
-        effect: access-secret
-        dry_run: "no"
-        idempotency: "no"
-        approval_required: true
-        recovery_required: false
-        description: local-email:access_secret
-    automation_limits:
-      Agent judgment remains for non-script operations; blocked mutators
-      stay blocked without approval.
   - tool_id: local-maintenance
     skill: local-maintenance
     entrypoint: skills/local-maintenance/scripts

@@ -32,7 +32,6 @@ test:
 		skills/local-maintenance/scripts/tests/ \
 		skills/web-compliance/tests/ \
 		skills/local-security/scripts/tests/ \
-		tools/email/drivers/proton/ \
 		-q
 
 smoke:

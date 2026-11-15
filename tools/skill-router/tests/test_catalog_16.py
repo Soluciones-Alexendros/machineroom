@@ -1,4 +1,4 @@
-"""Catalog gate: 17 skills, the renamed self-audit entry, coherent index.
+"""Catalog gate: 16 skills, the renamed self-audit entry, coherent index.
 
 The Pi/Cursor listings are operator evidence (``not_run`` in CI); this test only
 covers what the repository can prove. The post-rename Pi RPC re-check lives in
@@ -15,21 +15,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-EXPECTED_COUNT = 17
+EXPECTED_COUNT = 16
 RENAMED = "project-machineroom"
 REMOVED = "project-autoworkspace"
+RETIRED = "local-email"
 
 
 def _catalog_dirs() -> list[Path]:
     return sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
 
 
-def test_catalog_has_seventeen_skills() -> None:
+def test_catalog_has_sixteen_skills() -> None:
     dirs = _catalog_dirs()
     assert len(dirs) == EXPECTED_COUNT, [p.name for p in dirs]
     names = {p.name for p in dirs}
     assert RENAMED in names
     assert REMOVED not in names
+    assert RETIRED not in names
 
 
 def test_directory_name_matches_frontmatter() -> None:

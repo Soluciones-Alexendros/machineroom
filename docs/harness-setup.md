@@ -52,11 +52,11 @@ The symlink installers below remain the development flow for a local checkout.
 | Project `.cursor/skills` via `--target .` | `bash scripts/install-cursor.sh --target .`                |
 | Project `.cursor/skills` explicit         | `bash scripts/install-cursor.sh --target .cursor/skills`   |
 | User `~/.cursor/skills`                   | `bash scripts/install-cursor.sh --user`                    |
-| Any directory (flat 17 symlinks)          | `bash scripts/install-cursor.sh --target /tmp/test-cursor` |
+| Any directory (flat 16 symlinks)          | `bash scripts/install-cursor.sh --target /tmp/test-cursor` |
 | Project `.pi/skills` (default)            | `bash scripts/install-pi.sh`                               |
 | Project `.pi/skills` via `--target .`     | `bash scripts/install-pi.sh --target .`                    |
 | User `~/.pi/agent/skills`                 | `bash scripts/install-pi.sh --user`                        |
-| Any directory (flat 17 symlinks)          | `bash scripts/install-pi.sh --target /tmp/test-pi`         |
+| Any directory (flat 16 symlinks)          | `bash scripts/install-pi.sh --target /tmp/test-pi`         |
 
 `--target .` (or the checkout root) resolves to the harness default skills directory — it does **not** place symlinks in the repository root. Arbitrary `--target DIR` stays flat (compat 7.0.0).
 

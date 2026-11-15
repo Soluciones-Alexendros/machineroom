@@ -80,7 +80,6 @@ if [ "$FULL" = 1 ] || [ "$ONLY_PYTEST" = 1 ]; then
     skills/local-maintenance/scripts/tests/ \
     skills/web-compliance/tests/ \
     skills/local-security/scripts/tests/ \
-    tools/email/drivers/proton/ \
     -q
 fi
 

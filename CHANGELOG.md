@@ -6,6 +6,13 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+### Removed
+
+- Skill `local-email` and its Proton driver (`tools/email/`). The catalog is
+  now 16 skills in 5 domains; registry, router intents, frozen snapshot
+  `docs/architecture/skill-index-8.0.0.json`, catalog tests and install matrix
+  counts follow the new size.
+
 ## [8.0.1] - 2026-11-15
 
 ### Changed
