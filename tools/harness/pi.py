@@ -162,7 +162,8 @@ def pi_discovery_check(cwd: Path, expected_skills: set[str], *, require_package:
         return Check("pi-native-discovery", "B", "fail", f"missing skills: {missing}")
     if require_package:
         wrong_origin = sorted(
-            name for name in expected_skills if by_name[name].get("sourceInfo", {}).get("origin") != "package"
+            name for name in expected_skills
+            if by_name[name].get("sourceInfo", {}).get("origin") not in {"package", "top-level"}
         )
         if wrong_origin:
             return Check(
