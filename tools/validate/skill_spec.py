@@ -101,6 +101,54 @@ def parse_allowed_tools(raw: object) -> set[str] | None:
 def estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
+# --- New validation functions (WP6) ---
+
+# Description template regex (warn level)
+DESC_TEMPLATE_RE = re.compile(
+    r"^[^.]+\.\s*Use when\s+.+?\.\s*(Not for|Do not use)\s+.+?→\s*`?(?:plan|local|project|web|role)-[a-z0-9-]+`?\.?$",
+    re.IGNORECASE | re.DOTALL
+)
+
+def check_description_template(skill: str, desc: str) -> None:
+    """Validate description follows template: [Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)."""
+    if not DESC_TEMPLATE_RE.match(desc):
+        has_use_when = "Use when" in desc
+        has_not_for = "Not for" in desc or "Do not use" in desc
+        has_arrow = bool(ARROW_RE.search(desc))
+        if not (has_use_when and has_not_for and has_arrow):
+            err(skill, f"WARN: description no sigue plantilla '[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)'")
+
+def check_keywords_array(skill: str, meta: dict[str, Any]) -> None:
+    """Validate metadata.keywords is an array with skill name and 3-5 terms."""
+    keywords = meta.get("keywords")
+    if keywords is None:
+        err(skill, "WARN: metadata.keywords ausente")
+        return
+    if isinstance(keywords, str):
+        err(skill, f"WARN: metadata.keywords debe ser array, no string: {keywords!r}")
+        return
+    if not isinstance(keywords, list):
+        err(skill, f"WARN: metadata.keywords debe ser lista: {type(keywords).__name__}")
+        return
+    if len(keywords) < 2:
+        err(skill, f"WARN: metadata.keywords debe tener al menos 2 elementos (skill + domain): {keywords!r}")
+    if skill not in keywords:
+        err(skill, f"WARN: metadata.keywords debe incluir el nombre del skill: {skill!r}")
+
+def check_cross_refs_in_frontmatter(skill: str, meta: dict[str, Any], names: set[str]) -> None:
+    execution = meta.get("execution")
+    if execution and execution not in names:
+        err(skill, f"metadata.execution apunta a skill inexistente: {execution}")
+
+def check_size_limits(skill: str, text: str) -> None:
+    body = text.split("\n---", 1)[-1]
+    body_lines = len(body.splitlines())
+    if body_lines > MAX_BODY_LINES:
+        err(skill, f"cuerpo {body_lines} líneas (> {MAX_BODY_LINES})")
+    body_tokens = estimate_tokens(body)
+    if body_tokens > MAX_BODY_TOKENS:
+        err(skill, f"cuerpo ~{body_tokens} tokens (> {MAX_BODY_TOKENS})")
+
 
 def err(skill: str, msg: str) -> None:
     ERRORS.append(f"[{skill}] {msg}")
@@ -439,6 +487,12 @@ def check_skill(root: Path, sdir: Path, names: set[str]) -> None:
         return
     _check_metadata(skill, meta, root)
     _check_allowed_tools(skill, fm, meta)
+
+    # WP6: New validations
+    check_description_template(skill, str(fm.get("description", "")))
+    check_keywords_array(skill, meta)
+    check_cross_refs_in_frontmatter(skill, meta, names)
+    check_size_limits(skill, text)
 
     body = _check_body_size(skill, text)
     check_headings(skill, body, has_exec_scripts(sdir))
