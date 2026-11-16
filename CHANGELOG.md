@@ -6,7 +6,7 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
-## [Unreleased]
+## [8.1.0] - 2026-11-16
 
 ### Added
 
