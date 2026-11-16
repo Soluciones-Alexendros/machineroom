@@ -4,7 +4,8 @@ description:
   "Machineroom phase router: continue from roadmap or .machineroom status,
   scaffold project.yaml/status.yaml, and route DEFINE→SCHEMAS→IMPLEMENT→VALIDATE→INTEGRATE→STATUS.
   Use when asking where to start, plan mode, repo starting, or bringing a project
-  up to date. Not for release close or version publication (→ project-publish)."
+  up to date. Not for release close or version publication (→ project-publish); not
+  for repo health board (→ project-audit)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros

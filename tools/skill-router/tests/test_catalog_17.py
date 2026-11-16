@@ -15,23 +15,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-EXPECTED_COUNT = 16
+EXPECTED_COUNT = 17
 RENAMED = "project-machineroom"
 REMOVED = "project-autoworkspace"
 RETIRED = "local-email"
+NEW = "project-audit"
 
 
 def _catalog_dirs() -> list[Path]:
     return sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
 
 
-def test_catalog_has_sixteen_skills() -> None:
+def test_catalog_has_seventeen_skills() -> None:
     dirs = _catalog_dirs()
     assert len(dirs) == EXPECTED_COUNT, [p.name for p in dirs]
     names = {p.name for p in dirs}
     assert RENAMED in names
     assert REMOVED not in names
     assert RETIRED not in names
+    assert NEW in names
 
 
 def test_directory_name_matches_frontmatter() -> None:

@@ -287,6 +287,35 @@ tools:
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
+  - tool_id: project-audit
+    skill: project-audit
+    entrypoint: tools/execution
+    description: Execution tool for skill project-audit
+    execution_kind: script
+    distribution: workspace-required
+    shared_dependencies:
+      - tools/execution
+    system_requirements:
+      binaries: []
+      network: false
+    operations:
+      - id: repo_scan
+        effect: read
+        dry_run: "yes"
+        idempotency: "yes"
+        approval_required: false
+        recovery_required: false
+        description: project-audit:repo_scan
+      - id: status_board
+        effect: write-workspace
+        dry_run: "no"
+        idempotency: "no"
+        approval_required: false
+        recovery_required: false
+        description: project-audit:status_board
+    automation_limits:
+      Agent judgment remains for non-script operations; blocked mutators
+      stay blocked without approval.
   - tool_id: project-libraries
     skill: project-libraries
     entrypoint: tools/execution

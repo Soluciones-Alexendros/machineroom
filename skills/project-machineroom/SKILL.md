@@ -5,7 +5,8 @@ description:
   plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom,
   checking harness A/B/C drift, or planning an approved change to the pipeline. Not
   for generic architecture reviews (→ project-architecture); not for continuing an
-  arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish). "
+  arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish).
+  Not for product-repo health (→ project-audit)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
