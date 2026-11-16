@@ -106,7 +106,7 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
-          pattern='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert|style).*?: .{1,100}$'
+          pattern='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert|style)[^:]*: .{1,100}$'
           if ! printf '%s\n' "$PR_TITLE" | grep -Eq "$pattern"; then
             echo "::error::Título de PR inválido: «${PR_TITLE}»"
             echo "Esperado: tipo(alcance)?: descripción (1–100 caracteres tras «: »)"
