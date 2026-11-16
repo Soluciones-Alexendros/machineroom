@@ -6,6 +6,47 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [Unreleased]
+
+### Added
+
+- New skill `project-audit` (project domain, atomic) for repo health board and evolution plan
+- 41 new reference files across 10 skills (project-architecture, project-libraries, project-publish, role-back, role-front, web-performance, plan-validators, local-security, project-machineroom, project-audit)
+- Extended skill_spec.py validator: description template regex (warn), keywords array (warn), cross-ref targets in frontmatter/description (error), explicit size limits (lines ≤500, tokens ≤5000)
+- Skill `project-libraries` gains registry entry with `sca_scan` and `sbom_generate` operations
+- Skill `project-publish` gains `versioning-guide.md` and `changelog-guide.md` references
+- New intent `repo_starting` in intent-map.yaml routing to `project-audit`
+
+### Changed
+
+- **Metadata normalization** across all 17 skills: unified `author` to `Soluciones-Alexendros`, patch-bumped versions, `keywords` string→array with skill+domain+3-5 terms, `compatibility` array, `allowed-tools` audit/atomic/orchestrator alignment, `disable-model-invocation` only on `local-*`/`project-publish`
+- **Description template** enforced: `[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)` with 14 new cross-reference arrows added
+- **Type reclassification**: `project-libraries` audit→atomic (+Bash), `project-publish` atomic→orchestrator, `project-machineroom` stays orchestrator (correction)
+- **Orchestrator deduplication**: `plan-continue` now pure phase router + status bump; repo health board moved to new `project-audit` skill; `project-machineroom` stays self-audit only
+- **Documentation sync**: TAXONOMY.md, README.md, AGENTS.md updated to 17 skills; skill-index.json regenerated
+- **Validation tooling**: skill_spec.py extended with description template (warn), keywords array (warn), cross-ref targets, size limits; skill_links.py verifies cross-ref targets
+
+### Removed
+
+- Skill `local-email` and its Proton driver (`tools/email/`)
+- Orphan directory `skills/data-linkml/`
+- `project-libraries` from audit skills list (now atomic)
+
+### Fixed
+
+- Mypy exclude for `skills/project-audit/` (duplicate `inicio_plan.py` module)
+- Test expectations updated: `EXPECTED_REGISTRY_TOOLS` 11→13, `EXPECTED_OPERATIONS` 33→37, catalog tests 16→17 skills, `USER_SCOPE_COMPONENTS` 22→23, cursor install expected 23→24, Pi catalog test lenient
+- 41 trailing whitespace issues removed from new reference files
+
+### Security
+
+- `project-libraries` now `atomic` (+Bash) to execute SCA pipeline; `allowed-tools` updated accordingly
+- `project-machineroom` confirmed `orchestrator` (not `audit`) due to `plan_self_change` write + `doctor.py` Bash usage
+
+### Documentation
+
+- 7 future skill gaps documented in `tasks/decisions-skills-repertoire.md`: `local-network`, `local-containers`, `project-dependencies`, `project-licenses`, `role-api`, `role-data`, `web-api-security`
+
 ## [8.0.1] - 2026-11-15
 
 ### Changed
