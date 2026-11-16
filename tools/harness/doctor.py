@@ -128,7 +128,7 @@ def skill_link_check(root: Path, harness: str, *, source_root: Path | None = Non
 
 def cursor_full_check(
     root: Path,
-) -> Check:  # noqa: C901, PLR0911  # v1/v2 + user/project link checks
+) -> Check:  # v1/v2 + user/project link checks
     manifest = root.resolve() / ".cursor" / ".machineroom-full-manifest.json"
     try:
         data = json.loads(manifest.read_text(encoding="utf-8"))

@@ -258,7 +258,7 @@ def _check_action_pins(rel: str, text: str) -> None:
 
 def release_asset_errors(
     root: Path,
-) -> list[str]:  # noqa: C901, PLR0912, PLR0915  # ordered release asset gate
+) -> list[str]:  # ordered release asset gate
     """Require archive → checksum → attestation → upload in the release workflow."""
     path = root / ".github" / "workflows" / "release.yml"
     if not path.is_file():

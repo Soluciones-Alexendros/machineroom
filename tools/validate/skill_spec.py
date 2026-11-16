@@ -120,7 +120,7 @@ def check_description_template(skill: str, desc: str) -> None:
         if not (has_use_when and has_not_for and has_arrow):
             err(
                 skill,
-                f"WARN: description no sigue plantilla '[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)'",
+                "WARN: description no sigue plantilla '[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)'",
             )
 
 

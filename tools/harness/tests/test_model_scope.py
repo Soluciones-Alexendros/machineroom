@@ -23,7 +23,7 @@ from harness.model_scope import (
     ModelScopeError,
     model_in_scope,
     resolve_pi_model,
-)  # noqa: E402
+)
 from harness.pi import PiSubagentAdapter  # noqa: E402
 from orchestrator.run import _build_adapter  # noqa: E402
 

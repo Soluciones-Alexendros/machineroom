@@ -13,7 +13,7 @@ from validate.naming_gate import (
     ALLOWED_FILES,
     candidate_files,
     scan,
-)  # noqa: E402
+)
 
 
 def test_repository_is_clean() -> None:

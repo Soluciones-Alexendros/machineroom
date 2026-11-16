@@ -119,7 +119,7 @@ class Scheduler:
 
     def run(
         self,
-    ) -> RunSummary:  # noqa: C901, PLR0912  # DAG loop: schedule/wait/stop branches
+    ) -> RunSummary:  # DAG loop: schedule/wait/stop branches
         if self.adapter is None:
             raise ValueError("adapter required for non-dry-run execution")
         status = load_status(self.repo)

@@ -17,7 +17,7 @@ from harness.cursor_install import (
     ConflictError,
     install_full,
     uninstall_full,
-)  # noqa: E402
+)
 from harness.runtime import sync_payload  # noqa: E402
 
 

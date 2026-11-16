@@ -29,7 +29,7 @@ from harness.runtime import (
     format_failure,
     make_relative_symlink,
     write_user_hooks_config,
-)  # noqa: E402
+)
 
 MANIFEST_NAME = ".machineroom-full-manifest.json"
 JOURNAL_NAME = ".machineroom-full-journal.json"

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import yaml, pathlib, sys
+import pathlib
+
+import yaml
 
 skills = sorted(pathlib.Path("skills").glob("*/SKILL.md"))
 

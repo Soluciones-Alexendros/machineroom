@@ -48,7 +48,7 @@ if str(_TOOLS) not in sys.path:
 from execution.ops import run_registered  # noqa: E402  # requiere _TOOLS en sys.path
 from execution.registry import (
     register_handler,
-)  # noqa: E402  # requiere _TOOLS en sys.path
+)  # requiere _TOOLS en sys.path
 
 
 @dataclass

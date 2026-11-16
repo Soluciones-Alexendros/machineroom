@@ -17,7 +17,7 @@ from harness.cursor_install import (
     ConflictError,
     install_full,
     uninstall_full,
-)  # noqa: E402
+)
 from harness.doctor import cursor_full_check, skill_link_check  # noqa: E402
 from harness.runtime import make_relative_symlink, sync_payload  # noqa: E402
 

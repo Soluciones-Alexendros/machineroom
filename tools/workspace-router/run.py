@@ -32,7 +32,7 @@ from state_paths import (
     format_state_failure,
     migrate_state,
     state_dir,
-)  # noqa: E402
+)
 from status_bump import advance_status, load_status, migrate_status  # noqa: E402
 
 

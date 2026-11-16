@@ -31,11 +31,11 @@ from harness.policy import (
     ExecutionPolicy,
     assert_argv_policy,
     build_policy,
-)  # noqa: E402
+)
 from harness.subprocess_run import (
     CancellableRun,
     run_cancellable_subprocess,
-)  # noqa: E402
+)
 
 
 def response_commands(response: dict[str, Any]) -> list[dict[str, Any]]:
