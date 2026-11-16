@@ -115,12 +115,8 @@ class InteractiveProvider(ApprovalProvider):
         except EOFError:
             return ApprovalDecision(False, "EOF", "interactive", request.plan_digest)
         if line == request.operation_id:
-            return ApprovalDecision(
-                True, "operator typed operation id", "interactive", request.plan_digest
-            )
-        return ApprovalDecision(
-            False, "mismatched confirmation", "interactive", request.plan_digest
-        )
+            return ApprovalDecision(True, "operator typed operation id", "interactive", request.plan_digest)
+        return ApprovalDecision(False, "mismatched confirmation", "interactive", request.plan_digest)
 
 
 def sys_stdin_isatty() -> bool:

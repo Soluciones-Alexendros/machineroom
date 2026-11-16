@@ -49,10 +49,7 @@ def test_error_escritura_exit1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     )
     monkeypatch.setattr(audit_full, "run", lambda *a, **k: "")
     monkeypatch.setattr(audit_full, "run_check", lambda *a, **k: "")
-    assert (
-        audit_full.main([str(tmp_path / "nodir" / "o.json"), str(tmp_path / "p.json")])
-        == 1
-    )
+    assert audit_full.main([str(tmp_path / "nodir" / "o.json"), str(tmp_path / "p.json")]) == 1
 
 
 def test_run_check_golden() -> None:

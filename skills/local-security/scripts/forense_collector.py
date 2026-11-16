@@ -29,9 +29,7 @@ RECIPES = ("auth", "sudo", "apparmor", "watch-key", "pid", "timeline")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
-        )
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
     else:
         logging.getLogger().setLevel(level)
 
@@ -78,9 +76,7 @@ def collect_auth(since: str) -> list[dict[str, Any]]:
     out = run_cmd("last -f /var/log/wtmp 2>/dev/null | head -20")
     for line in out.splitlines():
         if line.strip():
-            events.append(
-                {"ts": "", "source": "last:wtmp", "summary": line.strip()[:300]}
-            )
+            events.append({"ts": "", "source": "last:wtmp", "summary": line.strip()[:300]})
     return events
 
 
@@ -105,14 +101,10 @@ def collect_apparmor(since: str) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     if which("ausearch") is None:
         return [{"ts": "", "source": "ausearch", "summary": "ausearch no disponible"}]
-    out = run_cmd(
-        f"ausearch -m avc -ts {since} 2>/dev/null | grep 'apparmor=\"DENIED\"' | head -30"
-    )
+    out = run_cmd(f"ausearch -m avc -ts {since} 2>/dev/null | grep 'apparmor=\"DENIED\"' | head -30")
     for line in out.splitlines():
         if line.strip():
-            events.append(
-                {"ts": "", "source": "ausearch:avc", "summary": line.strip()[:300]}
-            )
+            events.append({"ts": "", "source": "ausearch:avc", "summary": line.strip()[:300]})
     return events
 
 
@@ -123,9 +115,7 @@ def collect_watch_key(key: str, since: str) -> list[dict[str, Any]]:
     out = run_cmd(f"ausearch -k {key} -ts {since} 2>/dev/null | head -30")
     for line in out.splitlines():
         if line.strip():
-            events.append(
-                {"ts": "", "source": f"ausearch:{key}", "summary": line.strip()[:300]}
-            )
+            events.append({"ts": "", "source": f"ausearch:{key}", "summary": line.strip()[:300]})
     return events
 
 
@@ -142,9 +132,7 @@ def collect_pid(pid: str, since: str) -> list[dict[str, Any]]:
                         "summary": line.strip()[:300],
                     }
                 )
-    out = run_cmd(
-        f'journalctl _PID={pid} --since "{since}" --no-pager 2>/dev/null | head -20'
-    )
+    out = run_cmd(f'journalctl _PID={pid} --since "{since}" --no-pager 2>/dev/null | head -20')
     for line in out.splitlines():
         if line.strip():
             events.append(
@@ -158,23 +146,13 @@ def collect_pid(pid: str, since: str) -> list[dict[str, Any]]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Recetas forenses a cronologia JSON (solo lectura)."
-    )
-    parser.add_argument(
-        "recipe", choices=list(RECIPES), help="Receta de forense-logs.md"
-    )
-    parser.add_argument(
-        "--since", default="today", help="Ventana temporal (defecto today)"
-    )
+    parser = argparse.ArgumentParser(description="Recetas forenses a cronologia JSON (solo lectura).")
+    parser.add_argument("recipe", choices=list(RECIPES), help="Receta de forense-logs.md")
+    parser.add_argument("--since", default="today", help="Ventana temporal (defecto today)")
     parser.add_argument("--pid", default="", help="PID para receta pid")
-    parser.add_argument(
-        "--key", default="identity", help="Clave auditd para receta watch-key"
-    )
+    parser.add_argument("--key", default="identity", help="Clave auditd para receta watch-key")
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
-    parser.add_argument(
-        "--verbose", action="store_true", help="Logging verboso a stderr"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     return parser
 
 
@@ -197,9 +175,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.pid:
             print("receta pid requiere --pid N", file=sys.stderr)
             return 2
-        events += collect_pid(
-            args.pid, "today" if args.since == "today" else args.since
-        )
+        events += collect_pid(args.pid, "today" if args.since == "today" else args.since)
     events.sort(key=lambda e: (e.get("ts") or "", e.get("source") or ""))
 
     result = {

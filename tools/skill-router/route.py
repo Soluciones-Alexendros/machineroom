@@ -131,9 +131,7 @@ def _emit_results(results: list, as_json: bool) -> None:
         print(json.dumps(rows, ensure_ascii=False, indent=2))
         return
     for sc, sk in results:
-        print(
-            f"{sc:.2f} {sk['name']} -> {sk['entry']}  keywords={','.join(sk.get('keywords', [])[:4])}"
-        )
+        print(f"{sc:.2f} {sk['name']} -> {sk['entry']}  keywords={','.join(sk.get('keywords', [])[:4])}")
 
 
 def main():

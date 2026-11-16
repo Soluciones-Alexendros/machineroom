@@ -18,11 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = (
-    Path(sys.argv[sys.argv.index("--root") + 1])
-    if "--root" in sys.argv
-    else Path(__file__).resolve().parents[2]
-)
+ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 ADR_CITE_RE = re.compile(
     r"\bADR-(\d{4})\b(?:\s+[«\"]?([A-Za-z][A-Za-z /-]{2,40}))?",
@@ -189,11 +185,7 @@ def load_adr_status(root: Path) -> dict[str, tuple[Path, str]]:
     for path in sorted(dec.glob("ADR-*.md")):
         text = path.read_text(encoding="utf-8")
         m_id = re.search(r"adr_id:\s*\"?(ADR-\d{4})\"?", text)
-        adr_id = (
-            m_id.group(1)
-            if m_id
-            else path.name.split("-")[0] + "-" + path.name.split("-")[1]
-        )
+        adr_id = m_id.group(1) if m_id else path.name.split("-")[0] + "-" + path.name.split("-")[1]
         if not adr_id.startswith("ADR-"):
             m_name = re.match(r"(ADR-\d{4})", path.name)
             adr_id = m_name.group(1) if m_name else path.stem
@@ -277,19 +269,13 @@ def check_md(md: Path) -> None:
 
 
 def main() -> int:
-    mds = sorted(
-        p
-        for p in ROOT.rglob("*.md")
-        if not (TERM_SKIP_PARTS & set(p.parts)) and ".archivado" not in str(p)
-    )
+    mds = sorted(p for p in ROOT.rglob("*.md") if not (TERM_SKIP_PARTS & set(p.parts)) and ".archivado" not in str(p))
     for md in mds:
         check_md(md)
     check_adr_citations(ROOT)
     check_terminology(ROOT)
     check_github_owners(ROOT)
-    print(
-        f"md revisados: {len(mds)}, rotos: {len(BROKEN)}, adr_citas: {len(ADR_STATUS_ERRORS)}"
-    )
+    print(f"md revisados: {len(mds)}, rotos: {len(BROKEN)}, adr_citas: {len(ADR_STATUS_ERRORS)}")
     for b in BROKEN:
         print("BROKEN", b)
     for e in ADR_STATUS_ERRORS:

@@ -27,9 +27,7 @@ def _node() -> str:
         check=False,
     )
     if probe.returncode != 0:
-        pytest.skip(
-            "node without --experimental-strip-types: spawn settlement is not_run here"
-        )
+        pytest.skip("node without --experimental-strip-types: spawn settlement is not_run here")
     return node
 
 

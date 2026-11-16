@@ -52,11 +52,7 @@ def response_commands(response: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def skill_commands(response: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        command
-        for command in response_commands(response)
-        if command.get("source") == "skill"
-    ]
+    return [command for command in response_commands(response) if command.get("source") == "skill"]
 
 
 class PiCallError(ValueError):
@@ -77,9 +73,7 @@ def _backoff_seconds(attempt: int) -> float:
     return delay
 
 
-def _rpc_once(
-    cwd: Path, *, timeout: int, env: dict[str, str] | None
-) -> list[dict[str, Any]]:
+def _rpc_once(cwd: Path, *, timeout: int, env: dict[str, str] | None) -> list[dict[str, Any]]:
     function = "rpc_commands"
     process = subprocess.Popen(
         ["pi", "--mode", "rpc", "--no-session"],
@@ -99,9 +93,7 @@ def _rpc_once(
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
         process.wait(timeout=5)
-        raise PiCallError(
-            function, f"Pi RPC timeout after {timeout}s", retryable=False
-        ) from None
+        raise PiCallError(function, f"Pi RPC timeout after {timeout}s", retryable=False) from None
     if process.returncode != 0:
         raise PiCallError(
             function,
@@ -115,9 +107,7 @@ def _rpc_once(
         try:
             responses.append(json.loads(line))
         except json.JSONDecodeError:
-            raise PiCallError(
-                function, "Pi RPC returned invalid JSONL", retryable=True
-            ) from None
+            raise PiCallError(function, "Pi RPC returned invalid JSONL", retryable=True) from None
     for response in responses:
         if isinstance(response, dict) and response.get("command") == "get_commands":
             return response_commands(response)
@@ -134,9 +124,7 @@ def rpc_commands(
 ) -> list[dict[str, Any]]:
     """Call get_commands. Transient startup failures retry with backoff; a timeout does not."""
     if attempts < 1:
-        raise PiCallError(
-            "rpc_commands", "attempts must be at least 1", retryable=False
-        )
+        raise PiCallError("rpc_commands", "attempts must be at least 1", retryable=False)
     pause = time.sleep if sleep is None else sleep
     last: PiCallError | None = None
     for attempt in range(attempts):
@@ -157,9 +145,7 @@ def rpc_commands(
     )
 
 
-def pi_discovery_check(
-    cwd: Path, expected_skills: set[str], *, require_package: bool = True
-) -> Check:
+def pi_discovery_check(cwd: Path, expected_skills: set[str], *, require_package: bool = True) -> Check:
     if shutil.which("pi") is None:
         return Check("pi-native-discovery", "B", "not_run", "Pi binary not found")
     try:
@@ -176,9 +162,7 @@ def pi_discovery_check(
         return Check("pi-native-discovery", "B", "fail", f"missing skills: {missing}")
     if require_package:
         wrong_origin = sorted(
-            name
-            for name in expected_skills
-            if by_name[name].get("sourceInfo", {}).get("origin") != "package"
+            name for name in expected_skills if by_name[name].get("sourceInfo", {}).get("origin") != "package"
         )
         if wrong_origin:
             return Check(
@@ -223,9 +207,7 @@ def _interpret_pi_output(run: CancellableRun) -> tuple[str, str]:
             stop_reason = str(message.get("stopReason") or stop_reason)
             content = message.get("content") or []
             final_text = "".join(
-                str(part.get("text", ""))
-                for part in content
-                if isinstance(part, dict) and part.get("type") == "text"
+                str(part.get("text", "")) for part in content if isinstance(part, dict) and part.get("type") == "text"
             )
     except (json.JSONDecodeError, AttributeError) as exc:
         stop_reason = "error"
@@ -253,9 +235,7 @@ class PiSubagentAdapter:
         retry_sleep: Callable[[float], None] | None = None,
     ) -> None:
         if attempts < 1:
-            raise PiCallError(
-                "PiSubagentAdapter", "attempts must be at least 1", retryable=False
-            )
+            raise PiCallError("PiSubagentAdapter", "attempts must be at least 1", retryable=False)
         self.binary = binary
         self.model = resolve_pi_model(model)
         self.timeout = timeout
@@ -270,15 +250,10 @@ class PiSubagentAdapter:
         task: dict[str, Any],
         policy: ExecutionPolicy,
     ) -> list[str]:
-        prompt = (
-            f"/skill:{operation.skill}\n\nExecute exactly this task packet:\n{packet}"
-        )
+        prompt = f"/skill:{operation.skill}\n\nExecute exactly this task packet:\n{packet}"
         if policy.write_scope:
             paths = ", ".join(policy.write_scope)
-            expected = "\n".join(
-                f"{path} must contain exactly: {task['id']}"
-                for path in policy.write_scope
-            )
+            expected = "\n".join(f"{path} must contain exactly: {task['id']}" for path in policy.write_scope)
             prompt += (
                 f"\nWrite only these files under the workspace ({paths}).\n"
                 f"{expected}\n"
@@ -297,9 +272,7 @@ class PiSubagentAdapter:
             prompt,
         ]
 
-    def _run_with_retry(
-        self, argv: list[str], cwd: str, env: dict[str, str], context: RunContext
-    ) -> CancellableRun:
+    def _run_with_retry(self, argv: list[str], cwd: str, env: dict[str, str], context: RunContext) -> CancellableRun:
         for attempt in range(self.attempts):
             try:
                 run = run_cancellable_subprocess(
@@ -348,14 +321,10 @@ class PiSubagentAdapter:
                 run_id=run_id,
                 plan_digest=plan_digest,
             )
-            return AdapterResult(
-                outcome, detail=detail, operation_result=operation_result
-            )
+            return AdapterResult(outcome, detail=detail, operation_result=operation_result)
 
         try:
-            run = self._run_with_retry(
-                argv, str(context.repo), policy.env_mapping(), context
-            )
+            run = self._run_with_retry(argv, str(context.repo), policy.env_mapping(), context)
         except OSError as exc:
             return finish("failed", None, f"Pi spawn failed: {exc}")
         outcome, detail = _interpret_pi_output(run)
@@ -367,9 +336,7 @@ def _version() -> str | None:
     if shutil.which("pi") is None:
         return None
     try:
-        result = subprocess.run(
-            ["pi", "--version"], capture_output=True, text=True, timeout=10, check=False
-        )
+        result = subprocess.run(["pi", "--version"], capture_output=True, text=True, timeout=10, check=False)
     except (OSError, subprocess.TimeoutExpired):
         return None
     return result.stdout.strip() if result.returncode == 0 else None
@@ -378,21 +345,13 @@ def _version() -> str | None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Pi native package discovery check")
     parser.add_argument("--cwd", type=Path, default=Path("."))
-    parser.add_argument(
-        "--catalog", type=Path, default=Path(__file__).resolve().parents[2]
-    )
+    parser.add_argument("--catalog", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--allow-top-level", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     skills_dir = args.catalog.resolve() / "skills"
-    expected = {
-        path.name
-        for path in skills_dir.iterdir()
-        if path.is_dir() and (path / "SKILL.md").is_file()
-    }
-    check = pi_discovery_check(
-        args.cwd.resolve(), expected, require_package=not args.allow_top_level
-    )
+    expected = {path.name for path in skills_dir.iterdir() if path.is_dir() and (path / "SKILL.md").is_file()}
+    check = pi_discovery_check(args.cwd.resolve(), expected, require_package=not args.allow_top_level)
     report = build_report(
         "pi",
         [check],

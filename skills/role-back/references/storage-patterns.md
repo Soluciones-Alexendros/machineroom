@@ -15,6 +15,7 @@ async def get_upload_url(filename: str, content_type: str, max_size: int) -> str
     url = await storage.presigned_put(key, content_type, max_size, expires=3600)
     return {"url": url, "key": key, "headers": {"Content-Type": content_type}}
 
+
 # Client uploads directly to storage
 # Server verifies on webhook/callback
 ```
@@ -33,8 +34,10 @@ async def get_download_url(key: str, filename: str | None = None) -> str:
 async def initiate_multipart(key: str, content_type: str) -> str:
     return await storage.create_multipart_upload(key, content_type)
 
+
 async def sign_part(key: str, upload_id: str, part_number: int) -> str:
     return await storage.presigned_upload_part(key, upload_id, part_number, expires=3600)
+
 
 async def complete_multipart(key: str, upload_id: str, parts: list[Part]) -> Object:
     return await storage.complete_multipart_upload(key, upload_id, parts)
@@ -55,10 +58,14 @@ async def create_export(job_id: str, query: Query) -> str:
 ```python
 # ALWAYS validate on server side
 ALLOWED_TYPES = {
-    "image/jpeg", "image/png", "image/webp",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
     "application/pdf",
-    "text/csv", "application/json",
+    "text/csv",
+    "application/json",
 }
+
 
 async def verify_upload(key: str, expected_type: str) -> bool:
     obj = await storage.head(key)

@@ -21,11 +21,7 @@ except ImportError:  # pragma: no cover - entorno sin PyYAML
 
 yaml = _yaml_mod
 
-ROOT = (
-    Path(sys.argv[sys.argv.index("--root") + 1])
-    if "--root" in sys.argv
-    else Path(__file__).resolve().parents[2]
-)
+ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
 EXPR_RE = re.compile(r"\$\{\{")
 ERRORS: list[str] = []
 
@@ -42,9 +38,7 @@ def _walk_steps(rel: str, job_name: str, steps: Any) -> None:
             continue
         run = step.get("run")
         if isinstance(run, str) and EXPR_RE.search(run):
-            err(
-                f"{rel}: job '{job_name}' step[{idx}] run incrusta expresión ${{{{ ... }}}}"
-            )
+            err(f"{rel}: job '{job_name}' step[{idx}] run incrusta expresión ${{{{ ... }}}}")
 
 
 def check_workflow(path: Path, root: Path) -> None:

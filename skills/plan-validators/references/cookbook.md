@@ -22,6 +22,7 @@ def db():
 ```python
 from freezegun import freeze_time
 
+
 @freeze_time("2024-01-15 12:00:00")
 def test_expiry():
     token = create_token(expires_in=3600)
@@ -33,10 +34,10 @@ def test_expiry():
 ```python
 import responses
 
+
 @responses.activate
 def test_external_call():
-    responses.add(responses.GET, "https://api.example.com/user/1",
-                  json={"id": 1, "name": "Test"}, status=200)
+    responses.add(responses.GET, "https://api.example.com/user/1", json={"id": 1, "name": "Test"}, status=200)
 
     result = client.get_user(1)
     assert result.name == "Test"
@@ -135,7 +136,7 @@ def test_idempotent_operation():
     # Duplicate call with same key
     result2 = service.process(key, data={"x": 1})
     assert result2.id == "result-1"  # Same result
-    assert service.call_count == 1   # Only executed once
+    assert service.call_count == 1  # Only executed once
 ```
 
 ## Quick Reference: Assertions

@@ -47,9 +47,7 @@ class ScanRepoTests(unittest.TestCase):
     def test_app_tsx_no_es_nombre_invalido(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write(
-                root, "src/App.tsx", "export default function App() { return null }\n"
-            )
+            _write(root, "src/App.tsx", "export default function App() { return null }\n")
             _write(root, "src/Main.java", "class Main {}\n")
             _write(root, "src/Bad Name.py", "pass\n")
             rep = scan_repo.scan(str(root))
@@ -176,33 +174,19 @@ class PureFunctionGoldens(unittest.TestCase):
         self.assertFalse(scan_repo.is_env_file("app.py"))
 
     def test_naming_is_suspicious_dorado(self) -> None:
-        self.assertEqual(
-            scan_repo.naming_is_suspicious("Bad Name.py", ".py"), "con_espacios"
-        )
+        self.assertEqual(scan_repo.naming_is_suspicious("Bad Name.py", ".py"), "con_espacios")
         self.assertIsNone(scan_repo.naming_is_suspicious("README.md", ".md"))
         self.assertIsNone(scan_repo.naming_is_suspicious("Makefile", ""))
         self.assertIsNone(scan_repo.naming_is_suspicious("App.tsx", ".tsx"))
-        self.assertEqual(
-            scan_repo.naming_is_suspicious("MiModulo.py", ".py"), "con_mayusculas"
-        )
+        self.assertEqual(scan_repo.naming_is_suspicious("MiModulo.py", ".py"), "con_mayusculas")
         self.assertIsNone(scan_repo.naming_is_suspicious("modulo.py", ".py"))
 
     def test_is_dedicated_test_path_dorado(self) -> None:
-        self.assertTrue(
-            scan_repo.is_dedicated_test_path("tests/test_a.py", "test_a.py")
-        )
-        self.assertTrue(
-            scan_repo.is_dedicated_test_path("src/test_app.py", "test_app.py")
-        )
-        self.assertTrue(
-            scan_repo.is_dedicated_test_path("pkg/tests/helpers.py", "helpers.py")
-        )
-        self.assertFalse(
-            scan_repo.is_dedicated_test_path("src/integration/client.py", "client.py")
-        )
-        self.assertFalse(
-            scan_repo.is_dedicated_test_path("src/testing/helpers.py", "helpers.py")
-        )
+        self.assertTrue(scan_repo.is_dedicated_test_path("tests/test_a.py", "test_a.py"))
+        self.assertTrue(scan_repo.is_dedicated_test_path("src/test_app.py", "test_app.py"))
+        self.assertTrue(scan_repo.is_dedicated_test_path("pkg/tests/helpers.py", "helpers.py"))
+        self.assertFalse(scan_repo.is_dedicated_test_path("src/integration/client.py", "client.py"))
+        self.assertFalse(scan_repo.is_dedicated_test_path("src/testing/helpers.py", "helpers.py"))
         self.assertFalse(scan_repo.is_dedicated_test_path("src/app.py", "app.py"))
 
     def test_path_confidence_dorado(self) -> None:
@@ -250,9 +234,7 @@ class ScanRepoCliHardening(unittest.TestCase):
         self.assertEqual(cm.exception.code, 2)
 
     def test_repo_inexistente_exit_1(self) -> None:
-        rc = scan_repo.main(
-            [os.path.join(tempfile.gettempdir(), "scan_repo_no_existe_xyz")]
-        )
+        rc = scan_repo.main([os.path.join(tempfile.gettempdir(), "scan_repo_no_existe_xyz")])
         self.assertEqual(rc, 1)
 
     def test_repo_valido_exit_0_con_json_md(self) -> None:

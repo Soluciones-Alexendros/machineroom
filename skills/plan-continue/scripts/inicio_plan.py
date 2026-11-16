@@ -73,9 +73,7 @@ def git_snapshot(repo: str) -> dict[str, Any]:
     _, upstream = run_git(repo, "rev-parse", "--abbrev-ref", "@{upstream}")
     adelante, atras = 0, 0
     if upstream:
-        rc, counts = run_git(
-            repo, "rev-list", "--left-right", "--count", "HEAD...@{upstream}"
-        )
+        rc, counts = run_git(repo, "rev-list", "--left-right", "--count", "HEAD...@{upstream}")
         if rc == 0 and counts:
             parts = counts.replace("\t", " ").split()
             if len(parts) == COUNT_FIELDS:
@@ -266,9 +264,7 @@ def estructura(repo: str, profile: str) -> dict[str, Any]:
         return {"ok": False, "codigo": 3, "lineas": [str(exc)], "faltantes": []}
     out = (proc.stdout or "") + (proc.stderr or "")
     lineas = [ln for ln in out.splitlines() if ln.strip()]
-    faltantes = [
-        ln for ln in lineas if ln.startswith("FALTA") or ln.startswith("PROHIBIDO")
-    ]
+    faltantes = [ln for ln in lineas if ln.startswith("FALTA") or ln.startswith("PROHIBIDO")]
     avisos = [ln for ln in lineas if ln.startswith("AVISO")]
     return {
         "ok": proc.returncode == 0,
@@ -301,9 +297,7 @@ def _fallos_git(git: dict[str, Any]) -> list[dict[str, Any]]:
     fallos: list[dict[str, Any]] = []
     if git.get("es_git") and git.get("sucio"):
         cambios = git.get("cambios_sin_commit", 0)
-        fallos.append(
-            _fallo("P2", "git", f"árbol sucio ({cambios} cambios sin commit)")
-        )
+        fallos.append(_fallo("P2", "git", f"árbol sucio ({cambios} cambios sin commit)"))
     if git.get("atras"):
         fallos.append(
             _fallo(
@@ -353,13 +347,7 @@ def semaforo(fallos: list[dict[str, Any]], git: dict[str, Any]) -> str:
 
 
 def esc(text: object) -> str:
-    return (
-        str(text)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _md_git(git: dict[str, Any]) -> list[str]:
@@ -409,9 +397,7 @@ def _md_issue(issue: dict[str, Any]) -> str:
 
 def _md_pull(pr: dict[str, Any]) -> str:
     draft = " (borrador)" if pr.get("isDraft") else ""
-    return (
-        f"- PR #{pr.get('number')} {pr.get('title')}{draft} ← `{pr.get('headRefName')}`"
-    )
+    return f"- PR #{pr.get('number')} {pr.get('title')}{draft} ← `{pr.get('headRefName')}`"
 
 
 def _sin_camino(road: dict[str, Any], gh: dict[str, Any]) -> bool:
@@ -497,9 +483,7 @@ def to_html(rep: dict[str, Any]) -> str:
     road = rep["roadmap"]
     fallos_rows = []
     for f in rep["fallos"]:
-        fallos_rows.append(
-            f"<tr><td>{esc(f['sev'])}</td><td>{esc(f['fuente'])}</td><td>{esc(f['detalle'])}</td></tr>"
-        )
+        fallos_rows.append(f"<tr><td>{esc(f['sev'])}</td><td>{esc(f['fuente'])}</td><td>{esc(f['detalle'])}</td></tr>")
     if not fallos_rows:
         fallos_rows.append('<tr><td colspan="3">Sin hallazgos</td></tr>')
     road_items = []
@@ -508,13 +492,9 @@ def to_html(rep: dict[str, Any]) -> str:
     for u in road.get("unreleased") or []:
         road_items.append(f"<li>Sin publicar: {esc(u)}</li>")
     for issue in (gh.get("issues_abiertos") or [])[:10]:
-        road_items.append(
-            f"<li>#{esc(issue.get('number'))} {esc(issue.get('title'))}</li>"
-        )
+        road_items.append(f"<li>#{esc(issue.get('number'))} {esc(issue.get('title'))}</li>")
     for pr in (gh.get("prs_abiertos") or [])[:10]:
-        road_items.append(
-            f"<li>PR #{esc(pr.get('number'))} {esc(pr.get('title'))}</li>"
-        )
+        road_items.append(f"<li>PR #{esc(pr.get('number'))} {esc(pr.get('title'))}</li>")
     if not road_items:
         road_items.append("<li>Sin camino documentado todavía</li>")
     nombre = esc(rep.get("nombre") or Path(rep["repo"]).name)
@@ -603,16 +583,12 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Tablero de partida para un plan de repo")
     ap.add_argument("repo", help="Ruta raíz del repositorio")
     ap.add_argument("--profile", default="P1", choices=["P0", "P1", "P2"])
-    ap.add_argument(
-        "--out", help="Directorio de salida (inicio.json, ESTADO.md, ESTADO.html)"
-    )
+    ap.add_argument("--out", help="Directorio de salida (inicio.json, ESTADO.md, ESTADO.html)")
     return ap
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(
-        stream=sys.stderr, level=logging.INFO, format="%(levelname)s: %(message)s"
-    )
+    logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="%(levelname)s: %(message)s")
     args = build_parser().parse_args(argv)
     if not os.path.isdir(args.repo):
         logger.error("'%s' no es un directorio", args.repo)

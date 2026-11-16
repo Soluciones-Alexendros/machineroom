@@ -16,9 +16,7 @@ EXIT_USAGE = 2
 SCRIPT = "session_logger.py"
 
 
-def _run(
-    *args: str, env: dict[str, str] | None = None
-) -> subprocess.CompletedProcess[str]:
+def _run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     e = dict(os.environ)
     if env:
         e.update(env)
@@ -58,10 +56,7 @@ def test_error_io_exit1(monkeypatch: pytest.MonkeyPatch) -> None:
         raise OSError("disco simulado")
 
     monkeypatch.setattr(os, "makedirs", _boom)
-    assert (
-        session_logger.main(["--log-dir", "/tmp/irrelevante-xyz", "--session-id", "s"])
-        == 1
-    )
+    assert session_logger.main(["--log-dir", "/tmp/irrelevante-xyz", "--session-id", "s"]) == 1
 
 
 def test_log_event_golden(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -78,9 +73,7 @@ def test_log_event_golden(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
 # --- session_logger additional tests for coverage ---
 
 
-def test_session_logger_init_log(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_session_logger_init_log(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     logdir = str(tmp_path / "logs3")
     monkeypatch.setattr(session_logger._STATE, "log_dir", logdir)
     monkeypatch.setattr(session_logger._STATE, "session_id", "init-test")
@@ -98,9 +91,7 @@ def test_session_logger_init_log(
     assert "USER: testuser" in content
 
 
-def test_session_logger_ensure_log_dir_fallback(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_session_logger_ensure_log_dir_fallback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def _boom(*a: str, **k: Any) -> None:
         raise OSError("disco simulado")
 
@@ -111,9 +102,7 @@ def test_session_logger_ensure_log_dir_fallback(
         session_logger._ensure_log_dir()
 
 
-def test_session_logger_log_event_multiple(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_session_logger_log_event_multiple(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     logdir = str(tmp_path / "logs4")
     monkeypatch.setattr(session_logger._STATE, "log_dir", logdir)
     monkeypatch.setattr(session_logger._STATE, "session_id", "multi-test")
@@ -126,9 +115,7 @@ def test_session_logger_log_event_multiple(
     assert "detalle1" in content and "detalle2" in content
 
 
-def test_session_logger_getters(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_session_logger_getters(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     logdir = str(tmp_path / "logs5")
     monkeypatch.setattr(session_logger._STATE, "log_dir", logdir)
     monkeypatch.setattr(session_logger._STATE, "session_id", "getter-test")

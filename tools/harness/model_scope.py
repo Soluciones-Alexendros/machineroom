@@ -47,9 +47,7 @@ def load_scope(path: Path | None = None) -> ModelScope:
     try:
         raw = json.loads(target.read_text(encoding="utf-8"))
     except OSError as exc:
-        raise ModelScopeError(
-            function, f"unreadable model scope: {target}: {exc}"
-        ) from exc
+        raise ModelScopeError(function, f"unreadable model scope: {target}: {exc}") from exc
     except json.JSONDecodeError as exc:
         raise ModelScopeError(function, f"invalid JSON in {target}: {exc}") from exc
     if not isinstance(raw, dict):
@@ -57,21 +55,15 @@ def load_scope(path: Path | None = None) -> ModelScope:
     default_model = str(raw.get("defaultModel", "")).strip()
     patterns_raw = raw.get("patterns")
     if not default_model or not isinstance(patterns_raw, list) or not patterns_raw:
-        raise ModelScopeError(
-            function, "model scope needs defaultModel and a non-empty patterns list"
-        )
+        raise ModelScopeError(function, "model scope needs defaultModel and a non-empty patterns list")
     patterns: list[str] = []
     for item in patterns_raw:
         if not isinstance(item, str) or not item.strip():
-            raise ModelScopeError(
-                function, "model scope patterns must be non-empty strings"
-            )
+            raise ModelScopeError(function, "model scope patterns must be non-empty strings")
         patterns.append(item.strip())
     scope = ModelScope(default_model, tuple(patterns))
     if not model_in_scope(default_model, scope):
-        raise ModelScopeError(
-            function, f"default model is outside the scope: {default_model}"
-        )
+        raise ModelScopeError(function, f"default model is outside the scope: {default_model}")
     return scope
 
 

@@ -15,20 +15,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-ROOT = (
-    Path(sys.argv[sys.argv.index("--root") + 1])
-    if "--root" in sys.argv
-    else Path(__file__).resolve().parents[2]
-)
+ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?$")
 STABLE_RE = re.compile(r"^\d+\.\d+\.\d+$")
 PEP440_PRE_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?$")
-README_VERSION_RE = re.compile(
-    r"Versión \*\*(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\*\*"
-)
-CHANGELOG_H2 = re.compile(
-    r"^## \[([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\] - (\d{4}-\d{2}-\d{2})(.*)$"
-)
+README_VERSION_RE = re.compile(r"Versión \*\*(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\*\*")
+CHANGELOG_H2 = re.compile(r"^## \[([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\] - (\d{4}-\d{2}-\d{2})(.*)$")
 USES_RE = re.compile(r"^\s+uses:\s+(\S+)", re.M)
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 ERRORS: list[str] = []
@@ -81,9 +73,7 @@ def check_readme_version(root: Path, version: str | None) -> None:
         return
     for value in found:
         if value != version:
-            err(
-                f"README.md declara Versión **{value}** y package.json.version es {version}"
-            )
+            err(f"README.md declara Versión **{value}** y package.json.version es {version}")
 
 
 def _project_file(root: Path, name: str) -> Path:
@@ -138,9 +128,7 @@ def check_package_lock_version(root: Path, version: str | None) -> None:
     if top != version:
         err(f"package-lock.json version {top} != package.json.version {version}")
     if nested != version:
-        err(
-            f"package-lock.json packages[''].version {nested} != package.json.version {version}"
-        )
+        err(f"package-lock.json packages[''].version {nested} != package.json.version {version}")
 
 
 def check_uv_lock_version(root: Path, version: str | None) -> None:
@@ -161,9 +149,7 @@ def check_uv_lock_version(root: Path, version: str | None) -> None:
                 err("uv.lock: version de machineroom ilegible")
                 return
             if not versions_equal(m.group(1), version):
-                err(
-                    f"uv.lock machineroom version {m.group(1)} != package.json.version {version}"
-                )
+                err(f"uv.lock machineroom version {m.group(1)} != package.json.version {version}")
             return
     err("uv.lock sin paquete machineroom")
 
@@ -175,11 +161,7 @@ def changelog_sections(text: str) -> dict[str, dict[str, object]]:
     yanked = False
     for line in text.splitlines():
         found = CHANGELOG_H2.match(line)
-        if (
-            line.startswith("## [")
-            and not found
-            and not line.startswith("## [Unreleased]")
-        ):
+        if line.startswith("## [") and not found and not line.startswith("## [Unreleased]"):
             err(f"encabezado de changelog inválido: {line}")
             continue
         if found or line.startswith("## [Unreleased]"):
@@ -310,17 +292,10 @@ def release_asset_errors(
     for name, position in positions.items():
         if position is None:
             errors.append(f"release provenance missing {name} step")
-    if (
-        archive is not None
-        and checksum is not None
-        and attest is not None
-        and upload is not None
-    ):
+    if archive is not None and checksum is not None and attest is not None and upload is not None:
         ordered = [archive, checksum, attest, upload]
         if ordered != sorted(ordered):
-            errors.append(
-                "release asset steps must be ordered archive → checksum → attestation → upload"
-            )
+            errors.append("release asset steps must be ordered archive → checksum → attestation → upload")
     if upload is not None:
         upload_run = runs[upload]
         if "SHA256SUMS" not in upload_run or "${ARCHIVE}" not in upload_run:
@@ -332,28 +307,18 @@ def release_asset_errors(
         # Guard the historical v7.1.0 failure mode: upload resolving VERSION from branch name.
         compact = "".join(upload_run.split()).replace('"', "").replace("'", "")
         if "VERSION=${VERSION:-${GITHUB_REF_NAME#v}}" in compact:
-            errors.append(
-                "release upload must not fall back VERSION to GITHUB_REF_NAME alone"
-            )
+            errors.append("release upload must not fall back VERSION to GITHUB_REF_NAME alone")
         workflow_text = path.read_text(encoding="utf-8")
         if "needs.publish.outputs.version" not in workflow_text:
-            errors.append(
-                "release provenance must consume needs.publish.outputs.version"
-            )
+            errors.append("release provenance must consume needs.publish.outputs.version")
         if "gh release view" not in upload_run:
-            errors.append(
-                "release upload must verify the release exists before uploading assets"
-            )
+            errors.append("release upload must verify the release exists before uploading assets")
     jobs = data.get("jobs") or {}
     smoke = jobs.get("post-release-smoke")
     if not isinstance(smoke, dict):
         errors.append("release workflow missing post-release-smoke job")
     else:
-        smoke_runs = [
-            str(step.get("run", ""))
-            for step in (smoke.get("steps") or [])
-            if isinstance(step, dict)
-        ]
+        smoke_runs = [str(step.get("run", "")) for step in (smoke.get("steps") or []) if isinstance(step, dict)]
         smoke_text = "\n".join(smoke_runs)
         if "gh release download" not in smoke_text:
             errors.append("post-release-smoke must download public release assets")
@@ -365,9 +330,7 @@ def release_asset_errors(
             errors.append("post-release-smoke must run bootstrap without models")
         smoke_compact = "".join(smoke_text.split()).replace('"', "").replace("'", "")
         if "VERSION=${VERSION:-${GITHUB_REF_NAME#v}}" in smoke_compact:
-            errors.append(
-                "post-release-smoke must not fall back VERSION to GITHUB_REF_NAME alone"
-            )
+            errors.append("post-release-smoke must not fall back VERSION to GITHUB_REF_NAME alone")
     return errors
 
 

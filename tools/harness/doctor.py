@@ -75,9 +75,7 @@ def installer_version_check(root: Path, expected: str | None) -> Check:
     )
 
 
-def version_coherence_checks(
-    root: Path, expected_version: str | None = None
-) -> list[Check]:
+def version_coherence_checks(root: Path, expected_version: str | None = None) -> list[Check]:
     root = root.resolve()
     package = _json_version(root / "package.json")
     expected = expected_version or package
@@ -85,11 +83,7 @@ def version_coherence_checks(
         Check(
             "package-version",
             "contract",
-            (
-                "pass"
-                if package and (expected_version is None or package == expected_version)
-                else "fail"
-            ),
+            ("pass" if package and (expected_version is None or package == expected_version) else "fail"),
             f"package={package or 'missing'} expected={expected or 'unknown'}",
         )
     ]
@@ -106,38 +100,26 @@ def version_coherence_checks(
     return checks
 
 
-def skill_link_check(
-    root: Path, harness: str, *, source_root: Path | None = None
-) -> Check:
+def skill_link_check(root: Path, harness: str, *, source_root: Path | None = None) -> Check:
     root = root.resolve()
     source = (source_root or root).resolve() / "skills"
     destination = root / (".pi/skills" if harness == "pi" else ".cursor/skills")
     expected = (
-        sorted(
-            path
-            for path in source.iterdir()
-            if path.is_dir() and (path / "SKILL.md").is_file()
-        )
+        sorted(path for path in source.iterdir() if path.is_dir() and (path / "SKILL.md").is_file())
         if source.is_dir()
         else []
     )
     if not expected or not destination.is_dir():
-        return Check(
-            f"{harness}-skill-links", "A", "fail", "catalog or destination missing"
-        )
+        return Check(f"{harness}-skill-links", "A", "fail", "catalog or destination missing")
     relative_count = 0
     for skill in expected:
         link = destination / skill.name
         if not link.is_symlink():
-            return Check(
-                f"{harness}-skill-links", "A", "fail", f"not a symlink: {link}"
-            )
+            return Check(f"{harness}-skill-links", "A", "fail", f"not a symlink: {link}")
         if not Path(link.readlink()).is_absolute():
             relative_count += 1
         if not link.exists() or link.resolve() != skill.resolve():
-            return Check(
-                f"{harness}-skill-links", "A", "fail", f"wrong or broken target: {link}"
-            )
+            return Check(f"{harness}-skill-links", "A", "fail", f"wrong or broken target: {link}")
     detail = f"{len(expected)} links resolve to catalog"
     if relative_count:
         detail += f" ({relative_count} relative)"
@@ -263,21 +245,14 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
             Check(
                 "package-version",
                 "contract",
-                (
-                    "pass"
-                    if package
-                    and (expected_version is None or package == expected_version)
-                    else "fail"
-                ),
+                ("pass" if package and (expected_version is None or package == expected_version) else "fail"),
                 f"package={package or 'missing'} expected={expected_version or package or 'unknown'} (runtime)",
             )
         ]
     else:
         checks = version_coherence_checks(source, expected_version)
     expected_skills = {
-        path.name
-        for path in (source / "skills").iterdir()
-        if path.is_dir() and (path / "SKILL.md").is_file()
+        path.name for path in (source / "skills").iterdir() if path.is_dir() and (path / "SKILL.md").is_file()
     }
     if harness in {"pi", "all"}:
         if not native:
@@ -301,9 +276,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Machineroom harness doctor")
     parser.add_argument("--harness", choices=("pi", "cursor", "all"), default="all")
     parser.add_argument("--target", type=Path, default=Path("."))
-    parser.add_argument(
-        "--source", type=Path, help="Package/catalog source when it differs from target"
-    )
+    parser.add_argument("--source", type=Path, help="Package/catalog source when it differs from target")
     parser.add_argument(
         "--full",
         action="store_true",

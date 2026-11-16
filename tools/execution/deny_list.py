@@ -80,9 +80,7 @@ def _rule(raw: Any, function: str) -> Rule:
     try:
         compiled = re.compile(pattern, re.IGNORECASE)
     except re.error as exc:
-        raise DenyListError(
-            function, f"invalid regex in rule {rule_id!r}: {exc}"
-        ) from exc
+        raise DenyListError(function, f"invalid regex in rule {rule_id!r}: {exc}") from exc
     return Rule(rule_id, compiled, message)
 
 
@@ -106,24 +104,14 @@ def load_policy(root: Path) -> Policy:
         raise DenyListError(function, f"unreadable deny list: {path}: {exc}") from exc
     except json.JSONDecodeError as exc:
         raise DenyListError(function, f"invalid JSON in {path}: {exc}") from exc
-    if (
-        not isinstance(raw, dict)
-        or not isinstance(raw.get("deny"), list)
-        or not raw["deny"]
-    ):
+    if not isinstance(raw, dict) or not isinstance(raw.get("deny"), list) or not raw["deny"]:
         raise DenyListError(function, f"deny must be a non-empty list: {path}")
     allow = raw.get("allow")
     if not isinstance(allow, dict):
         raise DenyListError(function, f"allow must be an object: {path}")
     prefixes = allow.get("tmpPrefixes")
-    if (
-        not isinstance(prefixes, list)
-        or not prefixes
-        or not all(isinstance(p, str) for p in prefixes)
-    ):
-        raise DenyListError(
-            function, "allow.tmpPrefixes must be a non-empty string list"
-        )
+    if not isinstance(prefixes, list) or not prefixes or not all(isinstance(p, str) for p in prefixes):
+        raise DenyListError(function, "allow.tmpPrefixes must be a non-empty string list")
     help_or_version = str(allow.get("helpOrVersion", "")).strip()
     if not help_or_version:
         raise DenyListError(function, "allow.helpOrVersion is required")
@@ -135,9 +123,7 @@ def load_policy(root: Path) -> Policy:
     network = _rule(raw.get("network"), function)
     rm_rf_rule = next((rule for rule in deny if rule.rule_id == "rm-rf"), None)
     if rm_rf_rule is None:
-        raise DenyListError(
-            function, "deny list must keep the 'rm-rf' rule for the /tmp exception"
-        )
+        raise DenyListError(function, "deny list must keep the 'rm-rf' rule for the /tmp exception")
     return Policy(
         deny=deny,
         network=network,

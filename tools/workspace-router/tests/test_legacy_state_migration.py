@@ -27,14 +27,10 @@ from state_paths import (  # noqa: E402
 def test_constants_and_paths(tmp_path: Path) -> None:
     assert PROJECT_DIRNAME == ".machineroom"
     assert state_dir(tmp_path) == tmp_path / ".machineroom"
-    assert (
-        state_file(tmp_path, "status.yaml") == tmp_path / ".machineroom" / "status.yaml"
-    )
+    assert state_file(tmp_path, "status.yaml") == tmp_path / ".machineroom" / "status.yaml"
 
 
-def test_legacy_fallback_warns_once(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_legacy_fallback_warns_once(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     (tmp_path / ".autoworkspace").mkdir()
     first = state_dir(tmp_path)
     assert first == tmp_path / ".autoworkspace"
@@ -60,9 +56,7 @@ def test_migrate_moves_state(tmp_path: Path) -> None:
 
     assert result["migrated"] is True
     assert not legacy.exists()
-    assert (tmp_path / ".machineroom" / "status.yaml").read_text(
-        encoding="utf-8"
-    ) == "phase: DEFINE\n"
+    assert (tmp_path / ".machineroom" / "status.yaml").read_text(encoding="utf-8") == "phase: DEFINE\n"
 
 
 def test_migrate_dry_run_writes_nothing(tmp_path: Path) -> None:

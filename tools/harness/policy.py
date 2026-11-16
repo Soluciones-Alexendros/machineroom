@@ -86,10 +86,7 @@ def is_sensitive_env(name: str) -> bool:
     upper = name.upper()
     if upper in SENSITIVE_ENV_EXACT:
         return True
-    if any(
-        token in upper
-        for token in ("SECRET", "TOKEN", "PASSWORD", "PASSWD", "API_KEY", "PRIVATE_KEY")
-    ):
+    if any(token in upper for token in ("SECRET", "TOKEN", "PASSWORD", "PASSWD", "API_KEY", "PRIVATE_KEY")):
         return True
     return any(upper.startswith(prefix) for prefix in SENSITIVE_ENV_PREFIXES)
 
@@ -184,9 +181,7 @@ def build_policy(  # noqa: PLR0913  # keyword-only policy builder: harness/task/
         "env_names": sorted(env),
     }
     digest = hashlib.sha256(
-        json.dumps(
-            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-        ).encode("utf-8")
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     ).hexdigest()
     return ExecutionPolicy(
         harness=harness,

@@ -27,9 +27,7 @@ from orchestrator.worktrees import _clean_git_env  # noqa: E402
 from status_bump import activate_plan, load_status  # noqa: E402
 
 
-def _task(
-    task_id: str, phase: str, operation: str, path: str, dependencies: list[str]
-) -> dict[str, Any]:
+def _task(task_id: str, phase: str, operation: str, path: str, dependencies: list[str]) -> dict[str, Any]:
     return {
         "id": task_id,
         "phase": phase,
@@ -76,11 +74,7 @@ def _activate(root: Path) -> None:
         ],
     }
     path = root / "plan.md"
-    path.write_text(
-        "# Fixture\n\n```yaml aw-plan\n"
-        + yaml.safe_dump(data, sort_keys=False)
-        + "```\n"
-    )
+    path.write_text("# Fixture\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
     activate_plan(root, path)
 
 
@@ -89,11 +83,7 @@ class WriteAdapter:
         self.wrong_validation = wrong_validation
 
     def execute(self, task: dict[str, Any], context: RunContext) -> AdapterResult:
-        content = (
-            "wrong\n"
-            if self.wrong_validation and task["id"] == "validate-output"
-            else f"{task['id']}\n"
-        )
+        content = "wrong\n" if self.wrong_validation and task["id"] == "validate-output" else f"{task['id']}\n"
         (context.repo / task["write_scope"][0]).write_text(content, encoding="utf-8")
         operation = OpResult(
             operation_id=task["operation"],
@@ -117,9 +107,7 @@ def _verifier(task: dict[str, Any]) -> Verifier:
 
     def verify(result: OpResult, staging: Path) -> list[dict[str, Any]]:
         content = (staging / task["write_scope"][0]).read_text(encoding="utf-8")
-        return [
-            {"kind": kind, "ok": content == f"{task['id']}\n", "detail": "staged bytes"}
-        ]
+        return [{"kind": kind, "ok": content == f"{task['id']}\n", "detail": "staged bytes"}]
 
     return verify
 

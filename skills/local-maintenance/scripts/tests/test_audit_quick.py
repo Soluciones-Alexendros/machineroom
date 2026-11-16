@@ -51,10 +51,7 @@ def test_error_escritura_exit1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(audit_quick, "run", lambda *a, **k: "")
     monkeypatch.setattr(audit_quick, "run_check", lambda *a, **k: "")
     # Directorio inexistente -> open falla -> exit 1.
-    assert (
-        audit_quick.main([str(tmp_path / "nodir" / "o.json"), str(tmp_path / "p.json")])
-        == 1
-    )
+    assert audit_quick.main([str(tmp_path / "nodir" / "o.json"), str(tmp_path / "p.json")]) == 1
 
 
 def test_run_check_golden() -> None:

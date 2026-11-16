@@ -92,10 +92,7 @@ def test_score_page_pass_dorado() -> None:
 def test_score_fail_critico_dorado() -> None:
     reg, _ = score_mod.load_configs()
     crit = next(c for c in reg["checks"] if c["severidad"] == "Crítico")
-    checks = [
-        {"id": c["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"}
-        for c in reg["checks"]
-    ]
+    checks = [{"id": c["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"} for c in reg["checks"]]
     sc = score_mod.score(checks)
     assert sc["dictamen"] == "NEGATIVO"
     assert sc["fails_criticos"] == 1
@@ -110,12 +107,8 @@ def test_audit_html_corrupto_degrada_sin_abortar() -> None:
     assert len(res["checks"]) > 0
 
 
-def test_audit_timeout_simulado_exit_2(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    def _boom(
-        url: str, timeout: int = 20
-    ) -> tuple[str, int, dict[str, str], bytes, float]:
+def test_audit_timeout_simulado_exit_2(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    def _boom(url: str, timeout: int = 20) -> tuple[str, int, dict[str, str], bytes, float]:
         raise TimeoutError("timed out (simulado)")
 
     monkeypatch.setattr(audit_page, "fetch", _boom)
@@ -126,9 +119,7 @@ def test_audit_timeout_simulado_exit_2(
 
 
 def test_audit_dns_simulado_exit_2(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _boom(
-        url: str, timeout: int = 20
-    ) -> tuple[str, int, dict[str, str], bytes, float]:
+    def _boom(url: str, timeout: int = 20) -> tuple[str, int, dict[str, str], bytes, float]:
         raise urllib.error.URLError("Name or service not known (simulado)")
 
     monkeypatch.setattr(audit_page, "fetch", _boom)
@@ -141,9 +132,7 @@ def test_score_json_invalido_exit_2(capsys: pytest.CaptureFixture[str]) -> None:
     assert score_mod.main([os.path.join(FIX, "invalid.json")]) == EXIT_USAGE
 
 
-def test_score_no_dict_exit_2(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_score_no_dict_exit_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     p = tmp_path / "lista.json"
     p.write_text("[1, 2]", encoding="utf-8")
     assert score_mod.main([str(p)]) == EXIT_USAGE
@@ -153,23 +142,17 @@ def test_report_json_invalido_exit_2(capsys: pytest.CaptureFixture[str]) -> None
     assert report_mod.main([os.path.join(FIX, "invalid.json")]) == EXIT_USAGE
 
 
-def test_report_scoring_incompleto_exit_1(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_report_scoring_incompleto_exit_1(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     p = tmp_path / "casi.json"
     p.write_text(json.dumps({"target": "x"}), encoding="utf-8")
     assert report_mod.main([str(p)]) == 1  # falta dictamen/pilares/hallazgos
 
 
-def test_report_pipeline_dorado(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_report_pipeline_dorado(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     res = audit_page.audit(file=os.path.join(FIX, "page_pass.html"))
     checks_path = tmp_path / "checks.json"
     checks_path.write_text(json.dumps(res), encoding="utf-8")
     md_path = tmp_path / "informe.md"
-    assert (
-        report_mod.main([str(checks_path), "--from-checks", "--md", str(md_path)]) == 0
-    )
+    assert report_mod.main([str(checks_path), "--from-checks", "--md", str(md_path)]) == 0
     md = md_path.read_text(encoding="utf-8")
     assert "POSITIVO" in md and "Cumplimiento global: **100%**" in md

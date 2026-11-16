@@ -12,6 +12,7 @@ Async work, cron, fan-out using queue/bus patterns. At-least-once delivery; hand
 # Enqueue
 await queue.enqueue("email:send", {"to": "user@example.com", "template": "welcome"})
 
+
 # Handler (idempotent by design)
 async def handle_email_send(payload: dict):
     await email.send(payload["to"], payload["template"])
@@ -48,7 +49,7 @@ async def handle_with_retry(payload: dict, attempt: int = 1):
         await do_work(payload)
     except TransientError as e:
         if attempt < 3:
-            delay = 2 ** attempt * 60  # 2m, 4m, 8m
+            delay = 2**attempt * 60  # 2m, 4m, 8m
             await queue.enqueue_in(timedelta(seconds=delay), "work:retry", {**payload, "attempt": attempt + 1})
         else:
             await dead_letter(payload, e)

@@ -16,9 +16,7 @@ import yaml
 FRONTMATTER_PARTS = 3
 
 
-def split_frontmatter(
-    text: str, path: pathlib.Path
-) -> tuple[dict[str, Any] | None, str]:
+def split_frontmatter(text: str, path: pathlib.Path) -> tuple[dict[str, Any] | None, str]:
     if not text.startswith("---"):
         print(f"SKIP (no frontmatter): {path}")
         return None, text

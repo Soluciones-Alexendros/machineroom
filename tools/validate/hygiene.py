@@ -15,11 +15,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal, NamedTuple
 
-ROOT = (
-    Path(sys.argv[sys.argv.index("--root") + 1])
-    if "--root" in sys.argv
-    else Path(__file__).resolve().parents[2]
-)
+ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
 RESIDUE_NAMES = {"__pycache__", ".pytest_cache"}
 RESIDUE_SUFFIXES = {".pyc", ".tmp", ".bak", ".log"}
 SECRET_NAMES = {".env", ".pem", ".key"}
@@ -86,9 +82,7 @@ def enumerate_tracked(root: Path, *, timeout: float = ENUM_TIMEOUT_SEC) -> EnumR
                 except UnicodeDecodeError:
                     reason = "salida de git ls-files no UTF-8"
                 else:
-                    return EnumResult(
-                        status="ok", files=[p for p in raw.split("\0") if p]
-                    )
+                    return EnumResult(status="ok", files=[p for p in raw.split("\0") if p])
     return EnumResult(status="error", files=[], reason=reason)
 
 
@@ -97,9 +91,7 @@ def _is_fixture_path(rel: str) -> bool:
     return "fixtures" in parts or "testdata" in parts
 
 
-def _read_capped(
-    path: Path, max_bytes: int
-) -> tuple[Literal["ok", "error"], bytes, str]:
+def _read_capped(path: Path, max_bytes: int) -> tuple[Literal["ok", "error"], bytes, str]:
     """Lee como máximo max_bytes+1 para distinguir exacto vs exceso sin cargar todo."""
     try:
         with path.open("rb") as handle:
@@ -180,11 +172,7 @@ def check_tracked(tracked: list[str]) -> Outcome:
         # *.example (p. ej. .env.example) es plantilla versionada, no secreto.
         if path.suffix == ".example":
             continue
-        if (
-            path.name == ".env"
-            or path.name.startswith(".env.")
-            or path.suffix in SECRET_NAMES
-        ):
+        if path.name == ".env" or path.name.startswith(".env.") or path.suffix in SECRET_NAMES:
             ERRORS.append(f"secreto rastreado: {rel}")
             worst = "match"
     return worst

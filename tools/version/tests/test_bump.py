@@ -118,15 +118,11 @@ def test_main_dry_run_tmp_root(tmp_path: Path) -> None:
 
 def test_main_unknown_skill_tmp_root(tmp_path: Path) -> None:
     (tmp_path / "skills").mkdir()
-    rc = bump.main(
-        ["--root", str(tmp_path), "--type", "minor", "--skills", "no-existe"]
-    )
+    rc = bump.main(["--root", str(tmp_path), "--type", "minor", "--skills", "no-existe"])
     assert rc == 1
 
 
 def test_bump_cli_help() -> None:
-    r = subprocess.run(
-        ["python3", str(BUMP), "--help"], capture_output=True, text=True, check=False
-    )
+    r = subprocess.run(["python3", str(BUMP), "--help"], capture_output=True, text=True, check=False)
     assert r.returncode == 0
     assert "--type" in r.stdout

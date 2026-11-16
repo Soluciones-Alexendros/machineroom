@@ -27,9 +27,7 @@ def _workflow() -> dict[str, Any]:
 
 def _diagram_steps() -> list[dict[str, Any]]:
     steps: list[dict[str, Any]] = _workflow()["jobs"]["diagrams"]["steps"]
-    return [
-        step for step in steps if step.get("uses", "").startswith("actions/checkout")
-    ]
+    return [step for step in steps if step.get("uses", "").startswith("actions/checkout")]
 
 
 def test_renderer_repo_is_pinned() -> None:
@@ -50,9 +48,9 @@ def test_archify_checkout_matches_catalog_sha() -> None:
     renderer = _catalog_renderer()
     archify_step = _diagram_steps()[1]
     assert archify_step["with"]["repository"] == renderer["repo"]
-    assert (
-        archify_step["with"]["ref"] == renderer["sha"]
-    ), "el ref de Archify en ci.yml debe coincidir con catalog.json.renderer.sha"
+    assert archify_step["with"]["ref"] == renderer["sha"], (
+        "el ref de Archify en ci.yml debe coincidir con catalog.json.renderer.sha"
+    )
 
 
 def test_diagrams_job_feeds_ci_gate() -> None:

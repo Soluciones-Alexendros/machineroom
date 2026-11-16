@@ -27,9 +27,7 @@ def test_history_and_caches_are_out_of_scope() -> None:
     assert not any(name.startswith("docs/archives/") for name in scanned)
     assert "CHANGELOG.md" not in scanned
     assert not any("__pycache__" in name for name in scanned)
-    assert not any(
-        name.startswith("docs/architecture/diagrams/rendered/") for name in scanned
-    )
+    assert not any(name.startswith("docs/architecture/diagrams/rendered/") for name in scanned)
 
 
 def test_allowlist_entries_exist() -> None:
@@ -50,7 +48,5 @@ def test_new_leak_is_detected(tmp_path: Path) -> None:
 def test_adr_filename_is_allowed_everywhere(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "note.md").write_text(
-        f"See [{ADR_FILENAME}](decisions/{ADR_FILENAME}).\n", encoding="utf-8"
-    )
+    (docs / "note.md").write_text(f"See [{ADR_FILENAME}](decisions/{ADR_FILENAME}).\n", encoding="utf-8")
     assert scan(tmp_path, allowed=set()) == []

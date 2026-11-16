@@ -52,18 +52,12 @@ def test_untracked_patch_applies_to_staging_without_commit(tmp_path: Path) -> No
     manager = WorktreeManager(repo, _head(repo), temp_root=tmp_path / "worktrees")
     try:
         writer = manager.create("writer")
-        (writer / "fixture-orchestration.txt").write_text(
-            "integrated\n", encoding="utf-8"
-        )
-        patch, manifest = manager.capture_patch(
-            writer, _task(["fixture-orchestration.txt"])
-        )
+        (writer / "fixture-orchestration.txt").write_text("integrated\n", encoding="utf-8")
+        patch, manifest = manager.capture_patch(writer, _task(["fixture-orchestration.txt"]))
         assert manifest["files"] == ["fixture-orchestration.txt"]
         staging = manager.create("staging")
         manager.apply_patch(staging, patch)
-        assert (staging / "fixture-orchestration.txt").read_text(
-            encoding="utf-8"
-        ) == "integrated\n"
+        assert (staging / "fixture-orchestration.txt").read_text(encoding="utf-8") == "integrated\n"
         assert subprocess.run(
             ["git", "rev-parse", "HEAD"],
             check=False,

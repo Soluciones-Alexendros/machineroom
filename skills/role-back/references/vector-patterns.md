@@ -24,7 +24,7 @@ async def ingest_document(doc: Document, chunk_size: int = 512, overlap: int = 5
                 "text": chunk.text,
                 "title": doc.title,
                 "source_url": doc.url,
-            }
+            },
         )
 ```
 
@@ -44,10 +44,7 @@ async def rag_query(question: str, top_k: int = 5) -> RAGResponse:
     )
 
     # 3. Build context with citations
-    context = "\n\n".join(
-        f"[{i+1}] {r.payload['title']}: {r.payload['text'][:500]}"
-        for i, r in enumerate(results)
-    )
+    context = "\n\n".join(f"[{i + 1}] {r.payload['title']}: {r.payload['text'][:500]}" for i, r in enumerate(results))
 
     # 4. Generate answer
     prompt = f"""Answer using only the context. Cite sources as [1], [2], etc.
@@ -67,10 +64,10 @@ Answer:"""
 async def hybrid_search(query: str, top_k: int = 10) -> list[Result]:
     # Vector search
     query_emb = await embedder.embed([query])
-    vector_results = await vector_db.query(collection="docs", vector=query_emb[0], top_k=top_k*2)
+    vector_results = await vector_db.query(collection="docs", vector=query_emb[0], top_k=top_k * 2)
 
     # Keyword search (BM25)
-    keyword_results = await search.search(index="docs", body={"query": {"match": {"content": query}}}, size=top_k*2)
+    keyword_results = await search.search(index="docs", body={"query": {"match": {"content": query}}}, size=top_k * 2)
 
     # Reciprocal Rank Fusion
     fused = rrf_fusion(vector_results, keyword_results, k=60)

@@ -36,12 +36,8 @@ def test_runtime_policy_matches_registry() -> None:
         spec = get_operation(operation_id)
         contract = contracts[operation_id]
         assert spec.effect == contract["effect"], operation_id
-        assert spec.require_approval == contract.get(
-            "approval_required", False
-        ), operation_id
-        assert spec.recovery_required == contract.get(
-            "recovery_required", False
-        ), operation_id
+        assert spec.require_approval == contract.get("approval_required", False), operation_id
+        assert spec.recovery_required == contract.get("recovery_required", False), operation_id
 
 
 def test_completion_operations_are_runtime_resolvable() -> None:
@@ -50,7 +46,5 @@ def test_completion_operations_are_runtime_resolvable() -> None:
 
 
 def test_public_e2e_does_not_construct_an_unexecuted_result() -> None:
-    script = (ROOT / "scripts" / "tests" / "test_execution_e2e.sh").read_text(
-        encoding="utf-8"
-    )
+    script = (ROOT / "scripts" / "tests" / "test_execution_e2e.sh").read_text(encoding="utf-8")
     assert "OpResult(" not in script

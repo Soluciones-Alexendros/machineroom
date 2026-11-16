@@ -78,14 +78,10 @@ class PageParser(HTMLParser):
         self.links: list[dict[str, str]] = []  # dict(href, text)
         self._link_href: str | None = None
         self._link_text: list[str] = []
-        self.ldjson_raw: list[str] = (
-            []
-        )  # contenido crudo de <script type=application/ld+json>
+        self.ldjson_raw: list[str] = []  # contenido crudo de <script type=application/ld+json>
         self._in_ldjson = False
         self._ldjson_buf: list[str] = []
-        self.inputs: list[dict[str, Any]] = (
-            []
-        )  # dict(id, type, aria_label, aria_labelledby)
+        self.inputs: list[dict[str, Any]] = []  # dict(id, type, aria_label, aria_labelledby)
         self.labels_for: list[str] = []
         self.has_viewport: str | None = None
         self.charset: str | None = None
@@ -174,9 +170,7 @@ class PageParser(HTMLParser):
         if tag == "title":
             self._in_title = False
         elif tag in ("h1", "h2", "h3", "h4", "h5", "h6") and self._heading_level:
-            self.headings.append(
-                (self._heading_level, " ".join(self._heading_text).strip())
-            )
+            self.headings.append((self._heading_level, " ".join(self._heading_text).strip()))
             self._heading_level = None
         elif tag == "a" and self._link_href is not None:
             self.links.append(
@@ -233,9 +227,7 @@ def _res(key: str, status: str, evidencia: str, detalle: str = "") -> dict[str, 
     }
 
 
-def check_https(
-    url: str, final_url: str, headers: dict[str, str], local: bool
-) -> dict[str, Any]:
+def check_https(url: str, final_url: str, headers: dict[str, str], local: bool) -> dict[str, Any]:
     if local:
         return _res("https_security", "NA", "Análisis offline de fichero local")
     https = urlparse(final_url).scheme == "https"
@@ -263,11 +255,7 @@ def check_security_headers(headers: dict[str, str], local: bool) -> dict[str, An
         "x-frame-options",
     ]
     present = [h for h in wanted if h in headers]
-    st = (
-        "PASS"
-        if len(present) >= MIN_BP_PRESENT
-        else ("WARN" if len(present) >= MIN_BP_WARN else "FAIL")
-    )
+    st = "PASS" if len(present) >= MIN_BP_PRESENT else ("WARN" if len(present) >= MIN_BP_WARN else "FAIL")
     return _res(
         "security_headers",
         st,
@@ -279,9 +267,7 @@ def check_security_headers(headers: dict[str, str], local: bool) -> dict[str, An
 def check_title(p: PageParser) -> dict[str, Any]:
     t = p.title.strip()
     if not t:
-        return _res(
-            "title", "FAIL", "Sin <title>", "Añadir title único 50-60 caracteres"
-        )
+        return _res("title", "FAIL", "Sin <title>", "Añadir title único 50-60 caracteres")
     n = len(t)
     st = "PASS" if TITLE_MIN_LEN <= n <= TITLE_MAX_LEN else "WARN"
     return _res("title", st, f"'{t[:70]}' ({n} caracteres)", "Rango óptimo 50-60")
@@ -303,9 +289,7 @@ def check_meta_description(p: PageParser) -> dict[str, Any]:
 
 def check_canonical(p: PageParser, final_url: str, local: bool) -> dict[str, Any]:
     if not p.canonical:
-        return _res(
-            "canonical", "WARN", "Sin canonical", "Añadir canonical autorreferenciado"
-        )
+        return _res("canonical", "WARN", "Sin canonical", "Añadir canonical autorreferenciado")
     if len(p.canonical) > 1:
         return _res(
             "canonical",
@@ -335,18 +319,14 @@ def check_robots_meta(p: PageParser) -> dict[str, Any]:
             f"robots='{vals}'",
             "Página noindex: confirmar que es intencionado",
         )
-    return _res(
-        "robots_meta", "PASS", f"robots='{vals or 'no explícito (index,follow)'}'"
-    )
+    return _res("robots_meta", "PASS", f"robots='{vals or 'no explícito (index,follow)'}'")
 
 
 def check_hreflang(p: PageParser) -> dict[str, Any]:
     if not p.hreflang:
         return _res("hreflang", "NA", "Sin hreflang (sitio monolingüe o pendiente)")
     codes = [h["hreflang"].lower() for h in p.hreflang]
-    valid = all(
-        re.fullmatch(r"[a-z]{2,3}(-[a-z0-9]{2,8})*|x-default", c) for c in codes
-    )
+    valid = all(re.fullmatch(r"[a-z]{2,3}(-[a-z0-9]{2,8})*|x-default", c) for c in codes)
     st = "PASS" if valid and "x-default" in codes else ("WARN" if valid else "FAIL")
     return _res(
         "hreflang",
@@ -367,9 +347,7 @@ def check_headings(p: PageParser) -> dict[str, Any]:
             issues.append(f"Salto de jerarquía H{prev} -> H{lv}")
         prev = lv
     if issues:
-        return _res(
-            "headings", "FAIL", "; ".join(issues), "Corregir jerarquía de encabezados"
-        )
+        return _res("headings", "FAIL", "; ".join(issues), "Corregir jerarquía de encabezados")
     return _res(
         "headings",
         "PASS",
@@ -442,12 +420,8 @@ def check_viewport(p: PageParser) -> dict[str, Any]:
 def check_skip_link(p: PageParser) -> dict[str, Any]:
     for link in p.links:
         href = link["href"].strip()
-        if href.startswith("#") and re.search(
-            r"(salt|skip|contenido|content|main)", link["text"], re.I
-        ):
-            return _res(
-                "skip_link", "PASS", f"Skip link -> {href} ('{link['text'][:50]}')"
-            )
+        if href.startswith("#") and re.search(r"(salt|skip|contenido|content|main)", link["text"], re.I):
+            return _res("skip_link", "PASS", f"Skip link -> {href} ('{link['text'][:50]}')")
     return _res(
         "skip_link",
         "FAIL",
@@ -461,11 +435,7 @@ def check_form_labels(p: PageParser) -> dict[str, Any]:
         return _res("form_labels", "NA", "Sin campos de formulario")
     labeled = 0
     for i in p.inputs:
-        if (
-            (i["id"] and i["id"] in p.labels_for)
-            or i["aria_label"]
-            or i["aria_labelledby"]
-        ):
+        if (i["id"] and i["id"] in p.labels_for) or i["aria_label"] or i["aria_labelledby"]:
             labeled += 1
     total = len(p.inputs)
     cov = labeled / total
@@ -504,9 +474,7 @@ def check_jsonld(p: PageParser) -> dict[str, Any]:
             f"{errors} bloque(s) JSON-LD inválidos",
             "Corregir sintaxis JSON",
         )
-    return _res(
-        "jsonld", "PASS", f"Tipos: {', '.join(sorted(set(types))) or 'sin @type'}"
-    )
+    return _res("jsonld", "PASS", f"Tipos: {', '.join(sorted(set(types))) or 'sin @type'}")
 
 
 def check_mixed_content(p: PageParser, final_url: str, local: bool) -> dict[str, Any]:
@@ -529,11 +497,7 @@ def check_content_parity(p: PageParser) -> dict[str, Any]:
         "content_parity",
         st,
         f"~{words} palabras de texto en HTML inicial",
-        (
-            ""
-            if st == "PASS"
-            else "Posible dependencia de renderizado JS: verificar DOM renderizado"
-        ),
+        ("" if st == "PASS" else "Posible dependencia de renderizado JS: verificar DOM renderizado"),
     )
 
 
@@ -549,9 +513,7 @@ def check_charset(p: PageParser) -> dict[str, Any]:
 # ----------------------------------------------------------------------
 
 
-def fetch(
-    url: str, timeout: int = TIMEOUT
-) -> tuple[str, int, dict[str, str], bytes, float]:
+def fetch(url: str, timeout: int = TIMEOUT) -> tuple[str, int, dict[str, str], bytes, float]:
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     t0 = time.monotonic()
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -604,9 +566,7 @@ def check_sitemap(base: str, robots_text_url: str, local: bool) -> dict[str, Any
                 n = body.count(b"<url>") or body.count(b"<sitemap>")
                 return _res("sitemap", "PASS", f"{url} 200 OK, {n} entradas")
         except NETWORK_ERRORS as e:
-            logger.debug(
-                "sitemap candidato %s falló: %s: %s", cand, type(e).__name__, e
-            )
+            logger.debug("sitemap candidato %s falló: %s: %s", cand, type(e).__name__, e)
             continue
     return _res(
         "sitemap",
@@ -635,17 +595,13 @@ def check_og_tags(p: PageParser) -> dict[str, Any]:
             f"Faltan: {', '.join(missing)}",
             "Completar etiquetas Open Graph obligatorias",
         )
-    return _res(
-        "og_tags", "PASS", f"OG completo ({len(og)} tags); Twitter: {len(tw)} tags"
-    )
+    return _res("og_tags", "PASS", f"OG completo ({len(og)} tags); Twitter: {len(tw)} tags")
 
 
 def check_cookie_banner(p: PageParser) -> dict[str, Any]:
     text = " ".join(p.text_chunks).lower()
     htmlish = text + " ".join(link["text"].lower() for link in p.links)
-    hits = [
-        k for k in ("cookie", "consent", "consentimiento", "privacidad") if k in htmlish
-    ]
+    hits = [k for k in ("cookie", "consent", "consentimiento", "privacidad") if k in htmlish]
     if hits:
         return _res(
             "cookie_banner",
@@ -675,9 +631,7 @@ def _load_body(
                 with open(file, "rb") as fh:
                     body = fh.read()
             except OSError as e:
-                logger.error(
-                    "no se pudo leer el fichero %s: %s: %s", file, type(e).__name__, e
-                )
+                logger.error("no se pudo leer el fichero %s: %s: %s", file, type(e).__name__, e)
                 results["error"] = f"Lectura de fichero {file}: {type(e).__name__}: {e}"
                 return None
             return body, url or "file://" + file, HTTP_OK, {}, 0.0
@@ -709,12 +663,8 @@ def _parse_page(body: bytes, results: dict[str, Any]) -> PageParser:
     try:
         p.feed(body.decode("utf-8", "replace"))
     except Exception as e:  # HTMLParser ante HTML mal formado: degradar, no abortar
-        logger.warning(
-            "parseo HTML parcial de %s: %s: %s", results["target"], type(e).__name__, e
-        )
-        results["checks"].append(
-            _res("parse", "WARN", f"Parseo parcial: {type(e).__name__}")
-        )
+        logger.warning("parseo HTML parcial de %s: %s: %s", results["target"], type(e).__name__, e)
+        results["checks"].append(_res("parse", "WARN", f"Parseo parcial: {type(e).__name__}"))
     return p
 
 
@@ -770,9 +720,7 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.WARNING,
         format="%(levelname)s %(name)s: %(message)s",
     )
-    ap = argparse.ArgumentParser(
-        description="Auditoría 360° - chequeo automatizado de página"
-    )
+    ap = argparse.ArgumentParser(description="Auditoría 360° - chequeo automatizado de página")
     ap.add_argument("url", nargs="?", help="URL a auditar (https://...)")
     ap.add_argument("--file", help="Fichero HTML local (modo offline/tests)")
     ap.add_argument("--json", help="Guardar resultado en JSON")
@@ -787,9 +735,7 @@ def main(argv: list[str] | None = None) -> int:
             with open(args.json, "w", encoding="utf-8") as fh:
                 fh.write(out)
         except OSError as e:
-            logger.error(
-                "no se pudo escribir %s: %s: %s", args.json, type(e).__name__, e
-            )
+            logger.error("no se pudo escribir %s: %s: %s", args.json, type(e).__name__, e)
             print(out)
             return 2
     try:

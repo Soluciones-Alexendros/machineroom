@@ -57,6 +57,7 @@ class UserBuilder:
     def build(self) -> User:
         return create_user(**self.data)
 
+
 # Usage
 admin = UserBuilder().as_admin().with_email("admin@example.com").build()
 ```
@@ -66,12 +67,16 @@ admin = UserBuilder().as_admin().with_email("admin@example.com").build()
 ```python
 import pytest
 
-@pytest.mark.parametrize("input,expected", [
-    ("", False),
-    ("a", True),
-    ("ab", True),
-    ("a" * 101, False),  # max length
-])
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("", False),
+        ("a", True),
+        ("ab", True),
+        ("a" * 101, False),  # max length
+    ],
+)
 def test_name_validation(input, expected):
     assert validate_name(input) == expected
 ```
@@ -85,6 +90,7 @@ def db_session():
     yield session
     session.rollback()
     session.close()
+
 
 @pytest.fixture
 def test_user(db_session):
@@ -101,6 +107,7 @@ def test_user(db_session):
 async def test_async_operation():
     result = await async_service.process(data)
     assert result.status == "done"
+
 
 # For async generators
 async def test_streaming():

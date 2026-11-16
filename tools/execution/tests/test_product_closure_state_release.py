@@ -151,12 +151,8 @@ def test_v29_receipt_survives_compaction(tmp_path: Path) -> None:
 def _init_release_repo(tmp: Path, version: str, notes_section: str | None) -> Path:
     tmp.mkdir(parents=True, exist_ok=True)
     subprocess.run(["git", "init"], cwd=tmp, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "config", "user.email", "t@t"], cwd=tmp, check=True, capture_output=True
-    )
-    subprocess.run(
-        ["git", "config", "user.name", "t"], cwd=tmp, check=True, capture_output=True
-    )
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp, check=True, capture_output=True)
     # Fixtures must not inherit host commit.gpgsign; GPG I/O failures are not readiness signals.
     subprocess.run(
         ["git", "config", "commit.gpgsign", "false"],
@@ -170,9 +166,7 @@ def _init_release_repo(tmp: Path, version: str, notes_section: str | None) -> Pa
         cl += notes_section
     (tmp / "CHANGELOG.md").write_text(cl)
     subprocess.run(["git", "add", "."], cwd=tmp, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "commit", "-m", "init"], cwd=tmp, check=True, capture_output=True
-    )
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp, check=True, capture_output=True)
     return tmp
 
 

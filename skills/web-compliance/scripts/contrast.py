@@ -91,9 +91,7 @@ def selftest() -> list[str]:
     for fg, bg, expected_ratio, expected_aa in cases:
         r = check(fg, bg)
         if abs(r["ratio"] - expected_ratio) > RATIO_TOLERANCE or r["aa"] != expected_aa:
-            failures.append(
-                f"{fg} sobre {bg}: ratio={r['ratio']} (esperado {expected_ratio}), aa={r['aa']}"
-            )
+            failures.append(f"{fg} sobre {bg}: ratio={r['ratio']} (esperado {expected_ratio}), aa={r['aa']}")
     return failures
 
 
@@ -106,9 +104,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Contraste WCAG entre dos colores")
     ap.add_argument("fg", nargs="?", help="Color de texto (#RRGGBB)")
     ap.add_argument("bg", nargs="?", help="Color de fondo (#RRGGBB)")
-    ap.add_argument(
-        "--large", action="store_true", help="Texto grande (>=18pt o 14pt bold)"
-    )
+    ap.add_argument("--large", action="store_true", help="Texto grande (>=18pt o 14pt bold)")
     ap.add_argument("--selftest", action="store_true", help="Ejecutar tests internos")
     args = ap.parse_args(argv)
 

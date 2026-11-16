@@ -89,9 +89,7 @@ CLEAN_OPS = (
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
-        )
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
     else:
         logging.getLogger().setLevel(level)
 
@@ -122,9 +120,7 @@ def detect_pkg_mgr() -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Rutina de limpieza aprobada (por defecto --dry-run)."
-    )
+    parser = argparse.ArgumentParser(description="Rutina de limpieza aprobada (por defecto --dry-run).")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--dry-run",
@@ -152,12 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=3,
         help="Versiones a conservar en caché (defecto 3)",
     )
-    parser.add_argument(
-        "--journal-time", default="7d", help="Vacuum time del journal (defecto 7d)"
-    )
-    parser.add_argument(
-        "--journal-size", default="500M", help="Vacuum size del journal (defecto 500M)"
-    )
+    parser.add_argument("--journal-time", default="7d", help="Vacuum time del journal (defecto 7d)")
+    parser.add_argument("--journal-size", default="500M", help="Vacuum size del journal (defecto 500M)")
     parser.add_argument(
         "--json",
         nargs="?",
@@ -171,9 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help="Incluir fwupdmgr update (R2, solo con --execute)",
     )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Logging verboso a stderr"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     return parser
 
 
@@ -197,9 +187,7 @@ def apply_args(args: argparse.Namespace) -> None:
 
 
 def _record(action: str, status: str, rc: int = 0, detail: str = "") -> None:
-    ACTION_RESULTS.append(
-        {"action": action, "status": status, "rc": rc, "detail": detail}
-    )
+    ACTION_RESULTS.append({"action": action, "status": status, "rc": rc, "detail": detail})
 
 
 def _snapshot_dir() -> str:
@@ -255,9 +243,7 @@ def _content_digest(path: str) -> str:
     return h.hexdigest()
 
 
-def _snapshot_meta_error(
-    meta: dict[str, Any], snapshot_id: str, path: str
-) -> str | None:
+def _snapshot_meta_error(meta: dict[str, Any], snapshot_id: str, path: str) -> str | None:
     missing = _missing_meta_field(meta)
     if missing:
         return missing
@@ -265,9 +251,7 @@ def _snapshot_meta_error(
         return "metadata id does not match snapshot_id"
     if meta.get("backend_status") == "failed":
         return "snapshot backend_status=failed"
-    if meta.get("recovery_scope") in (None, "", "none") and meta.get(
-        "backend_required"
-    ):
+    if meta.get("recovery_scope") in (None, "", "none") and meta.get("backend_required"):
         return "recovery_scope insufficient with required backend"
     if _content_digest(path) != str(meta.get("content_hash")):
         return "snapshot content_hash mismatch"
@@ -399,29 +383,21 @@ def dispatch_operation(operation_id: str) -> int:
 def clean_package_cache() -> int:
     log_info("=== Limpieza de caché de paquetes ===")
     if _STATE.pkg_mgr == "pacman":
-        cache_size = run(
-            "du -sh /var/cache/pacman/pkg 2>/dev/null | cut -f1", timeout=30
-        ).strip()
+        cache_size = run("du -sh /var/cache/pacman/pkg 2>/dev/null | cut -f1", timeout=30).strip()
         log_info(f"Tamaño actual: {cache_size}")
-        rc, _ = run_capture(
-            f"paccache -r -k {_STATE.keep_versions} 2>/dev/null", timeout=600
-        )
+        rc, _ = run_capture(f"paccache -r -k {_STATE.keep_versions} 2>/dev/null", timeout=600)
         if rc != 0:
             log_warn("paccache falló")
             raise RuntimeError("paccache failed")
     elif _STATE.pkg_mgr == "apt":
-        cache_size = run(
-            "du -sh /var/cache/apt/archives 2>/dev/null | cut -f1", timeout=30
-        ).strip()
+        cache_size = run("du -sh /var/cache/apt/archives 2>/dev/null | cut -f1", timeout=30).strip()
         log_info(f"Tamaño actual: {cache_size}")
         rc, _ = run_capture("apt-get autoclean 2>/dev/null", timeout=600)
         if rc != 0:
             log_warn("apt-get autoclean falló")
             raise RuntimeError("apt autoclean failed")
     elif _STATE.pkg_mgr == "dnf":
-        cache_size = run(
-            "du -sh /var/cache/dnf 2>/dev/null | cut -f1", timeout=30
-        ).strip()
+        cache_size = run("du -sh /var/cache/dnf 2>/dev/null | cut -f1", timeout=30).strip()
         log_info(f"Tamaño actual: {cache_size}")
         rc, _ = run_capture("dnf clean packages -y 2>/dev/null", timeout=600)
         if rc != 0:
@@ -455,9 +431,7 @@ def clean_orphans() -> int:
         log_info(f"Huérfanos detectados: {len(orphan_list)}")
         for pkg in orphan_list:
             log_info(f"Eliminando: {pkg}")
-            rc, _ = run_capture(
-                f"pacman -Rns {pkg} --noconfirm 2>/dev/null", timeout=600
-            )
+            rc, _ = run_capture(f"pacman -Rns {pkg} --noconfirm 2>/dev/null", timeout=600)
             if rc != 0:
                 log_warn(f"No se pudo eliminar {pkg}")
     elif _STATE.pkg_mgr == "apt":
@@ -484,9 +458,7 @@ def clean_temp() -> int:
 def clean_needrestart() -> int:
     log_info("=== Servicios que piden reinicio (needrestart) ===")
     if which("needrestart") is None:
-        log_info(
-            "needrestart no instalado (instalar para detectar reinicios pendientes)"
-        )
+        log_info("needrestart no instalado (instalar para detectar reinicios pendientes)")
         return 0
     rc, _ = run_capture("needrestart -r a 2>/dev/null", timeout=600)
     if rc != 0:
@@ -553,13 +525,9 @@ def generate_json_output() -> None:
     if not actions:
         for name in CLEAN_OPS:
             if name == "update_firmware" and not _STATE.with_firmware:
-                actions.append(
-                    {"action": name, "status": "skipped", "rc": 0, "detail": ""}
-                )
+                actions.append({"action": name, "status": "skipped", "rc": 0, "detail": ""})
             elif _STATE.dry_run:
-                actions.append(
-                    {"action": name, "status": "simulated", "rc": 0, "detail": ""}
-                )
+                actions.append({"action": name, "status": "simulated", "rc": 0, "detail": ""})
             else:
                 actions.append(
                     {
@@ -605,14 +573,10 @@ def _ensure_snapshot_for_execute() -> int:
     """Authorize snapshot create/validate before any host effect."""
 
     if not _STATE.snapshot_id:
-        log_warn(
-            "No se especificó --snapshot-id. Creando snapshot (requiere aprobación)..."
-        )
+        log_warn("No se especificó --snapshot-id. Creando snapshot (requiere aprobación)...")
         result = run_registered("create_snapshot", {}, target=hostname() or ".")
         if result.outcome != "succeeded":
-            _record(
-                "create_snapshot", result.outcome, result.returncode or 1, result.detail
-            )
+            _record("create_snapshot", result.outcome, result.returncode or 1, result.detail)
             return 3 if result.outcome == "blocked" else 1
         _record("create_snapshot", "succeeded", 0, result.run_id)
     else:

@@ -43,9 +43,7 @@ def test_ok_cuando_todo_presente(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_check_cmd_golden(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        check_deps, "which", lambda cmd: "/usr/bin/" + cmd if cmd == "jq" else None
-    )
+    monkeypatch.setattr(check_deps, "which", lambda cmd: "/usr/bin/" + cmd if cmd == "jq" else None)
     required = {"required": True, "verbose": False, "install_hint": False}
     optional = {**required, "required": False}
     assert check_deps.check_cmd(("jq", "jq", "hint"), **required) == 1

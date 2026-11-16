@@ -30,9 +30,7 @@ class AllowProvider(ApprovalProvider):
 
 
 def test_deny_provider_blocks_mutation() -> None:
-    d = DenyProvider().decide(
-        ApprovalRequest("clean_routine", "/tmp", {}, ("mutate-host",), "abc")
-    )
+    d = DenyProvider().decide(ApprovalRequest("clean_routine", "/tmp", {}, ("mutate-host",), "abc"))
     assert d.allowed is False
 
 

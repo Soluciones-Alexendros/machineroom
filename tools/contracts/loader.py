@@ -57,9 +57,7 @@ def _schema() -> dict[str, Any]:
     return data
 
 
-def _reject_duplicate_keys(
-    loader: yaml.SafeLoader, node: yaml.nodes.MappingNode
-) -> dict[str, object]:
+def _reject_duplicate_keys(loader: yaml.SafeLoader, node: yaml.nodes.MappingNode) -> dict[str, object]:
     mapping: dict[str, object] = {}
     for key_node, value_node in node.value:
         key = loader.construct_object(key_node, deep=False)
@@ -165,16 +163,12 @@ def _check_identity(data: dict[str, Any], skill_dir: str, errors: list[str]) -> 
         errors.append("distribution invalid")
 
 
-def _check_skill_version(
-    data: dict[str, Any], skill_path: Path | None, errors: list[str]
-) -> None:
+def _check_skill_version(data: dict[str, Any], skill_path: Path | None, errors: list[str]) -> None:
     if skill_path is None or not data.get("skill_version"):
         return
     md_ver = _skill_md_version(skill_path)
     if md_ver and md_ver != str(data["skill_version"]):
-        errors.append(
-            f"skill_version {data['skill_version']!r} != SKILL.md metadata.version {md_ver!r}"
-        )
+        errors.append(f"skill_version {data['skill_version']!r} != SKILL.md metadata.version {md_ver!r}")
 
 
 def _check_operations(data: dict[str, Any], errors: list[str]) -> None:

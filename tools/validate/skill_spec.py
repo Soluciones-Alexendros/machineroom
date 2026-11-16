@@ -23,11 +23,7 @@ except ImportError:
     print("ERROR: PyYAML no instalado. uv sync --frozen")
     sys.exit(1)
 
-ROOT = (
-    Path(sys.argv[sys.argv.index("--root") + 1])
-    if "--root" in sys.argv
-    else Path(__file__).resolve().parents[2]
-)
+ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
 SKILLS = ROOT / "skills"
 
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -152,9 +148,7 @@ def check_keywords_array(skill: str, meta: dict[str, Any]) -> None:
         )
 
 
-def check_cross_refs_in_frontmatter(
-    skill: str, meta: dict[str, Any], names: set[str]
-) -> None:
+def check_cross_refs_in_frontmatter(skill: str, meta: dict[str, Any], names: set[str]) -> None:
     execution = meta.get("execution")
     if execution and execution not in names:
         err(skill, f"metadata.execution apunta a skill inexistente: {execution}")
@@ -294,9 +288,7 @@ def check_skill_md_locations(root: Path) -> None:
         try:
             path.resolve().relative_to(skills)
         except ValueError:
-            ERRORS.append(
-                f"[catalog] SKILL.md fuera de skills/: {path.relative_to(root)}"
-            )
+            ERRORS.append(f"[catalog] SKILL.md fuera de skills/: {path.relative_to(root)}")
 
 
 def check_description(skill: str, desc: str, names: set[str]) -> None:
@@ -352,11 +344,7 @@ def _check_tracked_files(skill: str, root: Path, sdir: Path) -> None:
         name = Path(tracked).name
         if name in {"LICENSE", "LICENSE.txt"}:
             err(skill, f"fichero {name} por skill (licencia global)")
-        if (
-            name == "__pycache__"
-            or tracked.endswith(".pyc")
-            or "/__pycache__/" in tracked
-        ):
+        if name == "__pycache__" or tracked.endswith(".pyc") or "/__pycache__/" in tracked:
             err(skill, f"residuo rastreado: {tracked}")
         if ".pytest_cache" in tracked:
             err(skill, f"residuo rastreado: {tracked}")

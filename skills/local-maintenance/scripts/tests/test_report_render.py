@@ -81,12 +81,7 @@ def test_invalid_args_exit2() -> None:
 
 def test_error_input_ausente_exit1(tmp_path: Path) -> None:
     missing = tmp_path / "noexiste.json"
-    assert (
-        report_render.main(
-            ["--input", str(missing), "--output", str(tmp_path / "o.md")]
-        )
-        == 1
-    )
+    assert report_render.main(["--input", str(missing), "--output", str(tmp_path / "o.md")]) == 1
     r = _run("--input", str(missing), "--output", str(tmp_path / "o2.md"))
     assert r.returncode == 1
 
@@ -94,10 +89,7 @@ def test_error_input_ausente_exit1(tmp_path: Path) -> None:
 def test_error_input_corrupto_exit1(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text("{oops", encoding="utf-8")
-    assert (
-        report_render.main(["--input", str(bad), "--output", str(tmp_path / "o.md")])
-        == 1
-    )
+    assert report_render.main(["--input", str(bad), "--output", str(tmp_path / "o.md")]) == 1
 
 
 def test_calculate_trend_golden() -> None:
@@ -131,10 +123,5 @@ def test_render_html_file_golden(tmp_path: Path) -> None:
     inp = tmp_path / "in.json"
     inp.write_text(json.dumps(_sample()), encoding="utf-8")
     out = tmp_path / "rep.html"
-    assert (
-        report_render.main(
-            ["--input", str(inp), "--output", str(out), "--format", "html"]
-        )
-        == 0
-    )
+    assert report_render.main(["--input", str(inp), "--output", str(out), "--format", "html"]) == 0
     assert "<html" in out.read_text(encoding="utf-8")

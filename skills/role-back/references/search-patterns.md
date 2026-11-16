@@ -19,8 +19,9 @@ async def index_document(doc: Document):
             "content": doc.content,
             "tags": doc.tags,
             "created_at": doc.created_at.isoformat(),
-        }
+        },
     )
+
 
 # Search
 async def search_documents(query: str, filters: dict = None) -> SearchResults:

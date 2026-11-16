@@ -47,9 +47,7 @@ _RUN_ID_RE = re.compile(
 # Compatibility view derived from the canonical registry; never an independent allowlist.
 PHASE_EVIDENCE_OPS: dict[str, frozenset[str]] = {
     phase: frozenset(
-        operation_id
-        for operation_id in known_operation_ids()
-        if phase in get_operation(operation_id).completion_phases
+        operation_id for operation_id in known_operation_ids() if phase in get_operation(operation_id).completion_phases
     )
     for phase in ("DEFINE", "SCHEMAS", "IMPLEMENT", "VALIDATE", "INTEGRATE", "STATUS")
 }
@@ -73,13 +71,9 @@ def _completion_spec(operation_id: str, phase: str) -> OpSpec:
     try:
         spec = get_operation(operation_id)
     except KeyError as exc:
-        raise ValueError(
-            f"evidence operation {operation_id!r} cannot complete phase {phase}"
-        ) from exc
+        raise ValueError(f"evidence operation {operation_id!r} cannot complete phase {phase}") from exc
     if phase not in spec.completion_phases:
-        raise ValueError(
-            f"evidence operation {operation_id!r} cannot complete phase {phase}"
-        )
+        raise ValueError(f"evidence operation {operation_id!r} cannot complete phase {phase}")
     return spec
 
 
@@ -110,9 +104,7 @@ def _record_symlink(entries: dict[str, str], root: Path, path: Path, rel: str) -
         target = os.readlink(path)
     except OSError as exc:
         raise ValueError(f"unreadable symlink {rel}: {exc}") from exc
-    resolved = (
-        Path(target) if os.path.isabs(target) else (path.parent / target).resolve()
-    )
+    resolved = Path(target) if os.path.isabs(target) else (path.parent / target).resolve()
     kind = "symlink"
     try:
         resolved.relative_to(root)
@@ -132,9 +124,7 @@ def _record_file(entries: dict[str, str], path: Path, rel: str) -> None:
     entries[rel] = f"file:{h.hexdigest()}"
 
 
-def _walk_dirs(
-    root: Path, dirpath: str, dirnames: list[str], entries: dict[str, str]
-) -> list[str]:
+def _walk_dirs(root: Path, dirpath: str, dirnames: list[str], entries: dict[str, str]) -> list[str]:
     """Record directory symlinks and return the dirnames still worth descending."""
     kept: list[str] = []
     for name in sorted(dirnames):
@@ -154,9 +144,7 @@ def _walk_dirs(
     return kept
 
 
-def _walk_files(
-    root: Path, dirpath: str, filenames: list[str], entries: dict[str, str]
-) -> None:
+def _walk_files(root: Path, dirpath: str, filenames: list[str], entries: dict[str, str]) -> None:
     for name in sorted(filenames):
         path = Path(dirpath) / name
         try:
@@ -223,9 +211,7 @@ def evidence_dir(repo: Path) -> Path:
 
 def _validate_run_id(run_id: str) -> str:
     if not run_id or not _RUN_ID_RE.match(run_id):
-        raise ValueError(
-            f"run_id must be a UUID (got {run_id!r}); path separators and free-form ids rejected"
-        )
+        raise ValueError(f"run_id must be a UUID (got {run_id!r}); path separators and free-form ids rejected")
     if "/" in run_id or "\\" in run_id or ".." in run_id:
         raise ValueError("run_id path traversal rejected")
     return run_id
@@ -255,11 +241,7 @@ def _path_confined(path: Path, root: Path) -> Path:
             if nxt.is_symlink():
                 # Symlink component: resolve target and require under root
                 target = Path(os.readlink(nxt))
-                target = (
-                    (acc / target).resolve()
-                    if not target.is_absolute()
-                    else target.resolve()
-                )
+                target = (acc / target).resolve() if not target.is_absolute() else target.resolve()
                 try:
                     target.relative_to(root)
                 except ValueError as exc:
@@ -311,9 +293,7 @@ def _assert_no_symlink_ancestors(root: Path, rel_parts: list[str]) -> Path:
         nxt = cur / part
         if nxt.is_symlink():
             target = Path(os.readlink(nxt))
-            target = (
-                target.resolve() if target.is_absolute() else (cur / target).resolve()
-            )
+            target = target.resolve() if target.is_absolute() else (cur / target).resolve()
             try:
                 target.relative_to(root)
             except ValueError as exc:
@@ -362,18 +342,14 @@ def _require_nonempty_str(data: dict[str, Any], key: str) -> str:
     if val is None or (isinstance(val, str) and not val.strip()):
         raise ValueError(f"evidence missing required field: {key}")
     if not isinstance(val, str):
-        raise ValueError(
-            f"evidence field {key} must be string, got {type(val).__name__}"
-        )
+        raise ValueError(f"evidence field {key} must be string, got {type(val).__name__}")
     return val
 
 
 def _validate_digests(data: dict[str, Any]) -> None:
     for dk in ("plan_digest", "input_digest", "output_digest"):
         dig = str(data[dk])
-        if len(dig) != SHA256_HEX_LEN or any(
-            c not in "0123456789abcdef" for c in dig.lower()
-        ):
+        if len(dig) != SHA256_HEX_LEN or any(c not in "0123456789abcdef" for c in dig.lower()):
             raise ValueError(f"evidence {dk} must be sha256 hex")
 
 
@@ -382,29 +358,19 @@ def _validate_completion_requirements(data: dict[str, Any]) -> None:
     op = str(data["operation_id"])
     spec = _completion_spec(op, phase)
     if data.get("skill") != spec.skill:
-        raise ValueError(
-            f"evidence skill {data.get('skill')!r} does not match operation skill {spec.skill!r}"
-        )
+        raise ValueError(f"evidence skill {data.get('skill')!r} does not match operation skill {spec.skill!r}")
     verifications = data.get("verifications")
     if not isinstance(verifications, list) or not verifications:
         raise ValueError("evidence verifications required and non-empty for complete")
-    kinds = {
-        str(v.get("kind"))
-        for v in verifications
-        if isinstance(v, dict) and v.get("ok") is True
-    }
+    kinds = {str(v.get("kind")) for v in verifications if isinstance(v, dict) and v.get("ok") is True}
     missing = set(spec.required_verifications) - kinds
     if missing:
         raise ValueError(f"evidence missing required verifications: {sorted(missing)}")
 
 
-def _validate_succeeded_payload(
-    data: dict[str, Any], *, for_complete: bool = False
-) -> None:
+def _validate_succeeded_payload(data: dict[str, Any], *, for_complete: bool = False) -> None:
     if data.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError(
-            f"evidence schema_version must be {SCHEMA_VERSION}, got {data.get('schema_version')!r}"
-        )
+        raise ValueError(f"evidence schema_version must be {SCHEMA_VERSION}, got {data.get('schema_version')!r}")
     for key in REQUIRED_SUCCEEDED_FIELDS:
         if key in ("schema_version", "outcome"):
             continue
@@ -422,16 +388,12 @@ def _validate_succeeded_payload(
 
 def _assert_storable_outcome(result: OpResult) -> None:
     if result.outcome in NON_TERMINAL:
-        raise ValueError(
-            f"non-terminal outcome cannot be stored as evidence: {result.outcome}"
-        )
+        raise ValueError(f"non-terminal outcome cannot be stored as evidence: {result.outcome}")
     if result.outcome not in TERMINAL_OK and result.outcome != "failed":
         raise ValueError(f"unsupported outcome for evidence: {result.outcome}")
 
 
-def _assert_succeeded_bindings(
-    result: OpResult, phase: str, skill: str, target: str
-) -> None:
+def _assert_succeeded_bindings(result: OpResult, phase: str, skill: str, target: str) -> None:
     if result.outcome != "succeeded":
         return
     if result.returncode not in (0, None):
@@ -472,9 +434,7 @@ def _store_payload(
         "effect": result.effect,
         "plan_digest": result.plan_digest or "",
         "detail": _redact(result.detail),
-        "artifacts": [
-            _artifact_record(root, a) for a in (bindings.get("artifacts") or [])
-        ],
+        "artifacts": [_artifact_record(root, a) for a in (bindings.get("artifacts") or [])],
         "input_digest": in_digest,
         "output_digest": out_digest,
         "work_digest": out_digest,

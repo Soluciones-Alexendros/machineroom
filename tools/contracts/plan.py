@@ -14,9 +14,7 @@ import yaml
 
 from contracts.loader import StrictLoader
 
-_BLOCK_RE = re.compile(
-    r"^```yaml aw-plan[\t ]*\n(.*?)^```[\t ]*$", re.MULTILINE | re.DOTALL
-)
+_BLOCK_RE = re.compile(r"^```yaml aw-plan[\t ]*\n(.*?)^```[\t ]*$", re.MULTILINE | re.DOTALL)
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "plan.schema.json"
 
 
@@ -38,12 +36,7 @@ def _schema() -> dict[str, Any]:
 def _validate_scope(task_id: str, field: str, scopes: list[str]) -> None:
     for scope in scopes:
         path = PurePosixPath(scope)
-        if (
-            path.is_absolute()
-            or ".." in path.parts
-            or "\\" in scope
-            or not scope.strip()
-        ):
+        if path.is_absolute() or ".." in path.parts or "\\" in scope or not scope.strip():
             raise ValueError(f"task {task_id}: invalid {field} path: {scope!r}")
 
 
@@ -85,16 +78,12 @@ def validate_plan(data: dict[str, Any]) -> None:
 def parse_plan(text: str) -> PlanDocument:
     blocks = _BLOCK_RE.findall(text)
     if len(blocks) != 1:
-        raise ValueError(
-            f"expected exactly one yaml aw-plan block, found {len(blocks)}"
-        )
+        raise ValueError(f"expected exactly one yaml aw-plan block, found {len(blocks)}")
     data = yaml.load(blocks[0], Loader=StrictLoader)
     if not isinstance(data, dict):
         raise ValueError("aw-plan root must be a mapping")
     validate_plan(data)
-    canonical = json.dumps(
-        data, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    )
+    canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return PlanDocument(
         plan_id=str(data["plan_id"]),
         base_revision=str(data["base_revision"]),

@@ -43,9 +43,7 @@ def test_existing_destination_is_rejected(tmp_path: Path) -> None:
         safe_extract(archive, destination)
 
 
-@pytest.mark.parametrize(
-    "name", ["/absolute", "../escape", "package/../../escape", "package\\escape"]
-)
+@pytest.mark.parametrize("name", ["/absolute", "../escape", "package/../../escape", "package\\escape"])
 def test_path_escape_is_rejected(tmp_path: Path, name: str) -> None:
     archive = _archive(tmp_path, [(name, b"bad")])
     with pytest.raises(ValueError, match="path"):

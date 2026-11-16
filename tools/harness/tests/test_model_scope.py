@@ -102,9 +102,7 @@ def test_orchestrator_rejects_beam_free_on_opencode_go(
 
 
 def test_native_script_has_one_scoped_default() -> None:
-    text = (ROOT / "scripts" / "tests" / "test_pi_orchestration.sh").read_text(
-        encoding="utf-8"
-    )
+    text = (ROOT / "scripts" / "tests" / "test_pi_orchestration.sh").read_text(encoding="utf-8")
     assert "kimi-coding" not in text
     assert "beam-free" not in text
     assert text.count('MR_PI_MODEL="${MR_PI_MODEL:-') == 1
@@ -112,18 +110,14 @@ def test_native_script_has_one_scoped_default() -> None:
 
 
 def test_extension_spawn_uses_the_shared_scope_and_retry() -> None:
-    source = (ROOT / "extensions" / "machineroom" / "index.ts").read_text(
-        encoding="utf-8"
-    )
+    source = (ROOT / "extensions" / "machineroom" / "index.ts").read_text(encoding="utf-8")
     assert "apt-get|sshd" not in source
     assert "loadMatcher" in source
     assert "resolveSubagentModel" in source
     assert "buildSubagentArgs" in source
     assert "shouldRetrySpawn" in source
     assert "function runPiOnce" not in source
-    call_source = (ROOT / "extensions" / "machineroom" / "call.ts").read_text(
-        encoding="utf-8"
-    )
+    call_source = (ROOT / "extensions" / "machineroom" / "call.ts").read_text(encoding="utf-8")
     assert "function runPiOnce" in call_source
 
 
@@ -141,9 +135,7 @@ def test_typescript_scope_matches_python(tmp_path: Path) -> None:
         check=False,
     )
     if probe.returncode != 0:
-        pytest.skip(
-            "node without --experimental-strip-types: TypeScript model scope is not_run here"
-        )
+        pytest.skip("node without --experimental-strip-types: TypeScript model scope is not_run here")
     samples = list(KEPT) + list(DROPPED)
     script = tmp_path / "scope.mjs"
     script.write_text(

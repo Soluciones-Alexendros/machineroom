@@ -91,8 +91,6 @@ def test_existing_plan_file_is_not_inferred_as_active(tmp_path: Path) -> None:
     _legacy(tmp_path)
     migrate_status(tmp_path)
     (tmp_path / "tasks").mkdir()
-    (tmp_path / "tasks" / "plan.md").write_text(
-        FIXTURE.read_text(encoding="utf-8"), encoding="utf-8"
-    )
+    (tmp_path / "tasks" / "plan.md").write_text(FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
     with pytest.raises(ValueError, match="no active plan"):
         load_active_plan(tmp_path)

@@ -42,9 +42,7 @@ def tree_digest(root: Path) -> str:
     """
     digest = hashlib.sha256()
     root = root.resolve()
-    for path in sorted(
-        p for p in root.rglob("*") if p.is_file() and ".git" not in p.parts
-    ):
+    for path in sorted(p for p in root.rglob("*") if p.is_file() and ".git" not in p.parts):
         relative = path.relative_to(root).as_posix()
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
@@ -54,20 +52,14 @@ def tree_digest(root: Path) -> str:
 
 
 class WorktreeManager:
-    def __init__(
-        self, repo: Path, base_revision: str, *, temp_root: Path | None = None
-    ) -> None:
+    def __init__(self, repo: Path, base_revision: str, *, temp_root: Path | None = None) -> None:
         self.repo = repo.resolve()
         self.base_revision = base_revision
-        self.temp_root = (
-            temp_root or Path(tempfile.mkdtemp(prefix="machineroom-orchestration-"))
-        ).resolve()
+        self.temp_root = (temp_root or Path(tempfile.mkdtemp(prefix="machineroom-orchestration-"))).resolve()
         self.temp_root.mkdir(parents=True, exist_ok=True)
         self._worktrees: set[Path] = set()
 
-    def _git(
-        self, cwd: Path, args: list[str], *, allowed_returncodes: set[int] | None = None
-    ) -> bytes:
+    def _git(self, cwd: Path, args: list[str], *, allowed_returncodes: set[int] | None = None) -> bytes:
         allowed = allowed_returncodes or {0}
         result = subprocess.run(
             ["git", *args],
@@ -88,9 +80,7 @@ class WorktreeManager:
         path = self.temp_root / name
         if path.exists():
             raise ValueError(f"worktree already exists: {path}")
-        self._git(
-            self.repo, ["worktree", "add", "--detach", str(path), self.base_revision]
-        )
+        self._git(self.repo, ["worktree", "add", "--detach", str(path), self.base_revision])
         self._worktrees.add(path)
         return path
 
@@ -120,23 +110,15 @@ class WorktreeManager:
             set(tracked.decode().splitlines()) | set(untracked.decode().splitlines()),
         )
 
-    def capture_patch(
-        self, worktree: Path, task: dict[str, Any]
-    ) -> tuple[Path, dict[str, Any]]:
+    def capture_patch(self, worktree: Path, task: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
         files = self._changed_files(worktree)
         scopes = list(task["write_scope"])
         outside = [path for path in files if not self._in_scope(path, scopes)]
         if outside:
             raise ValueError(f"changed files outside write_scope: {outside}")
-        patches = [
-            self._git(worktree, ["diff", "--binary", "--full-index", "HEAD", "--", "."])
-        ]
+        patches = [self._git(worktree, ["diff", "--binary", "--full-index", "HEAD", "--", "."])]
         hashes: dict[str, str] = {}
-        untracked = set(
-            self._git(worktree, ["ls-files", "--others", "--exclude-standard"])
-            .decode()
-            .splitlines()
-        )
+        untracked = set(self._git(worktree, ["ls-files", "--others", "--exclude-standard"]).decode().splitlines())
         for relative in files:
             path = worktree / relative
             if path.is_symlink():
@@ -192,9 +174,7 @@ class WorktreeManager:
             try:
                 worktree.resolve().relative_to(self.temp_root)
             except ValueError as exc:
-                raise ValueError(
-                    f"worktree cleanup outside temporary root: {worktree}"
-                ) from exc
+                raise ValueError(f"worktree cleanup outside temporary root: {worktree}") from exc
             if worktree.exists():
                 shutil.rmtree(worktree)
         self._git(self.repo, ["worktree", "prune"])
@@ -255,9 +235,7 @@ class RunWorkspace:
             path = self.staging / relative
             if expected == "deleted":
                 if path.exists():
-                    raise ValueError(
-                        f"manifest digest mismatch (expected deleted): {relative}"
-                    )
+                    raise ValueError(f"manifest digest mismatch (expected deleted): {relative}")
                 continue
             if not path.is_file():
                 raise ValueError(f"manifest digest mismatch (missing): {relative}")
@@ -273,9 +251,7 @@ class RunWorkspace:
             self.manager.apply_patch(self.staging, Path(item["patch"]))
         restored = tree_digest(self.staging)
         if restored != expected_digest:
-            raise ValueError(
-                f"staging rollback digest mismatch: expected={expected_digest} actual={restored}"
-            )
+            raise ValueError(f"staging rollback digest mismatch: expected={expected_digest} actual={restored}")
         self._digest = restored
 
     def integrate(self, task_id: str, patch: Path, manifest: dict[str, Any]) -> str:
@@ -296,9 +272,7 @@ class RunWorkspace:
                 self.write_integrated_manifest()
                 return self._digest
             except Exception:
-                self.accepted = [
-                    item for item in self.accepted if item["task_id"] != task_id
-                ]
+                self.accepted = [item for item in self.accepted if item["task_id"] != task_id]
                 self._restore_to_digest(before)
                 raise
 
@@ -323,9 +297,7 @@ class RunWorkspace:
             "staging_digest": self._digest,
         }
         path = run_dir / "integrated.manifest.json"
-        path.write_text(
-            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 
     def rebuild_staging_from_artifacts(self, items: list[dict[str, Any]]) -> str:

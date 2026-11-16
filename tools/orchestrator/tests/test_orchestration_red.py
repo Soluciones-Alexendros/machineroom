@@ -54,9 +54,7 @@ def _cleanup(repo: Path) -> None:
     shutil.rmtree(repo, ignore_errors=True)
 
 
-def _op_result(
-    task: dict[str, Any], context: RunContext, detail: str = "ok"
-) -> OpResult:
+def _op_result(task: dict[str, Any], context: RunContext, detail: str = "ok") -> OpResult:
     return OpResult(
         operation_id=str(task["operation"]),
         outcome="succeeded",
@@ -78,13 +76,9 @@ class DependentReaderAdapter:
     def execute(self, task: dict[str, Any], context: RunContext) -> AdapterResult:
         if task["id"] == "task-a":
             (context.repo / "a.txt").write_text("from-a\n", encoding="utf-8")
-            return AdapterResult(
-                "succeeded", operation_result=_op_result(task, context)
-            )
+            return AdapterResult("succeeded", operation_result=_op_result(task, context))
         prior = context.repo / "a.txt"
-        self.saw_prior = (
-            prior.is_file() and prior.read_text(encoding="utf-8") == "from-a\n"
-        )
+        self.saw_prior = prior.is_file() and prior.read_text(encoding="utf-8") == "from-a\n"
         if not self.saw_prior:
             return AdapterResult(
                 "failed",
@@ -137,19 +131,14 @@ def _activate_dependency_plan(repo: Path) -> None:
         ],
     }
     path = repo / "plan-red.md"
-    path.write_text(
-        "# RED\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n"
-    )
+    path.write_text("# RED\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
     activate_plan(repo, path)
 
 
 def _content_verifier(task: dict[str, Any]) -> Any:
     def verify(result: OpResult, staging: Path) -> list[dict[str, Any]]:
         path = staging / task["write_scope"][0]
-        ok = (
-            path.is_file()
-            and path.read_text(encoding="utf-8") == f"from-{task['id'][-1]}\n"
-        )
+        ok = path.is_file() and path.read_text(encoding="utf-8") == f"from-{task['id'][-1]}\n"
         return [{"kind": "implementation_deliverable", "ok": ok, "detail": "content"}]
 
     return verify
@@ -211,11 +200,7 @@ def _activate_readonly_plan(repo: Path) -> None:
         ],
     }
     path = repo / "plan-ro.md"
-    path.write_text(
-        "# RED RO\n\n```yaml aw-plan\n"
-        + yaml.safe_dump(data, sort_keys=False)
-        + "```\n"
-    )
+    path.write_text("# RED RO\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
     activate_plan(repo, path)
 
 
@@ -227,9 +212,7 @@ def test_readonly_task_stores_real_evidence(tmp_path: Path) -> None:
         wrapper = WorktreeAdapter(
             repo,
             ReadOnlyAdapter(),
-            lambda task: lambda result, staging: [
-                {"kind": "gate_result", "ok": True, "detail": result.detail}
-            ],
+            lambda task: lambda result, staging: [{"kind": "gate_result", "ok": True, "detail": result.detail}],
         )
         summary = Scheduler(repo, adapter=wrapper).run()
         status = load_status(repo)
@@ -309,9 +292,7 @@ def test_resume_rejects_stale_patch_digest(tmp_path: Path) -> None:
         try:
             manager.create("resume-staging")
             try:
-                manager.validate_patch_manifest(
-                    patch, json.loads(manifest.read_text(encoding="utf-8"))
-                )
+                manager.validate_patch_manifest(patch, json.loads(manifest.read_text(encoding="utf-8")))
                 raise AssertionError("stale patch/manifest pair must be rejected")
             except ValueError as exc:
                 assert (

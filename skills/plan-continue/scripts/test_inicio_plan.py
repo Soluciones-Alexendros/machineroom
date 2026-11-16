@@ -32,13 +32,9 @@ def _git_init(root: Path) -> None:
         check=True,
         capture_output=True,
     )
-    subprocess.run(
-        ["git", "config", "user.name", "t"], cwd=root, check=True, capture_output=True
-    )
+    subprocess.run(["git", "config", "user.name", "t"], cwd=root, check=True, capture_output=True)
     subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "commit", "-m", "init"], cwd=root, check=True, capture_output=True
-    )
+    subprocess.run(["git", "commit", "-m", "init"], cwd=root, check=True, capture_output=True)
 
 
 class InicioPlanTests(unittest.TestCase):

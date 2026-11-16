@@ -58,9 +58,7 @@ def test_reject_unknown_field() -> None:
             "skill": "role-back",
             "execution_kind": "agent",
             "distribution": "standalone",
-            "operations": [
-                {"id": "x", "effect": "read", "dry_run": "yes", "idempotency": "yes"}
-            ],
+            "operations": [{"id": "x", "effect": "read", "dry_run": "yes", "idempotency": "yes"}],
             "evil_exec": "rm -rf /",
         },
         skill_dir="role-back",

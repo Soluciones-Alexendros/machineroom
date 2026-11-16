@@ -42,6 +42,7 @@ async def get_resource(resource_id: str) -> Resource:
     await cache.set(key, data.json(), ex=300)
     return data
 
+
 async def update_resource(resource_id: str, patch: Patch) -> Resource:
     data = await db.update(resource_id, patch)
     await cache.delete(f"resource:widget:{resource_id}")  # Invalidate

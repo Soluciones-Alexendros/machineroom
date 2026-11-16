@@ -50,11 +50,7 @@ def _activate(root: Path, independent: bool = False) -> None:
         ],
     }
     path = root / "plan.md"
-    path.write_text(
-        "# Fixture\n\n```yaml aw-plan\n"
-        + yaml.safe_dump(data, sort_keys=False)
-        + "```\n"
-    )
+    path.write_text("# Fixture\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
     activate_plan(root, path)
 
 
@@ -124,9 +120,7 @@ class ControlledAdapter:
 
 
 def _handler(params: dict[str, Any]) -> int:
-    (Path(params["repo"]) / params["path"]).write_text(
-        params["content"], encoding="utf-8"
-    )
+    (Path(params["repo"]) / params["path"]).write_text(params["content"], encoding="utf-8")
     return 0
 
 
@@ -151,9 +145,7 @@ def test_scheduler_limits_parallelism_without_lost_update(tmp_path: Path) -> Non
     summary = Scheduler(tmp_path, adapter=adapter, max_parallel=2).run()
     assert summary.outcome == "pass"
     assert adapter.max_active == 2  # noqa: PLR2004  # max_parallel fixture
-    assert (
-        load_status(tmp_path)["state_revision"] == 5
-    )  # noqa: PLR2004  # start/succeed x2 + activate
+    assert load_status(tmp_path)["state_revision"] == 5  # noqa: PLR2004  # start/succeed x2 + activate
 
 
 def test_failure_stops_dependents_and_returns_failed(tmp_path: Path) -> None:

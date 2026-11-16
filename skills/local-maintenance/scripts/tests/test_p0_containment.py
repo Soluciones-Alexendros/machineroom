@@ -42,13 +42,9 @@ class SpyExecutor:
         return 1, ""
 
 
-def test_f01_execute_without_policy_blocks(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_f01_execute_without_policy_blocks(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     spy = SpyExecutor()
-    monkeypatch.setattr(
-        clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None
-    )
+    monkeypatch.setattr(clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None)
     monkeypatch.setattr(clean_routine, "run_capture", spy)
     monkeypatch.setattr(clean_routine, "run", lambda *a, **k: "")
     monkeypatch.delenv("MACHINEROOM_ALLOW_HOST_MUTATION", raising=False)
@@ -58,9 +54,7 @@ def test_f01_execute_without_policy_blocks(
 
 
 def test_f02_create_snapshot_requires_approval(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None
-    )
+    monkeypatch.setattr(clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None)
     monkeypatch.delenv("MACHINEROOM_APPROVAL_PROVIDER", raising=False)
 
     def fake_run_capture(cmd: str, timeout: int = 10) -> None:
@@ -72,24 +66,16 @@ def test_f02_create_snapshot_requires_approval(monkeypatch: pytest.MonkeyPatch) 
     assert rc == EXIT_BLOCKED  # blocked awaiting approval
 
 
-def test_f02_invalid_snapshot_id_rejected(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    monkeypatch.setattr(
-        clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None
-    )
+def test_f02_invalid_snapshot_id_rejected(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None)
     monkeypatch.setattr(clean_routine, "run_capture", SpyExecutor())
     monkeypatch.setenv("SNAPSHOT_DIR", str(tmp_path))
     rc = clean_routine.main(["--execute", "--snapshot-id", "../escape"])
     assert rc != 0
 
 
-def test_f03_json_reflects_simulated_not_completed(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
-    monkeypatch.setattr(
-        clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None
-    )
+def test_f03_json_reflects_simulated_not_completed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None)
     monkeypatch.setattr(clean_routine, "run_capture", SpyExecutor())
     monkeypatch.setattr(clean_routine, "run", lambda *a, **k: "")
     out = tmp_path / "out.json"
@@ -112,16 +98,12 @@ def test_f04_unknown_operation_denied() -> None:
 
 
 def test_authorize_rejects_approved_token() -> None:
-    allowed, reason = risk_gate.authorize_operation(
-        "clean_journal", {"approved": True, "snapshot_id": "s"}
-    )
+    allowed, reason = risk_gate.authorize_operation("clean_journal", {"approved": True, "snapshot_id": "s"})
     assert allowed is False
     assert "consent" in reason or "ApprovalProvider" in reason
 
 
-def test_f19_backend_failure_not_success(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_f19_backend_failure_not_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         snapshot_state,
         "which",
@@ -140,9 +122,7 @@ def test_f19_backend_failure_not_success(
     assert rc != 0
 
 
-def test_f20_no_private_ssh_keys_by_default(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_f20_no_private_ssh_keys_by_default(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(snapshot_state, "which", lambda c: None)
     monkeypatch.setattr(snapshot_state, "detect_pkg_mgr", lambda: "apt")
     monkeypatch.setattr(snapshot_state, "run", lambda *a, **k: "")
@@ -192,9 +172,7 @@ def test_f22_skill_version_from_manifest() -> None:
 
 def test_r07_dry_run_zero_mutations(monkeypatch: pytest.MonkeyPatch) -> None:
     spy = SpyExecutor()
-    monkeypatch.setattr(
-        clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None
-    )
+    monkeypatch.setattr(clean_routine, "which", lambda c: "/bin/true" if c == "apt" else None)
     monkeypatch.setattr(clean_routine, "run_capture", spy)
     monkeypatch.setattr(clean_routine, "run", lambda *a, **k: "ok")
     rc = clean_routine.main(["--dry-run"])
@@ -212,9 +190,7 @@ def test_restore_staging_content_assert(tmp_path: Path) -> None:
     (src / "hello.txt").write_text("restore-ok\n", encoding="utf-8")
     with tarfile.open(tarball, "w:gz") as tf:
         tf.add(src / "hello.txt", arcname="hello.txt")
-    rc = snapshot_state.main(
-        ["--rollback", "snap-x", "--snapshot-dir", str(tmp_path), "--execute"]
-    )
+    rc = snapshot_state.main(["--rollback", "snap-x", "--snapshot-dir", str(tmp_path), "--execute"])
     assert rc == 0
 
 
@@ -240,11 +216,7 @@ def test_restore_rejects_symlink_member(tmp_path: Path) -> None:
 def test_host_rollback_privileged_root_blocked(tmp_path: Path) -> None:
     snap = tmp_path / "snap-x"
     snap.mkdir()
-    (snap / "etc-backup.tar.gz").write_bytes(
-        b"\x1f\x8b"
-    )  # not used if root rejected first
+    (snap / "etc-backup.tar.gz").write_bytes(b"\x1f\x8b")  # not used if root rejected first
     (snap / "metadata.json").write_text("{}", encoding="utf-8")
-    rc = snapshot_state.rollback_snapshot(
-        str(tmp_path), "snap-x", execute=True, restore_root="/"
-    )
+    rc = snapshot_state.rollback_snapshot(str(tmp_path), "snap-x", execute=True, restore_root="/")
     assert rc == EXIT_BLOCKED

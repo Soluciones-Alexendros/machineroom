@@ -63,11 +63,7 @@ def build_report(  # noqa: PLR0913  # report builder: keyword-only harness metad
         "checks": [check.as_dict() for check in checks],
         "capabilities": capabilities,
         "outcome": outcome,
-        "reasons": [
-            f"{check.check_id}: {check.detail}"
-            for check in checks
-            if check.outcome != "pass"
-        ],
+        "reasons": [f"{check.check_id}: {check.detail}" for check in checks if check.outcome != "pass"],
     }
 
 

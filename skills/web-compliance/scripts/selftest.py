@@ -71,13 +71,9 @@ def _configs_coherentes() -> None:
     reg, _th = score_mod.load_configs()
     ids = [c["id"] for c in reg["checks"]]
     assert len(ids) == len(set(ids)), "IDs duplicados en el registry"
-    assert (
-        len(ids) >= MIN_REGISTRY_CHECKS
-    ), f"Registry con {len(ids)} checks (<{MIN_REGISTRY_CHECKS})"
+    assert len(ids) >= MIN_REGISTRY_CHECKS, f"Registry con {len(ids)} checks (<{MIN_REGISTRY_CHECKS})"
     for c in reg["checks"]:
-        assert (
-            c["pilar"] in reg["pilares"]
-        ), f"{c['id']} con pilar desconocido {c['pilar']}"
+        assert c["pilar"] in reg["pilares"], f"{c['id']} con pilar desconocido {c['pilar']}"
         assert c["severidad"] in (
             "Crítico",
             "Alto",
@@ -85,9 +81,7 @@ def _configs_coherentes() -> None:
             "Bajo",
         ), f"{c['id']} severidad inválida"
     peso = sum(p["peso"] for p in reg["pilares"].values())
-    assert (
-        abs(peso - 1.0) < WEIGHT_TOLERANCE
-    ), f"Pesos de pilares suman {peso} (debe ser 1.0)"
+    assert abs(peso - 1.0) < WEIGHT_TOLERANCE, f"Pesos de pilares suman {peso} (debe ser 1.0)"
 
 
 @test("todos los script_key del registry tienen check implementado en audit_page")
@@ -162,9 +156,7 @@ def _audit_hreflang() -> None:
     )
     assert audit_page.check_hreflang(p)["status"] == "PASS"
     p2 = audit_page.PageParser()
-    p2.feed(
-        '<html><head><link rel="alternate" hreflang="ESPAÑOL!" href="x"></head><body></body></html>'
-    )
+    p2.feed('<html><head><link rel="alternate" hreflang="ESPAÑOL!" href="x"></head><body></body></html>')
     assert audit_page.check_hreflang(p2)["status"] == "FAIL"
 
 
@@ -200,10 +192,7 @@ def _score_one_critical_fail() -> None:
     reg, _ = score_mod.load_configs()
     checks = [{"id": c["id"], "resultado": "PASS"} for c in reg["checks"]]
     crit = next(c for c in reg["checks"] if c["severidad"] == "Crítico")
-    checks = [
-        {"id": crit["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"}
-        for c in reg["checks"]
-    ]
+    checks = [{"id": crit["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"} for c in reg["checks"]]
     sc = score_mod.score(checks)
     assert sc["dictamen"] == "NEGATIVO"
     assert sc["fails_criticos"] == 1
@@ -245,9 +234,7 @@ def _score_fail_not_overwritten() -> None:
 @test("report: genera Markdown con dictamen, matriz y verificación de cierre")
 def _report_markdown() -> None:
     reg, _ = score_mod.load_configs()
-    checks = [
-        {"id": c["id"], "resultado": "PASS", "evidencia": "test"} for c in reg["checks"]
-    ]
+    checks = [{"id": c["id"], "resultado": "PASS", "evidencia": "test"} for c in reg["checks"]]
     checks[0]["resultado"] = "FAIL"
     sc = score_mod.score(checks)
     sc["target"] = "https://fixture.test"
@@ -266,9 +253,7 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.WARNING,
         format="%(levelname)s %(name)s: %(message)s",
     )
-    ap = argparse.ArgumentParser(
-        description="Smoke test integrado de auditoria-360-web (exit 0/1)"
-    )
+    ap = argparse.ArgumentParser(description="Smoke test integrado de auditoria-360-web (exit 0/1)")
     ap.parse_args(argv)
     print("=" * 60)
     print("SELFTEST auditoria-360-web")

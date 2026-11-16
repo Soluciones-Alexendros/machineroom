@@ -74,9 +74,7 @@ def safe_extract(  # noqa: C901, PLR0912  # zip slip + size gates need explicit 
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Safely extract a verified machineroom archive"
-    )
+    parser = argparse.ArgumentParser(description="Safely extract a verified machineroom archive")
     parser.add_argument("archive", type=Path)
     parser.add_argument("destination", type=Path)
     args = parser.parse_args()

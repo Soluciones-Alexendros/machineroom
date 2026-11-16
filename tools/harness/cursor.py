@@ -78,9 +78,7 @@ def agent_authenticated(binary: str | None = None) -> bool:
     return result.returncode == 0
 
 
-def static_install_check(
-    target: Path, expected_skills: set[str]
-) -> Check:  # noqa: PLR0911
+def static_install_check(target: Path, expected_skills: set[str]) -> Check:  # noqa: PLR0911
     """Level A: filesystem presence after install (not native discovery)."""
     cursor = target.resolve() / ".cursor"
     if not cursor.is_dir():
@@ -88,24 +86,16 @@ def static_install_check(
     skills_dir = cursor / "skills"
     if not skills_dir.is_dir():
         return Check("cursor-static-install", "A", "fail", "skills directory missing")
-    found = {
-        path.name for path in skills_dir.iterdir() if path.is_dir() or path.is_symlink()
-    }
+    found = {path.name for path in skills_dir.iterdir() if path.is_dir() or path.is_symlink()}
     missing = sorted(expected_skills - found)
     if missing:
         return Check("cursor-static-install", "A", "fail", f"missing skills: {missing}")
     rules = cursor / "rules" / "machineroom.mdc"
-    agents = (
-        list((cursor / "agents").glob("*.md")) if (cursor / "agents").is_dir() else []
-    )
+    agents = list((cursor / "agents").glob("*.md")) if (cursor / "agents").is_dir() else []
     hooks = cursor / "hooks.json"
-    hook_scripts = (
-        list((cursor / "hooks").glob("*.py")) if (cursor / "hooks").is_dir() else []
-    )
+    hook_scripts = list((cursor / "hooks").glob("*.py")) if (cursor / "hooks").is_dir() else []
     if not rules.is_file() and not rules.is_symlink():
-        return Check(
-            "cursor-static-install", "A", "fail", "rules/machineroom.mdc missing"
-        )
+        return Check("cursor-static-install", "A", "fail", "rules/machineroom.mdc missing")
     if not agents:
         return Check("cursor-static-install", "A", "fail", "no agents discovered")
     if not hooks.is_file() and not hooks.is_symlink():
@@ -177,9 +167,7 @@ def cursor_discovery_check(target: Path, expected_skills: set[str]) -> Check:
             check=False,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        return Check(
-            "cursor-native-discovery", "B", "fail", f"agent invocation failed: {exc}"
-        )
+        return Check("cursor-native-discovery", "B", "fail", f"agent invocation failed: {exc}")
     finally:
         if hooks_json.exists() or hooks_json.is_symlink():
             hooks_json.unlink()
@@ -343,9 +331,7 @@ def _assert_policy_outcomes(  # noqa: PLR0913  # outcome paths + agent_exit for 
         "agent_exit": agent_exit,
         "force_flags": False,
     }
-    (policy_root / "policy-receipt.json").write_text(
-        json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
-    )
+    (policy_root / "policy-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
     return Check(
         "cursor-native-policy",
         "C",
@@ -392,9 +378,7 @@ def policy_check(target: Path, work_dir: Path | None = None) -> Check:
     ask_effect = root / ".machineroom-policy-ask.txt"
     for path in (decisions, allow_effect, deny_effect, ask_effect):
         path.unlink(missing_ok=True)
-    _install_policy_probe(
-        root, original_hooks=original_hooks, probe=probe, decisions=decisions
-    )
+    _install_policy_probe(root, original_hooks=original_hooks, probe=probe, decisions=decisions)
     try:
         result = _run_policy_agent(binary, root)
     except ValueError as exc:
@@ -405,9 +389,7 @@ def policy_check(target: Path, work_dir: Path | None = None) -> Check:
             f"forbidden argv for policy probe: {exc}",
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        return Check(
-            "cursor-native-policy", "C", "fail", f"agent policy probe failed: {exc}"
-        )
+        return Check("cursor-native-policy", "C", "fail", f"agent policy probe failed: {exc}")
     finally:
         _restore_policy_hooks(hooks_json, original_hooks, probe)
 
@@ -433,17 +415,9 @@ def capability_checks(
     checks: list[Check] = []
     checks.append(static_install_check(target, expected_skills))
     if not binary or not version:
-        checks.append(
-            Check(
-                "cursor-cli-version", "B", "blocked", "agent binary missing from PATH"
-            )
-        )
-        checks.append(
-            Check("cursor-native-discovery", "B", "not_run", "agent unavailable")
-        )
-        checks.append(
-            Check("cursor-native-policy", "C", "not_run", "agent unavailable")
-        )
+        checks.append(Check("cursor-cli-version", "B", "blocked", "agent binary missing from PATH"))
+        checks.append(Check("cursor-native-discovery", "B", "not_run", "agent unavailable"))
+        checks.append(Check("cursor-native-policy", "C", "not_run", "agent unavailable"))
         return checks
     checks.append(Check("cursor-cli-version", "B", "pass", f"{binary} → {version}"))
     checks.append(cursor_discovery_check(target, expected_skills))
@@ -474,9 +448,7 @@ class CursorSubagentAdapter:
         credential_names: tuple[str, ...] = (),
     ) -> None:
         if force:
-            raise ValueError(
-                "auto-approval (--force/--yolo) is forbidden for Cursor acceptance"
-            )
+            raise ValueError("auto-approval (--force/--yolo) is forbidden for Cursor acceptance")
         self.binary = binary or resolve_agent_binary() or "agent"
         self.model = model
         self.timeout = timeout
@@ -581,9 +553,7 @@ class CursorSubagentAdapter:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Cursor native discovery and policy checks"
-    )
+    parser = argparse.ArgumentParser(description="Cursor native discovery and policy checks")
     parser.add_argument("--target", type=Path, default=Path("."))
     parser.add_argument("--catalog", type=Path, default=ROOT)
     parser.add_argument("--work-dir", type=Path)
@@ -591,11 +561,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     skills_dir = args.catalog.resolve() / "skills"
-    expected = {
-        path.name
-        for path in skills_dir.iterdir()
-        if path.is_dir() and (path / "SKILL.md").is_file()
-    }
+    expected = {path.name for path in skills_dir.iterdir() if path.is_dir() and (path / "SKILL.md").is_file()}
     checks = capability_checks(
         args.target.resolve(),
         expected,

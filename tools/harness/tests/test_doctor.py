@@ -25,18 +25,14 @@ from harness.runtime import make_relative_symlink, sync_payload  # noqa: E402
 
 def _schema() -> dict[str, Any]:
     data = json.loads(
-        (
-            ROOT / "tools" / "contracts" / "schemas" / "harness-report.schema.json"
-        ).read_text(encoding="utf-8")
+        (ROOT / "tools" / "contracts" / "schemas" / "harness-report.schema.json").read_text(encoding="utf-8")
     )
     assert isinstance(data, dict)
     return data
 
 
 def test_valid_report_matches_schema() -> None:
-    report = build_report(
-        "pi", [Check("native", "B", "pass", "loaded")], package_version="1.2.3"
-    )
+    report = build_report("pi", [Check("native", "B", "pass", "loaded")], package_version="1.2.3")
     jsonschema.validate(report, _schema())
     assert report["outcome"] == "pass"
     assert report_exit_code(report) == 0
@@ -49,9 +45,7 @@ def test_failed_required_check_blocks_pass() -> None:
 
 
 def test_required_not_run_is_never_pass() -> None:
-    report = build_report(
-        "cursor", [Check("native", "C", "not_run", "agent unavailable")]
-    )
+    report = build_report("cursor", [Check("native", "C", "not_run", "agent unavailable")])
     assert report["outcome"] == "not_run"
     assert report_exit_code(report) == 3  # noqa: PLR2004  # not_run exit code
 
@@ -69,13 +63,9 @@ def test_optional_not_run_does_not_hide_required_pass() -> None:
 
 def _versioned_repo(root: Path, version: str = "1.2.3") -> None:
     (root / "skills" / "fixture-skill").mkdir(parents=True)
-    (root / "skills" / "fixture-skill" / "SKILL.md").write_text(
-        "---\nname: fixture-skill\n---\n"
-    )
+    (root / "skills" / "fixture-skill" / "SKILL.md").write_text("---\nname: fixture-skill\n---\n")
     (root / ".cursor-plugin").mkdir()
-    (root / ".cursor-plugin" / "plugin.json").write_text(
-        json.dumps({"version": version})
-    )
+    (root / ".cursor-plugin" / "plugin.json").write_text(json.dumps({"version": version}))
     (root / "package.json").write_text(json.dumps({"version": version}))
     (root / "scripts" / "lib").mkdir(parents=True)
     (root / "scripts" / "lib" / "link-skills.sh").write_text(f'VERSION="{version}"\n')
@@ -85,14 +75,9 @@ def test_version_drift_is_detected(tmp_path: Path) -> None:
     _versioned_repo(tmp_path)
     checks = version_coherence_checks(tmp_path, "1.2.3")
     assert all(check.outcome == "pass" for check in checks)
-    (tmp_path / ".cursor-plugin" / "plugin.json").write_text(
-        json.dumps({"version": "1.2.2"})
-    )
+    (tmp_path / ".cursor-plugin" / "plugin.json").write_text(json.dumps({"version": "1.2.2"}))
     checks = version_coherence_checks(tmp_path, "1.2.3")
-    assert any(
-        check.outcome == "fail" and "cursor-plugin" in check.check_id
-        for check in checks
-    )
+    assert any(check.outcome == "fail" and "cursor-plugin" in check.check_id for check in checks)
 
 
 def _installer(tmp_path: Path, assignment: str) -> None:
@@ -148,9 +133,7 @@ def test_cursor_full_check_rejects_missing_generated_hooks(tmp_path: Path) -> No
 def test_real_checkout_version_coherence_passes() -> None:
     """Regression: the shipped installer must satisfy the doctor that verifies it."""
     checks = version_coherence_checks(ROOT, None)
-    assert [check.outcome for check in checks] == ["pass"] * 3, [
-        check.detail for check in checks
-    ]
+    assert [check.outcome for check in checks] == ["pass"] * 3, [check.detail for check in checks]
 
 
 def test_skill_links_must_resolve_to_catalog(tmp_path: Path) -> None:
@@ -161,9 +144,7 @@ def test_skill_links_must_resolve_to_catalog(tmp_path: Path) -> None:
     check = skill_link_check(tmp_path, "pi")
     assert check.outcome == "pass"
     (destination / "fixture-skill").unlink()
-    make_relative_symlink(
-        tmp_path / "skills" / "fixture-skill", destination / "fixture-skill"
-    )
+    make_relative_symlink(tmp_path / "skills" / "fixture-skill", destination / "fixture-skill")
     check = skill_link_check(tmp_path, "pi")
     assert check.outcome == "pass"
     assert "relative" in check.detail

@@ -23,21 +23,13 @@ logger = logging.getLogger("mantenimiento.session_logger")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
-        )
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
     else:
         logging.getLogger().setLevel(level)
 
 
 def _default_session_id() -> str:
-    stamp = (
-        utcnow_iso()
-        .replace("-", "")
-        .replace(":", "")
-        .replace("T", "-")
-        .replace("Z", "")
-    )
+    stamp = utcnow_iso().replace("-", "").replace(":", "").replace("T", "-").replace("Z", "")
     return os.environ.get("SESSION_ID", "") or f"session-{stamp}"
 
 
@@ -45,11 +37,7 @@ def _default_session_id() -> str:
 class _SessionState:
     """Estado del logger; `log_file` se deriva de `log_dir` y `session_id`."""
 
-    log_dir: str = field(
-        default_factory=lambda: os.environ.get(
-            "LOG_DIR", "/var/log/mantenimiento-linux"
-        )
-    )
+    log_dir: str = field(default_factory=lambda: os.environ.get("LOG_DIR", "/var/log/mantenimiento-linux"))
     session_id: str = field(default_factory=_default_session_id)
 
     @property
@@ -73,9 +61,7 @@ def _ensure_log_dir() -> None:
         try:
             os.makedirs(_STATE.log_dir, exist_ok=True)
         except OSError as exc2:
-            logger.error(
-                "no se pudo crear fallback LOG_DIR=%r: %s", _STATE.log_dir, exc2
-            )
+            logger.error("no se pudo crear fallback LOG_DIR=%r: %s", _STATE.log_dir, exc2)
             raise
 
 
@@ -182,17 +168,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Registro forense append-only por sesión (inicializa log al ejecutar)."
     )
-    parser.add_argument(
-        "--log-dir", default=None, help="Override LOG_DIR (por defecto env LOG_DIR)"
-    )
+    parser.add_argument("--log-dir", default=None, help="Override LOG_DIR (por defecto env LOG_DIR)")
     parser.add_argument(
         "--session-id",
         default=None,
         help="Override SESSION_ID (por defecto env/ autogenerado)",
     )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Logging verboso a stderr"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
     if args.log_dir:

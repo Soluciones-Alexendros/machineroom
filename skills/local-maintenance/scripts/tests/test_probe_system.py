@@ -35,9 +35,7 @@ def test_invalid_args_exit2() -> None:
     assert r.returncode == EXIT_USAGE
 
 
-def test_error_detect_distro_exit1(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_error_detect_distro_exit1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def _boom() -> None:
         raise OSError("os-release simulado")
 

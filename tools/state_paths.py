@@ -103,9 +103,7 @@ def migrate_state(repo: Path | str, *, dry_run: bool = False) -> dict[str, Any]:
             "detail": "no legacy state",
         }
     if legacy.is_symlink():
-        raise StateDirError(
-            "state", "migrate_state", f"legacy state must be a real directory: {legacy}"
-        )
+        raise StateDirError("state", "migrate_state", f"legacy state must be a real directory: {legacy}")
     if dry_run:
         return {
             "migrated": False,
@@ -116,9 +114,7 @@ def migrate_state(repo: Path | str, *, dry_run: bool = False) -> dict[str, Any]:
     try:
         legacy.rename(target)
     except OSError as exc:
-        raise StateDirError(
-            "state", "migrate_state", f"cannot move {legacy} to {target}: {exc}"
-        ) from exc
+        raise StateDirError("state", "migrate_state", f"cannot move {legacy} to {target}: {exc}") from exc
     return {
         "migrated": True,
         "from": str(legacy),

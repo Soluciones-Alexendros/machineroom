@@ -20,9 +20,7 @@ EXIT_USAGE = 2
         (report_mod, ["--help"]),
     ],
 )
-def test_help_exit_0(
-    mod: Any, args: list[str], capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_help_exit_0(mod: Any, args: list[str], capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as e:
         mod.main(args)
     assert e.value.code == 0

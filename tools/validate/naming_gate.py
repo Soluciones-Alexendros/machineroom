@@ -197,9 +197,7 @@ def scan(root: Path = ROOT, allowed: set[str] | None = None) -> list[Finding]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Fail when the pre-8.0 name leaks into live files"
-    )
+    parser = argparse.ArgumentParser(description="Fail when the pre-8.0 name leaks into live files")
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
     findings = scan(args.root.resolve())

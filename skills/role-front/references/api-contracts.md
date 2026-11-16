@@ -62,14 +62,17 @@ const { data } = await createUser({ email: 'x@y.com', name: 'X', password: 'secr
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
+
 class CreateUserRequest(BaseModel):
     email: EmailStr
     name: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=8)
 
+
 class CreateUserResponse(BaseModel):
     user: User
     token: str
+
 
 @app.post("/users", response_model=CreateUserResponse)
 async def create_user(request: CreateUserRequest):

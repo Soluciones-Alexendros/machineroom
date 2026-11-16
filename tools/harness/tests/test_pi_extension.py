@@ -18,17 +18,13 @@ from harness.pi import rpc_commands  # noqa: E402
 
 def test_packaged_extension_registers_native_command(tmp_path: Path) -> None:
     if shutil.which("pi") is None:
-        pytest.skip(
-            "Pi binary not on PATH; native extension gate is not_run in this environment"
-        )
+        pytest.skip("Pi binary not on PATH; native extension gate is not_run in this environment")
     home = tmp_path / "home"
     project = tmp_path / "project"
     home.mkdir()
     project.mkdir()
     env = dict(os.environ, HOME=str(home))
-    subprocess.run(
-        ["pi", "install", str(ROOT)], env=env, check=True, capture_output=True
-    )
+    subprocess.run(["pi", "install", str(ROOT)], env=env, check=True, capture_output=True)
     commands = rpc_commands(project, env=env)
     status = [command for command in commands if command.get("name") == "mr-status"]
     assert len(status) == 1

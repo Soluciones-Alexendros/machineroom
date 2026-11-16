@@ -24,9 +24,7 @@ logger = logging.getLogger("seguridad.vulns")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
-        )
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
     else:
         logging.getLogger().setLevel(level)
 
@@ -96,13 +94,9 @@ def check_flatpak() -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Chequeo de vulnerabilidades apt+snap/flatpak (solo lectura)."
-    )
+    parser = argparse.ArgumentParser(description="Chequeo de vulnerabilidades apt+snap/flatpak (solo lectura).")
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
-    parser.add_argument(
-        "--verbose", action="store_true", help="Logging verboso a stderr"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
 
@@ -110,17 +104,13 @@ def main(argv: list[str] | None = None) -> int:
     result: dict[str, Any] = {"network": online, "sources": {}}
     if not online:
         logger.warning("sin red: modo degradado, solo informe local")
-        print(
-            "AVISO: sin red — modo degradado (solo informe local, sin datos de seguridad frescos)"
-        )
+        print("AVISO: sin red — modo degradado (solo informe local, sin datos de seguridad frescos)")
     result["sources"]["apt"] = check_apt()
     result["sources"]["snap"] = check_snap()
     result["sources"]["flatpak"] = check_flatpak()
 
     total = sum(
-        int(v.get("security", v.get("pending", 0)) or 0)
-        for v in result["sources"].values()
-        if isinstance(v, dict)
+        int(v.get("security", v.get("pending", 0)) or 0) for v in result["sources"].values() if isinstance(v, dict)
     )
     result["summary"] = {"pending_security_signals": total, "degraded": not online}
     print(f"vulns: {total} senales pendientes (degradado={not online})")

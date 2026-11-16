@@ -20,9 +20,7 @@ REQUIRED_REGISTRY_TOOLS = ("local-maintenance", "plan-continue", "project-publis
 
 def catalog(root: Path) -> set[str]:
     skills = root / "skills"
-    return {
-        p.name for p in skills.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()
-    }
+    return {p.name for p in skills.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()}
 
 
 def _validate_standalone(skill_path: Path) -> int:
@@ -68,9 +66,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.skill_root:
         return _validate_standalone(Path(args.skill_root).resolve())
 
-    root = (
-        Path(args.root).resolve() if args.root else Path(__file__).resolve().parents[2]
-    )
+    root = Path(args.root).resolve() if args.root else Path(__file__).resolve().parents[2]
     errors, tools = _collect_registry_errors(root)
     if errors:
         for e in errors:

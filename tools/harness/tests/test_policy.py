@@ -48,12 +48,8 @@ def test_writer_tools_exclude_bash() -> None:
 
 def test_policy_digest_stable_without_secret_values() -> None:
     task = {"write_scope": ["a.txt"], "read_scope": ["README.md"]}
-    first = build_policy(
-        harness="pi", task=task, parent_env={"PATH": "/bin", "TOKEN": "secret"}
-    )
-    second = build_policy(
-        harness="pi", task=task, parent_env={"PATH": "/bin", "TOKEN": "other"}
-    )
+    first = build_policy(harness="pi", task=task, parent_env={"PATH": "/bin", "TOKEN": "secret"})
+    second = build_policy(harness="pi", task=task, parent_env={"PATH": "/bin", "TOKEN": "other"})
     assert first.digest == second.digest
     assert "secret" not in str(first.as_artifact())
 

@@ -77,9 +77,7 @@ def test_g13_hold_blocks() -> None:
     assert "hold" in msg
 
 
-def test_cli_announces_private_na(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_cli_announces_private_na(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     mod = _load()
     needs = _needs(a="success", **{"private-denylist": "skipped"})
     monkeypatch.setenv("NEEDS_JSON", json.dumps(needs))

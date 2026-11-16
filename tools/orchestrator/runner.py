@@ -26,9 +26,7 @@ VerifierFactory = Callable[[dict[str, Any]], Verifier]
 class WorktreeAdapter:
     """Execute tasks against a shared run staging area with transactional integration."""
 
-    def __init__(
-        self, repo: Path, adapter: SubagentAdapter, verifier_for: VerifierFactory
-    ) -> None:
+    def __init__(self, repo: Path, adapter: SubagentAdapter, verifier_for: VerifierFactory) -> None:
         self.repo = repo.resolve()
         self.adapter = adapter
         self.verifier_for = verifier_for
@@ -42,9 +40,7 @@ class WorktreeAdapter:
     def _require_workspace(self, context: RunContext) -> RunWorkspace:
         with self._lock:
             if self._workspace is None:
-                self._workspace = RunWorkspace(
-                    self.repo, context.base_revision, context.run_id
-                )
+                self._workspace = RunWorkspace(self.repo, context.base_revision, context.run_id)
             elif self._workspace.run_id != context.run_id:
                 raise ValueError("run workspace bound to a different run_id")
             return self._workspace
@@ -57,9 +53,7 @@ class WorktreeAdapter:
         run_dir.mkdir(parents=True, exist_ok=True)
 
         if not write_scope:
-            return self._execute_readonly(
-                task, context, workspace, input_digest, run_dir
-            )
+            return self._execute_readonly(task, context, workspace, input_digest, run_dir)
 
         writer: Path | None = None
         try:
@@ -72,15 +66,10 @@ class WorktreeAdapter:
             patch_artifact = run_dir / f"{task['id']}.patch"
             manifest_artifact = run_dir / f"{task['id']}.manifest.json"
             patch_artifact.write_bytes(patch.read_bytes())
-            manifest_artifact.write_text(
-                json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-            )
+            manifest_artifact.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
             policy_artifact = run_dir / f"{task['id']}.policy.json"
             policy_artifact.write_text(
-                json.dumps(
-                    {"harness": context.adapter, "task_id": task["id"]}, indent=2
-                )
-                + "\n",
+                json.dumps({"harness": context.adapter, "task_id": task["id"]}, indent=2) + "\n",
                 encoding="utf-8",
             )
             workspace.integrate(str(task["id"]), patch_artifact, manifest)
@@ -138,9 +127,7 @@ class WorktreeAdapter:
                 "operation_id": delegated.operation_result.operation_id,
                 "adapter_run_id": delegated.operation_result.run_id,
             }
-            artifact.write_text(
-                json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-            )
+            artifact.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             verified = verify_and_store(
                 delegated.operation_result,
                 repo=self.repo,

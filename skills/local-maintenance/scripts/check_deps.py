@@ -18,9 +18,7 @@ logger = logging.getLogger("mantenimiento.check_deps")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(
-            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
-        )
+        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
     else:
         logging.getLogger().setLevel(level)
 
@@ -67,9 +65,7 @@ OPTIONAL = [
 ]
 
 
-def check_cmd(
-    spec: tuple[str, str, str], *, required: bool, verbose: bool, install_hint: bool
-) -> int:
+def check_cmd(spec: tuple[str, str, str], *, required: bool, verbose: bool, install_hint: bool) -> int:
     cmd, package, hint = spec
     if which(cmd) is not None:
         if verbose:
@@ -85,15 +81,9 @@ def check_cmd(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Verifica dependencias requeridas y opcionales."
-    )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Muestra dependencias encontradas"
-    )
-    parser.add_argument(
-        "--install-hint", action="store_true", help="Muestra comandos de instalación"
-    )
+    parser = argparse.ArgumentParser(description="Verifica dependencias requeridas y opcionales.")
+    parser.add_argument("--verbose", action="store_true", help="Muestra dependencias encontradas")
+    parser.add_argument("--install-hint", action="store_true", help="Muestra comandos de instalación")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
     verbose = args.verbose

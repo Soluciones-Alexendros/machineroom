@@ -47,11 +47,7 @@ def load_catalog() -> list[str]:
             mod.ensure_index(ROOT)
     if not index.is_file():
         skills_dir = ROOT / "skills"
-        return sorted(
-            p.name
-            for p in skills_dir.iterdir()
-            if p.is_dir() and (p / "SKILL.md").is_file()
-        )
+        return sorted(p.name for p in skills_dir.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
     data = json.loads(index.read_text(encoding="utf-8"))
     return [s["name"] for s in data.get("skills", [])]
 
@@ -91,9 +87,7 @@ def route(repo: Path, phase: str, *, bump: bool, note: str, init: bool = False) 
     if skill is None or skill not in catalog:
         raise ProjectConfigError(f"unknown handoff skill for phase {phase}: {skill!r}")
     if skill not in allowed:
-        raise ProjectConfigError(
-            f"handoff skill {skill!r} not in allowlist; refusing silent fallback"
-        )
+        raise ProjectConfigError(f"handoff skill {skill!r} not in allowlist; refusing silent fallback")
     result = {
         "repo": str(repo),
         "phase": phase,
@@ -133,12 +127,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Move legacy .machineroom to .machineroom",
     )
-    ap.add_argument(
-        "--list", action="store_true", help="List allowed skills (read-only)"
-    )
-    ap.add_argument(
-        "--status", action="store_true", help="Show status.yaml (read-only)"
-    )
+    ap.add_argument("--list", action="store_true", help="List allowed skills (read-only)")
+    ap.add_argument("--status", action="store_true", help="Show status.yaml (read-only)")
     ap.add_argument(
         "--migrate-status",
         action="store_true",
@@ -161,9 +151,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         help="Mark phase awaiting_agent without completing",
     )
     ap.add_argument("--note", default="", help="Optional status history note")
-    ap.add_argument(
-        "--dry-run", action="store_true", help="Report without writing (with --migrate)"
-    )
+    ap.add_argument("--dry-run", action="store_true", help="Report without writing (with --migrate)")
     ap.add_argument("--json", action="store_true", help="JSON output")
     return ap.parse_args(argv)
 
@@ -175,11 +163,7 @@ def _fail(message: object) -> int:
 
 def _cmd_init(repo: Path, args: argparse.Namespace) -> int:
     ensure_scaffold(repo)
-    print(
-        json.dumps({"init": True, "repo": str(repo)})
-        if args.json
-        else f"initialized {repo}/.machineroom"
-    )
+    print(json.dumps({"init": True, "repo": str(repo)}) if args.json else f"initialized {repo}/.machineroom")
     return 0
 
 
@@ -204,9 +188,7 @@ def _cmd_migrate_state(repo: Path, args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return _fail(exc.detail)
-    print(
-        json.dumps(data, ensure_ascii=False, indent=2) if args.json else data["detail"]
-    )
+    print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else data["detail"])
     return 0
 
 
@@ -224,11 +206,7 @@ def _cmd_migrate_status(repo: Path, args: argparse.Namespace) -> int:
         data = migrate_status(repo)
     except (ValueError, OSError) as exc:
         return _fail(exc)
-    print(
-        json.dumps(data, ensure_ascii=False, indent=2)
-        if args.json
-        else "status migration complete"
-    )
+    print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else "status migration complete")
     return 0
 
 
@@ -243,11 +221,7 @@ def _cmd_awaiting(repo: Path, args: argparse.Namespace) -> int:
         )
     except ValueError as exc:
         return _fail(exc)
-    print(
-        json.dumps(data, ensure_ascii=False, indent=2)
-        if args.json
-        else f"awaiting_agent phase={args.phase}"
-    )
+    print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else f"awaiting_agent phase={args.phase}")
     return 0
 
 
@@ -255,9 +229,7 @@ class _InvalidProjectError(Exception):
     """The project configuration could not be loaded."""
 
 
-def _complete_target(
-    repo: Path, args: argparse.Namespace
-) -> tuple[dict[str, Any], str]:
+def _complete_target(repo: Path, args: argparse.Namespace) -> tuple[dict[str, Any], str]:
     try:
         project = load_project(repo)
     except ProjectConfigError as exc:
@@ -305,13 +277,9 @@ def _cmd_route(repo: Path, args: argparse.Namespace) -> int:
         print(json.dumps(out, ensure_ascii=False, indent=2))
     else:
         print(f"phase={out['phase']} skill={out['skill']} profile={out['profile']}")
-        print(
-            f"status version={out['status'].get('version')} advance={out['status'].get('advance')}"
-        )
+        print(f"status version={out['status'].get('version')} advance={out['status'].get('advance')}")
         print(f"allowed={len(out['allowed_skills'])} skills")
-        print(
-            f"→ invoke skill tool / read skills/{out['skill']}/SKILL.md (route ≠ execute)"
-        )
+        print(f"→ invoke skill tool / read skills/{out['skill']}/SKILL.md (route ≠ execute)")
     return 0
 
 
@@ -330,11 +298,7 @@ _EXCLUSIVE_COMMANDS = ("migrate", "migrate_status", "init", "list", "status", "p
 
 def _conflict(args: argparse.Namespace, owner: str) -> str | None:
     """Return an error message when a single-command flag is combined with others."""
-    others = [
-        f"--{name.replace('_', '-')}"
-        for name in _EXCLUSIVE_COMMANDS
-        if name != owner and getattr(args, name)
-    ]
+    others = [f"--{name.replace('_', '-')}" for name in _EXCLUSIVE_COMMANDS if name != owner and getattr(args, name)]
     if not others:
         return None
     return f"--{owner.replace('_', '-')} cannot be combined with {', '.join(others)}"
@@ -346,11 +310,7 @@ def _dispatch(repo: Path, args: argparse.Namespace) -> int:
         problem = _conflict(args, owner)
         if problem:
             return _fail(problem)
-        return (
-            _cmd_migrate_state(repo, args)
-            if args.migrate
-            else _cmd_migrate_status(repo, args)
-        )
+        return _cmd_migrate_state(repo, args) if args.migrate else _cmd_migrate_status(repo, args)
     if args.init and not (args.phase or args.list or args.status):
         return _cmd_init(repo, args)
     if args.list:
