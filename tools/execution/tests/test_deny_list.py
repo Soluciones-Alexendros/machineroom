@@ -160,8 +160,15 @@ def test_missing_matcher_is_a_structured_failure(tmp_path: Path) -> None:
             {
                 "version": 1,
                 "deny": [{"id": "rm-rf", "pattern": r"\brm\s+-rf\b", "message": "no"}],
-                "network": {"id": "outbound-network", "pattern": r"\bcurl\b", "message": "ask"},
-                "allow": {"helpOrVersion": "--help", "tmpPrefixes": ["/tmp/machineroom-"]},
+                "network": {
+                    "id": "outbound-network",
+                    "pattern": r"\bcurl\b",
+                    "message": "ask",
+                },
+                "allow": {
+                    "helpOrVersion": "--help",
+                    "tmpPrefixes": ["/tmp/machineroom-"],
+                },
             }
         ),
         encoding="utf-8",

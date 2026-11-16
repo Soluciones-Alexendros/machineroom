@@ -100,7 +100,11 @@ class Scheduler:
                     complete_task(self.repo, task_id, run_id=result.run_id, target=str(self.repo))
                     return result
                 except Exception as exc:
-                    result = AdapterResult("failed", run_id=result.run_id, detail=f"completion failed: {exc}")
+                    result = AdapterResult(
+                        "failed",
+                        run_id=result.run_id,
+                        detail=f"completion failed: {exc}",
+                    )
         if result.outcome in {"blocked", "cancelled", "failed", "simulated"}:
             try:
                 if result.outcome == "blocked":
@@ -113,7 +117,9 @@ class Scheduler:
                 return AdapterResult("failed", detail=f"{result.detail}; state failure: {exc}")
         return result
 
-    def run(self) -> RunSummary:  # noqa: C901, PLR0912  # DAG loop: schedule/wait/stop branches
+    def run(
+        self,
+    ) -> RunSummary:  # DAG loop: schedule/wait/stop branches
         if self.adapter is None:
             raise ValueError("adapter required for non-dry-run execution")
         status = load_status(self.repo)

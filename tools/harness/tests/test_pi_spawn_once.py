@@ -58,7 +58,9 @@ def _observe(tmp_path: Path, notices: list[dict[str, object]]) -> dict[str, obje
     return observed
 
 
-def test_error_then_close_with_output_is_one_close_and_not_retried(tmp_path: Path) -> None:
+def test_error_then_close_with_output_is_one_close_and_not_retried(
+    tmp_path: Path,
+) -> None:
     observed = _observe(
         tmp_path,
         [

@@ -673,7 +673,7 @@ def _build_summary(ctx: _ScanCtx, root: str) -> None:
     report["resumen"] = {
         "total_ficheros": ctx.total_files,
         "total_bytes": ctx.total_bytes,
-        "lenguaje_principal": ctx.lang_bytes.most_common(1)[0][0] if ctx.lang_bytes else None,
+        "lenguaje_principal": (ctx.lang_bytes.most_common(1)[0][0] if ctx.lang_bytes else None),
         "n_hallazgos_patrones": len(report["hallazgos_patrones"]),
         "n_hallazgos_alta": sum(1 for s in report["hallazgos_patrones"] if s.get("confianza") == "alta"),
         "n_env_versionados": len(report["env_versionados"]),
@@ -924,7 +924,11 @@ def _md_alerts(rep: dict[str, Any]) -> list[str]:
 def _md_env_files(rep: dict[str, Any]) -> list[str]:
     if not rep.get("env_versionados"):
         return []
-    return ["", "### Ficheros .env versionados", *[f"- `{e}`" for e in rep["env_versionados"][:30]]]
+    return [
+        "",
+        "### Ficheros .env versionados",
+        *[f"- `{e}`" for e in rep["env_versionados"][:30]],
+    ]
 
 
 def _md_findings(rep: dict[str, Any]) -> list[str]:
@@ -943,7 +947,11 @@ def _md_findings(rep: dict[str, Any]) -> list[str]:
 def _md_deps(rep: dict[str, Any]) -> list[str]:
     if not rep["salud_dependencias"]:
         return []
-    return ["", "### Salud de dependencias", *[f"- {f}" for f in rep["salud_dependencias"][:40]]]
+    return [
+        "",
+        "### Salud de dependencias",
+        *[f"- {f}" for f in rep["salud_dependencias"][:40]],
+    ]
 
 
 def _md_artifacts(rep: dict[str, Any]) -> list[str]:
@@ -959,7 +967,11 @@ def _md_artifacts(rep: dict[str, Any]) -> list[str]:
 def _md_markers(rep: dict[str, Any]) -> list[str]:
     if not rep["marcadores"]:
         return []
-    return ["", "### Marcadores (solo confianza alta)", *[f"- {m}: {n}" for m, n in rep["marcadores"].items()]]
+    return [
+        "",
+        "### Marcadores (solo confianza alta)",
+        *[f"- {m}: {n}" for m, n in rep["marcadores"].items()],
+    ]
 
 
 def _md_tests(rep: dict[str, Any]) -> list[str]:

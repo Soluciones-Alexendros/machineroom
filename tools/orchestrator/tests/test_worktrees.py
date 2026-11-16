@@ -24,13 +24,22 @@ def _isolated_repo(tmp_path: Path) -> Path:
         capture_output=True,
         env=_clean_git_env(),
     )
-    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "commit.gpgsign", "false"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
     return repo
 
 
 def _head(repo: Path) -> str:
     return subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
 
 
@@ -50,7 +59,11 @@ def test_untracked_patch_applies_to_staging_without_commit(tmp_path: Path) -> No
         manager.apply_patch(staging, patch)
         assert (staging / "fixture-orchestration.txt").read_text(encoding="utf-8") == "integrated\n"
         assert subprocess.run(
-            ["git", "rev-parse", "HEAD"], check=False, cwd=repo, capture_output=True, text=True
+            ["git", "rev-parse", "HEAD"],
+            check=False,
+            cwd=repo,
+            capture_output=True,
+            text=True,
         ).stdout.strip() == _head(repo)
     finally:
         manager.cleanup()
@@ -92,6 +105,10 @@ def test_cleanup_only_removes_temporary_worktrees(tmp_path: Path) -> None:
     manager.cleanup()
     assert not root.exists()
     listed = subprocess.run(
-        ["git", "worktree", "list", "--porcelain"], check=False, cwd=repo, capture_output=True, text=True
+        ["git", "worktree", "list", "--porcelain"],
+        check=False,
+        cwd=repo,
+        capture_output=True,
+        text=True,
     ).stdout
     assert str(writer) not in listed

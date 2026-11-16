@@ -168,7 +168,11 @@ def ensure_index(root: pathlib.Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Generate skill-index.json and catalog markers")
     ap.add_argument("--root", default=".", help="Repository root")
-    ap.add_argument("--check", action="store_true", help="Write the index and fail if doc markers drift")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="Write the index and fail if doc markers drift",
+    )
     ap.add_argument("--sync-docs", action="store_true", help="Rewrite marker regions from skills/")
     ap.add_argument(
         "--json",

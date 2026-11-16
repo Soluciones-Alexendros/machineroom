@@ -88,7 +88,8 @@ def test_router_reads_current_state(tmp_path: Path) -> None:
     state = tmp_path / ".machineroom"
     state.mkdir()
     (state / "project.yaml").write_text(
-        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n", encoding="utf-8"
+        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n",
+        encoding="utf-8",
     )
     proc = subprocess.run(
         [sys.executable, str(ROUTER), "--repo", str(tmp_path), "--list", "--json"],
@@ -104,7 +105,8 @@ def test_router_accepts_legacy_state_with_warning(tmp_path: Path) -> None:
     state = tmp_path / ".autoworkspace"
     state.mkdir()
     (state / "project.yaml").write_text(
-        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n", encoding="utf-8"
+        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n",
+        encoding="utf-8",
     )
     proc = subprocess.run(
         [sys.executable, str(ROUTER), "--repo", str(tmp_path), "--list", "--json"],

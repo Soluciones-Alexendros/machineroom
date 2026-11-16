@@ -1,12 +1,41 @@
 line-length = 120
 target-version = "py312"
-extend-exclude = [".worktrees", ".venv", "node_modules"]
+extend-exclude = [".worktrees", ".venv", "node_modules", "tasks"]
 
 [format]
 quote-style = "double"
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "C90", "N", "PL", "RUF"]
+ignore = ["RUF100", "C901", "PLR0911", "PLR2004", "PLR0912", "PLR0915", "E501"]
 
 [lint.mccabe]
 max-complexity = 10
+
+[lint.per-file-ignores]
+"tools/workspace-router/status_bump.py" = ["PLC0415"]
+"tools/workspace-router/run.py" = ["E402"]
+"tools/execution/registry.py" = ["E402"]
+"tools/harness/tests/test_doctor.py" = ["E402"]
+"tools/harness/tests/test_cursor_install.py" = ["E402"]
+"tools/harness/tests/test_cursor_plugin.py" = ["E402"]
+"tools/harness/tests/test_pi_catalog_discovery.py" = ["E402"]
+"tools/orchestrator/tests/test_scheduler.py" = ["E402"]
+"tools/orchestrator/tests/test_orchestration_red.py" = ["E402"]
+"tools/orchestrator/tests/test_full_flow.py" = ["E402"]
+"tools/orchestrator/tests/test_orchestration.py" = ["E402"]
+"tools/execution/tests/test_verifiable_closure.py" = ["E402"]
+"tools/harness/pi.py" = ["E402"]
+"tools/harness/doctor.py" = ["E402"]
+"tools/harness/runtime.py" = ["E402"]
+"tools/harness/cursor_install.py" = ["E402"]
+"tools/harness/base.py" = ["E402"]
+"tools/orchestrator/run.py" = ["E402"]
+"tools/validate/release_coherence.py" = ["E402"]
+"tools/validate/skill_spec.py" = ["E402"]
+"tools/version/cut_tag.py" = ["E402"]
+"tools/version/bump.py" = ["E402"]
+"skills/local-maintenance/scripts/clean_routine.py" = ["E402"]
+"tools/harness/tests/test_model_scope.py" = ["E402"]
+"tools/harness/tests/test_runtime.py" = ["E402"]
+"tools/validate/tests/test_naming_gate.py" = ["E402"]

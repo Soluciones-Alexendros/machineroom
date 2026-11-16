@@ -45,7 +45,11 @@ def _task(task_id: str, phase: str, operation: str, path: str, dependencies: lis
 
 def _activate(root: Path) -> None:
     revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     data = {
         "schema_version": 1,
@@ -53,8 +57,20 @@ def _activate(root: Path) -> None:
         "base_revision": revision,
         "tasks": [
             _task("define-spec", "DEFINE", "specify", "spec.md", []),
-            _task("implement-output", "IMPLEMENT", "implement_api", "implementation.txt", ["define-spec"]),
-            _task("validate-output", "VALIDATE", "local_gates", "validation.txt", ["implement-output"]),
+            _task(
+                "implement-output",
+                "IMPLEMENT",
+                "implement_api",
+                "implementation.txt",
+                ["define-spec"],
+            ),
+            _task(
+                "validate-output",
+                "VALIDATE",
+                "local_gates",
+                "validation.txt",
+                ["implement-output"],
+            ),
         ],
     }
     path = root / "plan.md"
@@ -105,7 +121,12 @@ def _fixture_repo(tmp_path: Path) -> Path:
         capture_output=True,
         env=_clean_git_env(),
     )
-    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "commit.gpgsign", "false"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
     return repo
 
 
@@ -113,7 +134,9 @@ def _cleanup_fixture(repo: Path) -> None:
     shutil.rmtree(repo, ignore_errors=True)
 
 
-def test_complete_flow_closes_without_applying_to_operator_checkout(tmp_path: Path) -> None:
+def test_complete_flow_closes_without_applying_to_operator_checkout(
+    tmp_path: Path,
+) -> None:
     repo = _fixture_repo(tmp_path)
     try:
         _activate(repo)

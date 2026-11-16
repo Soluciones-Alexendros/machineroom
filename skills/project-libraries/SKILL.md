@@ -1,16 +1,29 @@
 ---
 name: project-libraries
-description: "Dependency audit (SCA/CVE): multi-language pipeline (npm/pip/cargo/go/maven/gradle/composer/gem) to detect vulnerabilities, malware, typosquatting, unused dependencies and outdated. Use when performing dependency audit, SCA, CVE scanning, supply chain security or SBOM generation. Not for code security review (→ web-owasp) nor web compliance audits (→ web-compliance)."
+description:
+  "Dependency audit (SCA/CVE): multi-language pipeline (npm/pip/cargo/go/maven/gradle/composer/gem)
+  to detect vulnerabilities, malware, typosquatting, unused dependencies and outdated.
+  Use when performing dependency audit, SCA, CVE scanning, supply chain security or
+  SBOM generation. Not for code security review (→ web-owasp) nor web compliance audits
+  (→ web-compliance)."
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: project
-  type: audit
+  type: atomic
   language: en
-  keywords: project-libraries
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob"
+  keywords:
+    - project-libraries
+    - project
+    - sca
+    - cve
+    - sbom
+    - supply-chain
+    - remediation
+  execution: project-libraries
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Project Libraries
@@ -30,6 +43,8 @@ performing dependency audit, SCA, CVE scanning, supply chain security or SBOM ge
 - For SBOM (Software Bill of Materials) generation
 
 ## Not for:
+
+not for code security review (→ web-owasp) nor web compliance audits (→ web-compliance). Dependency updates → release (→ project-publish).
 
 - Code OWASP review (→ web-owasp)
 - OS hardening (→ local-security)

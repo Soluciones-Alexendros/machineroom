@@ -71,7 +71,9 @@ def test_free_form_mutation_rejected() -> None:
     assert "free-form" in r.detail
 
 
-def test_digest_includes_argv_change_invalidates(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_digest_includes_argv_change_invalidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr("execution.ops.provider_from_env", AllowProvider)
     calls = []
 
@@ -103,7 +105,9 @@ def test_digest_includes_argv_change_invalidates(monkeypatch: pytest.MonkeyPatch
     assert d1 != d2
 
 
-def test_argv_or_target_change_blocks_stale_approval(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_argv_or_target_change_blocks_stale_approval(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Provider that approves only a fixed digest — change invalidates."""
     fixed = {"digest": ""}
 

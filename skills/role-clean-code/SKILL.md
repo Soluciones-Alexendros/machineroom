@@ -1,17 +1,29 @@
 ---
 name: role-clean-code
-description: "Implements Clean Code principles to write expressive, maintainable software and refactor existing code safely in any language. Use when the operator asks for 'clean code', 'código limpio', refactoring, meaningful names, smaller functions, fewer code smells, or cleanup of duplicated logic. Not for architecture-only assessments (→ project-architecture), test-suite audits (→ plan-validators), or security reviews (→ web-owasp). Uses Bash/Write for mutative refactoring."
+description:
+  Implements Clean Code principles to write expressive, maintainable software
+  and refactor existing code safely in any language. Use when the operator asks for
+  clean code, refactoring, meaningful names, smaller functions, fewer code smells,
+  or cleanup of duplicated logic. Not for architecture-only assessments (→ project-architecture),
+  test-suite audits (→ plan-validators), or security reviews (→ web-owasp).
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "7.1.0"
+  version: 7.1.1
   domain: role
   type: atomic
   language: en
-  keywords: "role-clean-code, clean code, código limpio, refactor, refactoring, refactorización, code smells, meaningful names, nombres significativos, small functions, funciones pequeñas, duplicated code, código duplicado"
+  keywords:
+    - role-clean-code
+    - role
+    - clean-code
+    - refactor
+    - naming
+    - smells
+    - protocols
   execution: role-clean-code
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash, Write"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 
 # Role Clean Code

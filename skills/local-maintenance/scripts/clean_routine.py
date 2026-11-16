@@ -46,7 +46,9 @@ if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
 from execution.ops import run_registered  # noqa: E402  # requiere _TOOLS en sys.path
-from execution.registry import register_handler  # noqa: E402  # requiere _TOOLS en sys.path
+from execution.registry import (
+    register_handler,
+)  # requiere _TOOLS en sys.path
 
 
 @dataclass
@@ -120,16 +122,46 @@ def detect_pkg_mgr() -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Rutina de limpieza aprobada (por defecto --dry-run).")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--dry-run", dest="dry_run", action="store_true", default=None, help="Solo simular (defecto)")
-    mode.add_argument("--execute", dest="execute", action="store_true", default=None, help="Ejecutar limpieza real")
-    parser.add_argument("--snapshot-id", default="", help="ID de snapshot previo (requerido en --execute)")
+    mode.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        default=None,
+        help="Solo simular (defecto)",
+    )
+    mode.add_argument(
+        "--execute",
+        dest="execute",
+        action="store_true",
+        default=None,
+        help="Ejecutar limpieza real",
+    )
+    parser.add_argument(
+        "--snapshot-id",
+        default="",
+        help="ID de snapshot previo (requerido en --execute)",
+    )
     parser.add_argument("--output", default="", help="Fichero de salida (reservado)")
-    parser.add_argument("--keep-versions", type=int, default=3, help="Versiones a conservar en caché (defecto 3)")
+    parser.add_argument(
+        "--keep-versions",
+        type=int,
+        default=3,
+        help="Versiones a conservar en caché (defecto 3)",
+    )
     parser.add_argument("--journal-time", default="7d", help="Vacuum time del journal (defecto 7d)")
     parser.add_argument("--journal-size", default="500M", help="Vacuum size del journal (defecto 500M)")
-    parser.add_argument("--json", nargs="?", const="", default=None, help="Generar JSON (opcional fichero)")
     parser.add_argument(
-        "--firmware", action="store_true", default=False, help="Incluir fwupdmgr update (R2, solo con --execute)"
+        "--json",
+        nargs="?",
+        const="",
+        default=None,
+        help="Generar JSON (opcional fichero)",
+    )
+    parser.add_argument(
+        "--firmware",
+        action="store_true",
+        default=False,
+        help="Incluir fwupdmgr update (R2, solo con --execute)",
     )
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     return parser
@@ -497,7 +529,14 @@ def generate_json_output() -> None:
             elif _STATE.dry_run:
                 actions.append({"action": name, "status": "simulated", "rc": 0, "detail": ""})
             else:
-                actions.append({"action": name, "status": "failed", "rc": 1, "detail": "no result recorded"})
+                actions.append(
+                    {
+                        "action": name,
+                        "status": "failed",
+                        "rc": 1,
+                        "detail": "no result recorded",
+                    }
+                )
     completed = sum(1 for a in actions if a.get("status") == "succeeded")
     failed = sum(1 for a in actions if a.get("status") in ("failed", "blocked"))
     simulated = sum(1 for a in actions if a.get("status") == "simulated")

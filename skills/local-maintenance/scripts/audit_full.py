@@ -92,7 +92,12 @@ def run_extended_checks(collector: FindingCollector, pkg_mgr: str, runner: Calla
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoria completa de higiene/updates (P0-P4).")
     parser.add_argument("output_file", nargs="?", default=None, help="Fichero JSON de salida")
-    parser.add_argument("profile_file", nargs="?", default="system-profile.json", help="Perfil del sistema")
+    parser.add_argument(
+        "profile_file",
+        nargs="?",
+        default="system-profile.json",
+        help="Perfil del sistema",
+    )
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
@@ -117,7 +122,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         output = collector.build_output(
-            "audit-full", distro_id, distro_family, running_kernel, duration, version_id, version_codename
+            "audit-full",
+            distro_id,
+            distro_family,
+            running_kernel,
+            duration,
+            version_id,
+            version_codename,
         )
     except (ValueError, TypeError, OSError) as exc:
         logger.error("no se pudo construir salida de auditoria: %s", exc)

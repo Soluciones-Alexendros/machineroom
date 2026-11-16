@@ -83,7 +83,12 @@ def run_quick_checks(collector: FindingCollector, pkg_mgr: str, runner: Callable
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Health-check read-only (higiene/updates P0+P1).")
     parser.add_argument("output_file", nargs="?", default=None, help="Fichero JSON de salida")
-    parser.add_argument("profile_file", nargs="?", default="system-profile.json", help="Perfil del sistema")
+    parser.add_argument(
+        "profile_file",
+        nargs="?",
+        default="system-profile.json",
+        help="Perfil del sistema",
+    )
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
@@ -107,7 +112,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         output = collector.build_output(
-            "audit-quick", distro_id, distro_family, running_kernel, duration, version_id, version_codename
+            "audit-quick",
+            distro_id,
+            distro_family,
+            running_kernel,
+            duration,
+            version_id,
+            version_codename,
         )
     except (ValueError, TypeError, OSError) as exc:
         logger.error("no se pudo construir salida de auditoria: %s", exc)

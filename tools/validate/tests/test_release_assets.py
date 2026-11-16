@@ -32,13 +32,25 @@ def test_missing_upload_or_wrong_order_is_rejected(tmp_path: Path) -> None:
 def test_archive_and_checksum_fixture_round_trip(tmp_path: Path) -> None:
     archive = tmp_path / "machineroom-fixture.tar.gz"
     subprocess.run(
-        ["git", "archive", "--format=tar.gz", "--prefix=machineroom-fixture/", "-o", str(archive), "HEAD"],
+        [
+            "git",
+            "archive",
+            "--format=tar.gz",
+            "--prefix=machineroom-fixture/",
+            "-o",
+            str(archive),
+            "HEAD",
+        ],
         cwd=ROOT,
         check=True,
         capture_output=True,
     )
     checksum = subprocess.run(
-        ["sha256sum", archive.name], cwd=tmp_path, capture_output=True, text=True, check=True
+        ["sha256sum", archive.name],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout
     (tmp_path / "SHA256SUMS").write_text(checksum, encoding="utf-8")
     subprocess.run(["sha256sum", "-c", "SHA256SUMS"], cwd=tmp_path, check=True, capture_output=True)

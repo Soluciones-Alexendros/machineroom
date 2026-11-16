@@ -59,10 +59,18 @@ def has_network() -> bool:
 def check_apt() -> dict[str, Any]:
     if which("apt") is None:
         return {"status": "skip", "reason": "apt no disponible"}
-    _, out = run_cmd("apt list --upgradable 2>/dev/null | grep -vE '^(Listing|Listando)'", timeout=120)
+    _, out = run_cmd(
+        "apt list --upgradable 2>/dev/null | grep -vE '^(Listing|Listando)'",
+        timeout=120,
+    )
     lines = [ln for ln in out.splitlines() if ln.strip()]
     sec = [ln for ln in lines if "-security" in ln or "security" in ln.lower()]
-    return {"status": "ok", "upgradable": len(lines), "security": len(sec), "sample": lines[:10]}
+    return {
+        "status": "ok",
+        "upgradable": len(lines),
+        "security": len(sec),
+        "sample": lines[:10],
+    }
 
 
 def check_snap() -> dict[str, Any]:
@@ -70,7 +78,11 @@ def check_snap() -> dict[str, Any]:
         return {"status": "skip", "reason": "snap no instalado"}
     _, out = run_cmd("snap refresh --list 2>/dev/null", timeout=120)
     lines = [ln for ln in out.splitlines() if ln.strip()]
-    return {"status": "ok", "pending": max(0, len(lines) - 1) if lines else 0, "sample": lines[:10]}
+    return {
+        "status": "ok",
+        "pending": max(0, len(lines) - 1) if lines else 0,
+        "sample": lines[:10],
+    }
 
 
 def check_flatpak() -> dict[str, Any]:

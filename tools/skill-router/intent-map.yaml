@@ -1,175 +1,208 @@
-# Intent map for deterministic routing — Cursor and Pi
-# Used by route.py
 intents:
   mantenimiento:
-    skills: [local-maintenance]
+    skills:
+      - local-maintenance
     patterns:
-      [
-        "mantenimiento",
-        "limpia",
-        "limpiar",
-        "limpieza",
-        "sistema arch",
-        "optimiza",
-        "paccache",
-        "journal vacuum",
-        "huérfanos",
-        "cribar filesystem",
-      ]
+      - mantenimiento
+      - limpia
+      - limpiar
+      - limpieza
+      - sistema arch
+      - optimiza
+      - paccache
+      - journal vacuum
+      - huérfanos
+      - cribar filesystem
   salud_sistema:
-    skills: [local-maintenance]
+    skills:
+      - local-maintenance
     patterns:
-      [
-        "salud del sistema",
-        "health check sistema",
-        "fingerprint",
-        "audit-full",
-        "auditar sistema",
-        "health score",
-        "auditoría completa",
-      ]
+      - salud del sistema
+      - health check sistema
+      - fingerprint
+      - audit-full
+      - auditar sistema
+      - health score
+      - auditoría completa
   seguridad_host:
-    skills: [local-security]
+    skills:
+      - local-security
     patterns:
-      [
-        "hardening",
-        "firewall",
-        "apparmor",
-        "auditd",
-        "seguridad host",
-        "forense",
-      ]
+      - hardening
+      - firewall
+      - apparmor
+      - auditd
+      - seguridad host
+      - forense
   plan_continuar:
-    skills: [plan-continue]
+    skills:
+      - plan-continue
     patterns:
-      [
-        "por donde empiezo",
-        "ciclo de vida",
-        "qué hago con este repo",
-        "audítalo y publícalo",
-        "pon al día proyecto",
-        "audita repo",
-        "repo standard",
-        "repo starting",
-        "inicio de plan",
-      ]
+      - por donde empiezo
+      - ciclo de vida
+      - qué hago con este repo
+      - audítalo y publícalo
+      - pon al día proyecto
   release:
-    skills: [project-publish]
+    skills:
+      - project-publish
     patterns:
-      [
-        "prepara release",
-        "publica version",
-        "changelog",
-        "semver",
-        "cierra repo",
-      ]
+      - prepara release
+      - publica version
+      - changelog
+      - semver
+      - cierra repo
   arquitectura:
-    skills: [project-architecture, plan-continue]
+    skills:
+      - project-architecture
+      - plan-continue
     patterns:
-      [
-        "revisa la arquitectura",
-        "acoplamiento",
-        "deepening",
-        "mapa de módulos",
-        "C4",
-      ]
+      - revisa la arquitectura
+      - acoplamiento
+      - deepening
+      - mapa de módulos
+      - C4
   compliance:
-    skills: [web-compliance]
-    patterns: ["wcag", "gdpr", "seo", "accesibilidad", "compliance"]
+    skills:
+      - web-compliance
+    patterns:
+      - wcag
+      - gdpr
+      - seo
+      - accesibilidad
+      - compliance
   performance:
-    skills: [web-performance]
-    patterns: ["lighthouse", "core web vitals", "ttfb", "performance"]
+    skills:
+      - web-performance
+    patterns:
+      - lighthouse
+      - core web vitals
+      - ttfb
+      - performance
   owasp:
-    skills: [web-owasp]
-    patterns: ["owasp", "xss", "sqli", "inyección", "vulnerabilidad código"]
+    skills:
+      - web-owasp
+    patterns:
+      - owasp
+      - xss
+      - sqli
+      - inyección
+      - vulnerabilidad código
   hooks:
-    skills: [project-publish]
-    patterns: ["husky", "lint-staged", "pre-commit", "hooks locales"]
+    skills:
+      - project-publish
+    patterns:
+      - husky
+      - lint-staged
+      - pre-commit
+      - hooks locales
   backend_data:
-    skills: [role-back]
+    skills:
+      - role-back
     patterns:
-      [
-        "upstash",
-        "redis",
-        "qstash",
-        "vector",
-        "ratelimit",
-        "cola",
-        "blob storage",
-        "backend",
-        "implementa api",
-        "endpoint",
-        "persistencia",
-        "background job",
-        "worker",
-        "cron",
-        "ruta api",
-      ]
+      - upstash
+      - redis
+      - qstash
+      - vector
+      - ratelimit
+      - cola
+      - blob storage
+      - backend
+      - implementa api
+      - endpoint
+      - persistencia
+      - background job
+      - worker
+      - cron
+      - ruta api
   frontend:
-    skills: [role-front]
+    skills:
+      - role-front
     patterns:
-      [
-        "frontend",
-        "estado cliente",
-        "routing ui",
-        "contrato api cliente",
-        "implementa ui",
-        "interfaz",
-        "componente",
-        "ruta cliente",
-        "formulario",
-        "navegación",
-      ]
+      - frontend
+      - estado cliente
+      - routing ui
+      - contrato api cliente
+      - implementa ui
+      - interfaz
+      - componente
+      - ruta cliente
+      - formulario
+      - navegación
   design:
-    skills: [role-design]
+    skills:
+      - role-design
     patterns:
-      ["design system", "tokens", "paleta", "tipografía", "dirección visual"]
+      - design system
+      - tokens
+      - paleta
+      - tipografía
+      - dirección visual
   clean_code:
-    skills: [role-clean-code]
+    skills:
+      - role-clean-code
     patterns:
-      [
-        "clean code",
-        "código limpio",
-        "refactor",
-        "refactoring",
-        "code smell",
-        "meaningful names",
-        "nombres significativos",
-        "small functions",
-        "funciones pequeñas",
-        "duplicated code",
-        "código duplicado",
-      ]
+      - clean code
+      - código limpio
+      - refactor
+      - refactoring
+      - code smell
+      - meaningful names
+      - nombres significativos
+      - small functions
+      - funciones pequeñas
+      - duplicated code
+      - código duplicado
   especificar:
-    skills: [plan-specification]
-    patterns: ["especificación", "spec", "desglosa tareas", "task breakdown"]
+    skills:
+      - plan-specification
+    patterns:
+      - especificación
+      - spec
+      - desglosa tareas
+      - task breakdown
   validar_tdd:
-    skills: [plan-validators]
+    skills:
+      - plan-validators
     patterns:
-      [
-        "tdd",
-        "test first",
-        "rojo verde",
-        "reproduce el bug",
-        "cobertura de tests",
-        "test coverage",
-        "estrategia de tests",
-        "tests integrados",
-        "qa",
-      ]
+      - tdd
+      - test first
+      - rojo verde
+      - reproduce el bug
+      - cobertura de tests
+      - test coverage
+      - estrategia de tests
+      - tests integrados
+      - qa
   libraries:
-    skills: [project-libraries]
-    patterns: ["dependencias", "cve", "sca", "sbom", "typosquatting"]
-  machineroom_self:
-    skills: [project-machineroom]
+    skills:
+      - project-libraries
     patterns:
-      [
-        "autoauditoría machineroom",
-        "audita machineroom",
-        "self-audit machineroom",
-        "deriva de harnesses",
-        "mejora del propio sistema",
-        "project-machineroom",
-        "harness A/B/C",
-        "doctor nativo",
-      ]
+      - dependencias
+      - cve
+      - sca
+      - sbom
+      - typosquatting
+  machineroom_self:
+    skills:
+      - project-machineroom
+    patterns:
+      - autoauditoría machineroom
+      - audita machineroom
+      - self-audit machineroom
+      - deriva de harnesses
+      - mejora del propio sistema
+      - project-machineroom
+      - harness A/B/C
+      - doctor nativo
+  repo_starting:
+    skills:
+      - project-audit
+    patterns:
+      - audita repo
+      - repo standard
+      - repo starting
+      - inicio de plan
+      - health board
+      - evolution plan
+      - estado del repo

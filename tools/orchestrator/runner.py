@@ -98,7 +98,10 @@ class WorktreeAdapter:
                 operation_result=verified.result,
             )
         except Exception as exc:
-            return AdapterResult("failed", detail=f"worktree integration failed: {type(exc).__name__}: {exc}")
+            return AdapterResult(
+                "failed",
+                detail=f"worktree integration failed: {type(exc).__name__}: {exc}",
+            )
         finally:
             if writer is not None:
                 with contextlib.suppress(Exception):
@@ -145,4 +148,7 @@ class WorktreeAdapter:
                 operation_result=verified.result,
             )
         except Exception as exc:
-            return AdapterResult("failed", detail=f"readonly verification failed: {type(exc).__name__}: {exc}")
+            return AdapterResult(
+                "failed",
+                detail=f"readonly verification failed: {type(exc).__name__}: {exc}",
+            )

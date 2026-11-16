@@ -63,7 +63,21 @@ EXCLUDED_DIR_NAMES = frozenset(
 EXCLUDED_FILES = frozenset({"CHANGELOG.md", "skill-index-7.0.0.json"})
 # Local install artifacts (gitignored): symlink manifests carry absolute paths.
 EXCLUDED_PREFIXES = (".cursor/skills/", ".pi/skills/")
-SUFFIXES = frozenset({".py", ".sh", ".md", ".json", ".yaml", ".yml", ".ts", ".toml", ".mdc", ".example", ""})
+SUFFIXES = frozenset(
+    {
+        ".py",
+        ".sh",
+        ".md",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".ts",
+        ".toml",
+        ".mdc",
+        ".example",
+        "",
+    }
+)
 
 ALLOWED_FILES = {
     # Naming SSOT and state fallback: they must spell the old name.
@@ -108,7 +122,7 @@ ALLOWED_FILES = {
     # invalidate every committed plan, so the parser keeps accepting it.
     "tools/contracts/plan.py",
     "tools/contracts/tests/test_plan.py",
-    "tools/skill-router/tests/test_catalog_16.py",
+    "tools/skill-router/tests/test_catalog_17.py",
     "templates/harness/plan.md",
     "tools/orchestrator/run.py",
     "tools/orchestrator/tests/test_full_flow.py",
@@ -190,7 +204,10 @@ def main(argv: list[str] | None = None) -> int:
     if findings:
         for finding in findings:
             print(finding.render(), file=sys.stderr)
-        print(f"FAIL naming naming_gate: {len(findings)} line(s) outside the allowlist", file=sys.stderr)
+        print(
+            f"FAIL naming naming_gate: {len(findings)} line(s) outside the allowlist",
+            file=sys.stderr,
+        )
         return 1
     print(f"naming gate OK ({len(candidate_files(args.root.resolve()))} live files)")
     return 0

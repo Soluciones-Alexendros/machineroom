@@ -1,17 +1,29 @@
 ---
 name: role-back
-description: "Specialist role for backend application work: data at rest and in motion, routes, deployments, robustness and application security. Includes general patterns for cache/KV, queues, rate limiting, object storage and search (Upstash and equivalents as providers). Use when implementing APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries). Uses Bash/Write to implement and mutate backend code."
+description:
+  "Specialist role for backend application work: data at rest and in motion,
+  routes, deployments, robustness and application security. Includes patterns for
+  cache/KV, queues, rate limiting, object storage and search. Use when implementing
+  APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security),
+  OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "7.1.0"
+  version: 7.1.1
   domain: role
   type: atomic
   language: en
-  keywords: role-back
+  keywords:
+    - role-back
+    - role
+    - backend
+    - api
+    - persistence
+    - jobs
+    - patterns
   execution: role-back
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash, Write"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 
 # Role Back
@@ -32,6 +44,7 @@ provider among others.
 - Wiring cache, queues, rate limits, object storage or search
 
 **When NOT to use:** Linux host hardening (→ local-security); OWASP audit of
+not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries). Supply chain before new deps (→ project-libraries).
 existing code (→ web-owasp); SCA/CVE of dependencies (→ project-libraries);
 frontend UI state (→ role-front).
 

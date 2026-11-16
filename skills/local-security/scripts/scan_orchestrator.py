@@ -150,20 +150,32 @@ def cross_validate(results: dict[str, Any]) -> dict[str, Any]:
         undetermined.append("aide: Changed entries (todo cambio necesita explicacion)")
     if not undetermined:
         discarded.append("sin candidatos entre los escaneres ejecutados")
-    return {"validados": validated, "descartados": discarded, "indeterminados": undetermined}
+    return {
+        "validados": validated,
+        "descartados": discarded,
+        "indeterminados": undetermined,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Orquesta escaneos con validacion cruzada (solo lectura).")
     parser.add_argument("--check", action="store_true", help="Solo disponibilidad (defecto)")
-    parser.add_argument("--run", action="store_true", help="Ejecutar escaneres disponibles (solo lectura)")
+    parser.add_argument(
+        "--run",
+        action="store_true",
+        help="Ejecutar escaneres disponibles (solo lectura)",
+    )
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
 
     avail = check_availability()
-    results: dict[str, Any] = {"availability": avail, "scans": {}, "cross_validation": {}}
+    results: dict[str, Any] = {
+        "availability": avail,
+        "scans": {},
+        "cross_validation": {},
+    }
     if args.run:
         results["scans"]["clamav"] = scan_clamav()
         results["scans"]["rkhunter"] = scan_rkhunter()

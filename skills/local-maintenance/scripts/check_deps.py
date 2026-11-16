@@ -34,12 +34,32 @@ REQUIRED = [
 ]
 
 OPTIONAL = [
-    ("lynis", "lynis", "Instalar: pacman -S lynis / apt install lynis (auditoría CIS extendida)"),
-    ("smartctl", "smartmontools", "Instalar: pacman -S smartmontools / apt install smartmontools (health disco)"),
-    ("fwupdmgr", "fwupd", "Instalar: pacman -S fwupd / apt install fwupd (firmware updates)"),
-    ("paccache", "pacman-contrib", "Instalar: pacman -S pacman-contrib (limpieza caché Arch)"),
+    (
+        "lynis",
+        "lynis",
+        "Instalar: pacman -S lynis / apt install lynis (auditoría CIS extendida)",
+    ),
+    (
+        "smartctl",
+        "smartmontools",
+        "Instalar: pacman -S smartmontools / apt install smartmontools (health disco)",
+    ),
+    (
+        "fwupdmgr",
+        "fwupd",
+        "Instalar: pacman -S fwupd / apt install fwupd (firmware updates)",
+    ),
+    (
+        "paccache",
+        "pacman-contrib",
+        "Instalar: pacman -S pacman-contrib (limpieza caché Arch)",
+    ),
     ("deborphan", "deborphan", "Instalar: apt install deborphan (huérfanos Debian)"),
-    ("needrestart", "needrestart", "Instalar: apt install needrestart (servicios a reiniciar Debian)"),
+    (
+        "needrestart",
+        "needrestart",
+        "Instalar: apt install needrestart (servicios a reiniciar Debian)",
+    ),
     ("rpmconf", "rpmconf", "Instalar: dnf install rpmconf (configs RPM)"),
     ("ucf", "ucf", "Instalar: apt install ucf (configs Debian)"),
 ]
@@ -77,13 +97,23 @@ def main(argv: list[str] | None = None) -> int:
 
     print("--- Requeridos ---")
     for cmd, package, hint in REQUIRED:
-        if not check_cmd((cmd, package, hint), required=True, verbose=verbose, install_hint=install_hint):
+        if not check_cmd(
+            (cmd, package, hint),
+            required=True,
+            verbose=verbose,
+            install_hint=install_hint,
+        ):
             missing_required += 1
 
     print()
     print("--- Opcionales (mejoran la auditoría) ---")
     for cmd, package, hint in OPTIONAL:
-        if not check_cmd((cmd, package, hint), required=False, verbose=verbose, install_hint=install_hint):
+        if not check_cmd(
+            (cmd, package, hint),
+            required=False,
+            verbose=verbose,
+            install_hint=install_hint,
+        ):
             missing_optional += 1
 
     print()
@@ -96,7 +126,12 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(color("Todas las dependencias requeridas están presentes.", GREEN))
     if missing_optional > 0:
-        print(color(f"Faltan {missing_optional} dependencias opcionales (funcionalidad reducida).", YELLOW))
+        print(
+            color(
+                f"Faltan {missing_optional} dependencias opcionales (funcionalidad reducida).",
+                YELLOW,
+            )
+        )
     return 0
 
 

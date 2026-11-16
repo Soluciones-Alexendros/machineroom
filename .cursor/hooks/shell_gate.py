@@ -28,7 +28,11 @@ else:
 
 
 def _deny(user_message: str, agent_message: str) -> dict[str, str]:
-    return {"permission": "deny", "user_message": user_message, "agent_message": agent_message}
+    return {
+        "permission": "deny",
+        "user_message": user_message,
+        "agent_message": agent_message,
+    }
 
 
 def decide(payload: dict[str, object]) -> dict[str, str]:

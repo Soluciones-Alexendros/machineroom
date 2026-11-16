@@ -34,7 +34,13 @@ def _sample() -> dict[str, Any]:
             "kernel": "k",
             "duration_seconds": 1,
         },
-        "health_score": {"overall": 80, "security": 80, "updates": 80, "hygiene": 80, "resources": 80},
+        "health_score": {
+            "overall": 80,
+            "security": 80,
+            "updates": 80,
+            "hygiene": 80,
+            "resources": 80,
+        },
         "findings": [
             {
                 "id": "X-01",

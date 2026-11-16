@@ -78,7 +78,9 @@ def _execute(root: Path, task_id: str):
     )
 
 
-def test_completion_unlocks_dependent_and_replays_without_double_advance(tmp_path: Path) -> None:
+def test_completion_unlocks_dependent_and_replays_without_double_advance(
+    tmp_path: Path,
+) -> None:
     register_handler("implement_api", _handler)
     _activate(tmp_path)
     assert [t["id"] for t in ready_tasks(tmp_path)] == ["first"]

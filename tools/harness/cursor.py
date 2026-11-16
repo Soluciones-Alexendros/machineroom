@@ -116,7 +116,12 @@ def cursor_discovery_check(target: Path, expected_skills: set[str]) -> Check:
         return Check("cursor-native-discovery", "B", "not_run", "agent binary missing")
     static = static_install_check(target, expected_skills)
     if static.outcome != "pass":
-        return Check("cursor-native-discovery", "B", "fail", f"static precheck failed: {static.detail}")
+        return Check(
+            "cursor-native-discovery",
+            "B",
+            "fail",
+            f"static precheck failed: {static.detail}",
+        )
     root = target.resolve()
     marker = root / ".machineroom-cursor-session-marker"
     marker.unlink(missing_ok=True)
@@ -300,9 +305,19 @@ def _assert_policy_outcomes(  # noqa: PLR0913  # outcome paths + agent_exit for 
             f"hook decisions incomplete or wrong: {seen!r}; agent_exit={agent_exit}",
         )
     if not allow_effect.is_file():
-        return Check("cursor-native-policy", "C", "fail", "allow permission did not produce shell side effect")
+        return Check(
+            "cursor-native-policy",
+            "C",
+            "fail",
+            "allow permission did not produce shell side effect",
+        )
     if deny_effect.is_file():
-        return Check("cursor-native-policy", "C", "fail", "deny permission still produced a side effect")
+        return Check(
+            "cursor-native-policy",
+            "C",
+            "fail",
+            "deny permission still produced a side effect",
+        )
     if ask_effect.is_file():
         return Check(
             "cursor-native-policy",
@@ -348,7 +363,12 @@ def policy_check(target: Path, work_dir: Path | None = None) -> Check:
     hooks_json = root / ".cursor" / "hooks.json"
     hooks_dir = root / ".cursor" / "hooks"
     if not hooks_json.exists():
-        return Check("cursor-native-policy", "C", "fail", "hooks.json missing before policy probe")
+        return Check(
+            "cursor-native-policy",
+            "C",
+            "fail",
+            "hooks.json missing before policy probe",
+        )
     hooks_dir.mkdir(parents=True, exist_ok=True)
     original_hooks = hooks_json.read_text(encoding="utf-8")
     probe = hooks_dir / "mr_policy_probe.py"
@@ -362,7 +382,12 @@ def policy_check(target: Path, work_dir: Path | None = None) -> Check:
     try:
         result = _run_policy_agent(binary, root)
     except ValueError as exc:
-        return Check("cursor-native-policy", "C", "fail", f"forbidden argv for policy probe: {exc}")
+        return Check(
+            "cursor-native-policy",
+            "C",
+            "fail",
+            f"forbidden argv for policy probe: {exc}",
+        )
     except (OSError, subprocess.TimeoutExpired) as exc:
         return Check("cursor-native-policy", "C", "fail", f"agent policy probe failed: {exc}")
     finally:
@@ -499,7 +524,11 @@ class CursorSubagentAdapter:
                 run_id=run_id,
                 plan_digest=plan_digest,
             )
-            return AdapterResult("cancelled", detail=operation_result.detail, operation_result=operation_result)
+            return AdapterResult(
+                "cancelled",
+                detail=operation_result.detail,
+                operation_result=operation_result,
+            )
         combined = f"{run.stdout}\n{run.stderr}"
         if run.cancelled:
             outcome = "cancelled"

@@ -79,7 +79,12 @@ def selftest() -> list[str]:
     cases = [
         ("#000000", "#FFFFFF", 21.0, True),
         ("#767676", "#FFFFFF", 4.54, True),
-        ("#767676", "#FFFF00", 4.23, False),  # corregido: el material fuente indicaba 2.59 (erróneo)
+        (
+            "#767676",
+            "#FFFF00",
+            4.23,
+            False,
+        ),  # corregido: el material fuente indicaba 2.59 (erróneo)
         ("#777777", "#FFFFFF", 4.48, False),
     ]
     failures: list[str] = []
@@ -91,7 +96,11 @@ def selftest() -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Contraste WCAG entre dos colores")
     ap.add_argument("fg", nargs="?", help="Color de texto (#RRGGBB)")
     ap.add_argument("bg", nargs="?", help="Color de fondo (#RRGGBB)")
@@ -101,7 +110,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.selftest:
         failures = selftest()
-        print(json.dumps({"selftest": "PASS" if not failures else "FAIL", "failures": failures}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"selftest": "PASS" if not failures else "FAIL", "failures": failures},
+                ensure_ascii=False,
+            )
+        )
         return 0 if not failures else 1
 
     if not args.fg or not args.bg:

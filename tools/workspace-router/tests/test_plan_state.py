@@ -79,7 +79,10 @@ def test_activate_plan_tracks_path_digest_and_pending_tasks(tmp_path: Path) -> N
     assert state["tasks"]["fixture-read"]["state"] == "pending"
     assert load_active_plan(tmp_path).plan_id == "fixture-plan-v1"
 
-    plan.write_text(plan.read_text(encoding="utf-8").replace("fixture-read-observed", "changed"), encoding="utf-8")
+    plan.write_text(
+        plan.read_text(encoding="utf-8").replace("fixture-read-observed", "changed"),
+        encoding="utf-8",
+    )
     with pytest.raises(ValueError, match="digest"):
         load_active_plan(tmp_path)
 

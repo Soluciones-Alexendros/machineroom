@@ -32,7 +32,13 @@ TIMEOUT = 20
 
 # Errores de red acotados: DNS, conexión, TLS, timeout, URL malformada.
 # (HTTPError hereda de URLError: se captura antes, por separado, para informar el código.)
-NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, OSError, ssl.SSLError, ValueError)
+NETWORK_ERRORS = (
+    urllib.error.URLError,
+    TimeoutError,
+    OSError,
+    ssl.SSLError,
+    ValueError,
+)
 
 
 # Constantes con nombre (P12 T6e): sustituyen literales mágicos.
@@ -167,7 +173,12 @@ class PageParser(HTMLParser):
             self.headings.append((self._heading_level, " ".join(self._heading_text).strip()))
             self._heading_level = None
         elif tag == "a" and self._link_href is not None:
-            self.links.append({"href": self._link_href, "text": " ".join(self._link_text).strip()[:120]})
+            self.links.append(
+                {
+                    "href": self._link_href,
+                    "text": " ".join(self._link_text).strip()[:120],
+                }
+            )
             self._link_href = None
         elif tag == "script" and self._in_ldjson:
             self.ldjson_raw.append("".join(self._ldjson_buf))
@@ -208,7 +219,12 @@ _START_HANDLERS: dict[str, Callable[[PageParser, dict[str, str]], None]] = {
 
 
 def _res(key: str, status: str, evidencia: str, detalle: str = "") -> dict[str, Any]:
-    return {"script_key": key, "status": status, "evidencia": evidencia, "detalle": detalle}
+    return {
+        "script_key": key,
+        "status": status,
+        "evidencia": evidencia,
+        "detalle": detalle,
+    }
 
 
 def check_https(url: str, final_url: str, headers: dict[str, str], local: bool) -> dict[str, Any]:
@@ -240,7 +256,12 @@ def check_security_headers(headers: dict[str, str], local: bool) -> dict[str, An
     ]
     present = [h for h in wanted if h in headers]
     st = "PASS" if len(present) >= MIN_BP_PRESENT else ("WARN" if len(present) >= MIN_BP_WARN else "FAIL")
-    return _res("security_headers", st, f"{len(present)}/6: {', '.join(present)}", "Mínimo 4 cabeceras de seguridad")
+    return _res(
+        "security_headers",
+        st,
+        f"{len(present)}/6: {', '.join(present)}",
+        "Mínimo 4 cabeceras de seguridad",
+    )
 
 
 def check_title(p: PageParser) -> dict[str, Any]:
@@ -255,7 +276,12 @@ def check_title(p: PageParser) -> dict[str, Any]:
 def check_meta_description(p: PageParser) -> dict[str, Any]:
     d = (p.meta.get("description") or [""])[0].strip()
     if not d:
-        return _res("meta_description", "FAIL", "Sin meta description", "Añadir 150-160 caracteres orientados a CTR")
+        return _res(
+            "meta_description",
+            "FAIL",
+            "Sin meta description",
+            "Añadir 150-160 caracteres orientados a CTR",
+        )
     n = len(d)
     st = "PASS" if META_MIN_LEN <= n <= META_MAX_LEN else "WARN"
     return _res("meta_description", st, f"{n} caracteres", "Rango óptimo 150-160")
@@ -265,21 +291,34 @@ def check_canonical(p: PageParser, final_url: str, local: bool) -> dict[str, Any
     if not p.canonical:
         return _res("canonical", "WARN", "Sin canonical", "Añadir canonical autorreferenciado")
     if len(p.canonical) > 1:
-        return _res("canonical", "FAIL", f"{len(p.canonical)} canonicals", "Debe existir un único canonical")
+        return _res(
+            "canonical",
+            "FAIL",
+            f"{len(p.canonical)} canonicals",
+            "Debe existir un único canonical",
+        )
     href = p.canonical[0]
     if local:
         return _res("canonical", "PASS", f"canonical={href}")
     same = href.rstrip("/") == final_url.rstrip("/")
     st = "PASS" if same else "WARN"
     return _res(
-        "canonical", st, f"canonical={href}", "" if same else f"Canonical no autorreferenciado (final={final_url})"
+        "canonical",
+        st,
+        f"canonical={href}",
+        "" if same else f"Canonical no autorreferenciado (final={final_url})",
     )
 
 
 def check_robots_meta(p: PageParser) -> dict[str, Any]:
     vals = ",".join(p.meta.get("robots", [])).lower()
     if "noindex" in vals:
-        return _res("robots_meta", "WARN", f"robots='{vals}'", "Página noindex: confirmar que es intencionado")
+        return _res(
+            "robots_meta",
+            "WARN",
+            f"robots='{vals}'",
+            "Página noindex: confirmar que es intencionado",
+        )
     return _res("robots_meta", "PASS", f"robots='{vals or 'no explícito (index,follow)'}'")
 
 
@@ -309,7 +348,11 @@ def check_headings(p: PageParser) -> dict[str, Any]:
         prev = lv
     if issues:
         return _res("headings", "FAIL", "; ".join(issues), "Corregir jerarquía de encabezados")
-    return _res("headings", "PASS", f"1 H1 ('{h1[0][:60]}'), {len(p.headings)} encabezados sin saltos")
+    return _res(
+        "headings",
+        "PASS",
+        f"1 H1 ('{h1[0][:60]}'), {len(p.headings)} encabezados sin saltos",
+    )
 
 
 def check_img_alt(p: PageParser) -> dict[str, Any]:
@@ -336,24 +379,40 @@ def check_img_dimensions(p: PageParser) -> dict[str, Any]:
     cov = withdim / total
     st = "PASS" if cov >= COV_LANG_PASS else "WARN"
     return _res(
-        "img_dimensions", st, f"{withdim}/{total} con width/height ({cov:.0%})", "Reservar espacio para evitar CLS"
+        "img_dimensions",
+        st,
+        f"{withdim}/{total} con width/height ({cov:.0%})",
+        "Reservar espacio para evitar CLS",
     )
 
 
 def check_html_lang(p: PageParser) -> dict[str, Any]:
     lang = p.html_attrs.get("lang", "").strip().lower()
     if not lang:
-        return _res("html_lang", "FAIL", "<html> sin atributo lang", "Añadir lang ISO 639-1 (WCAG 3.1.1)")
+        return _res(
+            "html_lang",
+            "FAIL",
+            "<html> sin atributo lang",
+            "Añadir lang ISO 639-1 (WCAG 3.1.1)",
+        )
     valid = bool(re.fullmatch(r"[a-z]{2,3}(-[a-z0-9]{2,8})*", lang))
     return _res(
-        "html_lang", "PASS" if valid else "FAIL", f"lang='{lang}'", "" if valid else "Código de idioma inválido"
+        "html_lang",
+        "PASS" if valid else "FAIL",
+        f"lang='{lang}'",
+        "" if valid else "Código de idioma inválido",
     )
 
 
 def check_viewport(p: PageParser) -> dict[str, Any]:
     v = p.has_viewport
     if not v:
-        return _res("viewport", "FAIL", "Sin meta viewport", "Añadir width=device-width, initial-scale=1")
+        return _res(
+            "viewport",
+            "FAIL",
+            "Sin meta viewport",
+            "Añadir width=device-width, initial-scale=1",
+        )
     ok = "width=device-width" in v.lower()
     return _res("viewport", "PASS" if ok else "WARN", f"viewport='{v}'")
 
@@ -409,7 +468,12 @@ def check_jsonld(p: PageParser) -> dict[str, Any]:
         except json.JSONDecodeError:
             errors += 1
     if errors:
-        return _res("jsonld", "FAIL", f"{errors} bloque(s) JSON-LD inválidos", "Corregir sintaxis JSON")
+        return _res(
+            "jsonld",
+            "FAIL",
+            f"{errors} bloque(s) JSON-LD inválidos",
+            "Corregir sintaxis JSON",
+        )
     return _res("jsonld", "PASS", f"Tipos: {', '.join(sorted(set(types))) or 'sin @type'}")
 
 
@@ -433,7 +497,7 @@ def check_content_parity(p: PageParser) -> dict[str, Any]:
         "content_parity",
         st,
         f"~{words} palabras de texto en HTML inicial",
-        "" if st == "PASS" else "Posible dependencia de renderizado JS: verificar DOM renderizado",
+        ("" if st == "PASS" else "Posible dependencia de renderizado JS: verificar DOM renderizado"),
     )
 
 
@@ -470,9 +534,18 @@ def check_robots_txt(base: str, local: bool) -> dict[str, Any]:
         has_sitemap = bool(re.search(r"(?im)^\s*sitemap:\s*\S+", text))
         blocks_all = bool(re.search(r"(?im)^\s*disallow:\s*/\s*$", text))
         if blocks_all:
-            return _res("robots_txt", "FAIL", "Disallow: / global detectado", "Bloquea el rastreo completo del sitio")
+            return _res(
+                "robots_txt",
+                "FAIL",
+                "Disallow: / global detectado",
+                "Bloquea el rastreo completo del sitio",
+            )
         st = "PASS" if has_sitemap else "WARN"
-        return _res("robots_txt", st, f"robots.txt 200 OK; Sitemap declarado={'sí' if has_sitemap else 'no'}")
+        return _res(
+            "robots_txt",
+            st,
+            f"robots.txt 200 OK; Sitemap declarado={'sí' if has_sitemap else 'no'}",
+        )
     except urllib.error.HTTPError as e:
         logger.debug("robots_txt %s devolvió HTTP %s", base, e.code)
         return _res("robots_txt", "WARN", f"robots.txt HTTP {e.code}")
@@ -496,7 +569,10 @@ def check_sitemap(base: str, robots_text_url: str, local: bool) -> dict[str, Any
             logger.debug("sitemap candidato %s falló: %s: %s", cand, type(e).__name__, e)
             continue
     return _res(
-        "sitemap", "WARN", "No se encontró sitemap.xml válido", "Generar sitemap y declararlo en robots.txt y GSC"
+        "sitemap",
+        "WARN",
+        "No se encontró sitemap.xml válido",
+        "Generar sitemap y declararlo en robots.txt y GSC",
     )
 
 
@@ -513,7 +589,12 @@ def check_og_tags(p: PageParser) -> dict[str, Any]:
             "Añadir og:title, og:description, og:image (>=1200x630)",
         )
     if missing:
-        return _res("og_tags", "WARN", f"Faltan: {', '.join(missing)}", "Completar etiquetas Open Graph obligatorias")
+        return _res(
+            "og_tags",
+            "WARN",
+            f"Faltan: {', '.join(missing)}",
+            "Completar etiquetas Open Graph obligatorias",
+        )
     return _res("og_tags", "PASS", f"OG completo ({len(og)} tags); Twitter: {len(tw)} tags")
 
 
@@ -565,7 +646,11 @@ def _load_body(
             logger.error("fallo de red al obtener %s: %s: %s", url, type(e).__name__, e)
             results["error"] = f"{type(e).__name__}: {e}"
             return None
-        results["http"] = {"status": status, "final_url": final_url, "ttfb_ms": round(ttfb)}
+        results["http"] = {
+            "status": status,
+            "final_url": final_url,
+            "ttfb_ms": round(ttfb),
+        }
         return body, final_url, status, headers, ttfb
     except (TypeError, ValueError) as e:
         logger.error("URL objetivo inválida %r: %s: %s", url, type(e).__name__, e)
@@ -630,7 +715,11 @@ def audit(url: str | None = None, file: str | None = None) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Auditoría 360° - chequeo automatizado de página")
     ap.add_argument("url", nargs="?", help="URL a auditar (https://...)")
     ap.add_argument("--file", help="Fichero HTML local (modo offline/tests)")

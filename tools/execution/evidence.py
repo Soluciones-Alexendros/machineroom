@@ -172,7 +172,11 @@ def content_manifest(root: Path) -> dict[str, Any]:
     root = root.resolve()
     entries: dict[str, str] = {}
     if not root.is_dir():
-        return {"schema_version": 1, "entries": entries, "digest": hashlib.sha256().hexdigest()}
+        return {
+            "schema_version": 1,
+            "entries": entries,
+            "digest": hashlib.sha256().hexdigest(),
+        }
 
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         dirnames[:] = _walk_dirs(root, dirpath, dirnames, entries)
@@ -629,9 +633,21 @@ def load_evidence(  # noqa: PLR0913  # API pública de evidencia: keyword-only, 
         _check_phase_operation(data, expected_phase)
 
     if expected_skill is not None:
-        _check_expected_field(data, "skill", expected_skill, missing="evidence missing skill", label="skill")
+        _check_expected_field(
+            data,
+            "skill",
+            expected_skill,
+            missing="evidence missing skill",
+            label="skill",
+        )
     if expected_target is not None:
-        _check_expected_field(data, "target", expected_target, missing="evidence missing target", label="target")
+        _check_expected_field(
+            data,
+            "target",
+            expected_target,
+            missing="evidence missing target",
+            label="target",
+        )
     if expected_operation is not None:
         _check_expected_field(
             data,

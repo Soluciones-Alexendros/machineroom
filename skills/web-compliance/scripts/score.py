@@ -39,7 +39,9 @@ def _load_json(path: str) -> Any:
         raise RuntimeError(f"JSON inválido en {path}: {e}") from e
 
 
-def load_configs(config_dir: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+def load_configs(
+    config_dir: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     base = config_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "configs")
     checks = _load_json(os.path.join(base, "checks.json"))
     thresholds = _load_json(os.path.join(base, "thresholds.json"))
@@ -123,11 +125,13 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
             "semaforo": (
                 "SIN DATOS"
                 if pct is None
-                else "VERDE"
-                if pct >= thresholds["semaforo"]["verde"]
-                else "AMBAR"
-                if pct >= thresholds["semaforo"]["ambar"]
-                else "ROJO"
+                else (
+                    "VERDE"
+                    if pct >= thresholds["semaforo"]["verde"]
+                    else "AMBAR"
+                    if pct >= thresholds["semaforo"]["ambar"]
+                    else "ROJO"
+                )
             ),
         }
         global_pass += p["pass"]
@@ -180,7 +184,11 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Scoring de compliance Auditoría 360°")
     ap.add_argument("resultados", help="JSON con checks evaluados")
     ap.add_argument("--config", help="Directorio de configs (por defecto ../configs)")
@@ -197,7 +205,8 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("formato inválido en %s: se esperaba objeto con 'checks'", args.resultados)
         print(
             json.dumps(
-                {"error": f"Formato inválido en {args.resultados}: se esperaba objeto con 'checks'"}, ensure_ascii=False
+                {"error": f"Formato inválido en {args.resultados}: se esperaba objeto con 'checks'"},
+                ensure_ascii=False,
             )
         )
         return 2
@@ -209,7 +218,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except (KeyError, TypeError, AttributeError) as e:
         logger.error("configs o resultados inválidos: %s: %s", type(e).__name__, e)
-        print(json.dumps({"error": f"Datos inválidos: {type(e).__name__}: {e}"}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"error": f"Datos inválidos: {type(e).__name__}: {e}"},
+                ensure_ascii=False,
+            )
+        )
         return 2
     out["target"] = data.get("target")
     txt = json.dumps(out, ensure_ascii=False, indent=2)

@@ -22,7 +22,10 @@ def _commands(names: list[str], origin: str = "package") -> list[dict[str, Any]]
         {
             "name": f"skill:{name}",
             "source": "skill",
-            "sourceInfo": {"origin": origin, "path": f"/package/skills/{name}/SKILL.md"},
+            "sourceInfo": {
+                "origin": origin,
+                "path": f"/package/skills/{name}/SKILL.md",
+            },
         }
         for name in names
     ]
@@ -40,14 +43,18 @@ def test_rpc_response_requires_successful_get_commands() -> None:
         pi.skill_commands({"type": "response", "success": False})
 
 
-def test_discovery_checks_names_and_package_origin(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_discovery_checks_names_and_package_origin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/pi")
     monkeypatch.setattr(pi, "rpc_commands", lambda cwd: _commands(["one", "two"]))
     check = pi.pi_discovery_check(Path("."), {"one", "two"})
     assert check.outcome == "pass"
 
 
-def test_discovery_rejects_missing_or_non_package_skill(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_discovery_rejects_missing_or_non_package_skill(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/pi")
     monkeypatch.setattr(pi, "rpc_commands", lambda cwd: _commands(["one"], origin="top-level"))
     check = pi.pi_discovery_check(Path("."), {"one", "two"})

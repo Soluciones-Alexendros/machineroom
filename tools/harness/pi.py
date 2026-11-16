@@ -27,8 +27,15 @@ from orchestrator.ports import AdapterResult  # noqa: E402
 
 from harness.base import Check, build_report, report_exit_code  # noqa: E402
 from harness.model_scope import resolve_pi_model  # noqa: E402
-from harness.policy import ExecutionPolicy, assert_argv_policy, build_policy  # noqa: E402
-from harness.subprocess_run import CancellableRun, run_cancellable_subprocess  # noqa: E402
+from harness.policy import (
+    ExecutionPolicy,
+    assert_argv_policy,
+    build_policy,
+)
+from harness.subprocess_run import (
+    CancellableRun,
+    run_cancellable_subprocess,
+)
 
 
 def response_commands(response: dict[str, Any]) -> list[dict[str, Any]]:
@@ -80,14 +87,19 @@ def _rpc_once(cwd: Path, *, timeout: int, env: dict[str, str] | None) -> list[di
     )
     try:
         stdout, stderr = process.communicate(
-            json.dumps({"id": "mr-skills", "type": "get_commands"}) + "\n", timeout=timeout
+            json.dumps({"id": "mr-skills", "type": "get_commands"}) + "\n",
+            timeout=timeout,
         )
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
         process.wait(timeout=5)
         raise PiCallError(function, f"Pi RPC timeout after {timeout}s", retryable=False) from None
     if process.returncode != 0:
-        raise PiCallError(function, f"Pi RPC exited {process.returncode}: {stderr[:500]}", retryable=True)
+        raise PiCallError(
+            function,
+            f"Pi RPC exited {process.returncode}: {stderr[:500]}",
+            retryable=True,
+        )
     responses: list[Any] = []
     for line in stdout.splitlines():
         if not line.strip():
@@ -126,7 +138,11 @@ def rpc_commands(
                     raise PiCallError(exc.function, detail, retryable=False) from None
                 raise
             pause(_backoff_seconds(attempt))
-    raise PiCallError("rpc_commands", "Pi RPC produced no result" if last is None else last.detail, retryable=False)
+    raise PiCallError(
+        "rpc_commands",
+        "Pi RPC produced no result" if last is None else last.detail,
+        retryable=False,
+    )
 
 
 def pi_discovery_check(cwd: Path, expected_skills: set[str], *, require_package: bool = True) -> Check:
@@ -149,8 +165,18 @@ def pi_discovery_check(cwd: Path, expected_skills: set[str], *, require_package:
             name for name in expected_skills if by_name[name].get("sourceInfo", {}).get("origin") != "package"
         )
         if wrong_origin:
-            return Check("pi-native-discovery", "B", "fail", f"skills not loaded from a package: {wrong_origin}")
-    return Check("pi-native-discovery", "B", "pass", f"{len(expected_skills)} skills discovered natively")
+            return Check(
+                "pi-native-discovery",
+                "B",
+                "fail",
+                f"skills not loaded from a package: {wrong_origin}",
+            )
+    return Check(
+        "pi-native-discovery",
+        "B",
+        "pass",
+        f"{len(expected_skills)} skills discovered natively",
+    )
 
 
 def _retryable_spawn(run: CancellableRun) -> bool:
@@ -162,7 +188,10 @@ def _retryable_spawn(run: CancellableRun) -> bool:
 
 def _interpret_pi_output(run: CancellableRun) -> tuple[str, str]:
     if run.timed_out:
-        return "cancelled", "timeout; process group killed; reconciliation_required before retry"
+        return (
+            "cancelled",
+            "timeout; process group killed; reconciliation_required before retry",
+        )
     stop_reason = ""
     final_text = ""
     try:
@@ -214,7 +243,13 @@ class PiSubagentAdapter:
         self.attempts = attempts
         self.retry_sleep = time.sleep if retry_sleep is None else retry_sleep
 
-    def _argv(self, operation: OpSpec, packet: str, task: dict[str, Any], policy: ExecutionPolicy) -> list[str]:
+    def _argv(
+        self,
+        operation: OpSpec,
+        packet: str,
+        task: dict[str, Any],
+        policy: ExecutionPolicy,
+    ) -> list[str]:
         prompt = f"/skill:{operation.skill}\n\nExecute exactly this task packet:\n{packet}"
         if policy.write_scope:
             paths = ", ".join(policy.write_scope)
@@ -261,7 +296,10 @@ class PiSubagentAdapter:
         started = time.monotonic()
         run_id = str(uuid.uuid4())
         operation = get_operation(str(task["operation"]))
-        packet = json.dumps({"task": task, "plan_id": context.plan_id, "run_id": context.run_id}, sort_keys=True)
+        packet = json.dumps(
+            {"task": task, "plan_id": context.plan_id, "run_id": context.run_id},
+            sort_keys=True,
+        )
         plan_digest = hashlib.sha256(packet.encode("utf-8")).hexdigest()
         policy = build_policy(
             harness="pi",

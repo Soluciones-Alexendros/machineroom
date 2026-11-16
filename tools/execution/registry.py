@@ -137,7 +137,7 @@ def _operation_specs() -> dict[str, OpSpec]:
             require_snapshot=bool(raw.get("snapshot_required", False)),
             timeout=int(raw.get("timeout_seconds", 60)),
             recovery_required=bool(raw.get("recovery_required", False)),
-            argv_template=tuple(raw["argv_template"]) if raw.get("argv_template") is not None else None,
+            argv_template=(tuple(raw["argv_template"]) if raw.get("argv_template") is not None else None),
             description=str(raw.get("description", "")),
             completion_phases=tuple(raw.get("completion_phases", [])),
             required_verifications=tuple(raw.get("required_verifications", [])),

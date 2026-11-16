@@ -36,7 +36,11 @@ class DenyListError(ValueError):
         super().__init__(f"FAIL {COMPONENT} {function}: {detail}")
 
     def to_dict(self) -> dict[str, str]:
-        return {"component": self.component, "function": self.function, "detail": self.detail}
+        return {
+            "component": self.component,
+            "function": self.function,
+            "detail": self.detail,
+        }
 
 
 @dataclass(frozen=True)
@@ -147,7 +151,11 @@ def _rm_rf_only_allowed_tmp(command: str, policy: Policy) -> bool:
 def decide_command(command: str, policy: Policy) -> dict[str, str]:
     """Return ``{permission, user_message, agent_message}`` for one shell command."""
     if _rm_rf_only_allowed_tmp(command, policy):
-        return {"permission": PERMISSION_ALLOW, "user_message": _allow_message(), "agent_message": _allow_message()}
+        return {
+            "permission": PERMISSION_ALLOW,
+            "user_message": _allow_message(),
+            "agent_message": _allow_message(),
+        }
     for rule in policy.deny:
         if rule.pattern.search(command):
             return {

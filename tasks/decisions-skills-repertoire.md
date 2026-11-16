@@ -63,9 +63,18 @@ y merge-watch. `project-machineroom` está marcado `orchestrator` pero sólo aud
 | **B. Mantener y añadir matiz**   | Dejar el tipo y explicar en `## Overview` que el skill «audita ejecutando»                    |
 | **C. Ampliar el enum**           | Añadir `pipeline` al conjunto cerrado de `docs/TAXONOMY.md`                                   |
 
-**Recomendación: A.** El tipo es contrato normativo (`docs/TAXONOMY.md`, «closed set»)
-y gobierna el techo de `allowed-tools` por ADR-0017. Añadir `pipeline` (C) amplía el
-conjunto cerrado sin necesidad. B deja una mentira documentada.
+**Recomendación: A, con una corrección.** El tipo es contrato normativo
+(`docs/TAXONOMY.md`, «closed set») y gobierna el techo de `allowed-tools` por ADR-0017,
+así que el cambio arrastra `allowed-tools`:
+
+- `project-libraries` → `atomic` **y `+Bash`**: como `audit` no puede ejecutar el
+  pipeline SCA que anuncia.
+- `project-publish` → `orchestrator` (sin cambio de herramientas).
+- `project-machineroom` → **se queda `orchestrator`**: `plan_self_change` escribe un
+  spec y `self_audit` corre `doctor.py` con Bash; `audit` (Read/Grep/Glob) se lo
+  impediría.
+
+Detalle por skill en [`decisions-d1-d2-table.md`](decisions-d1-d2-table.md).
 
 ---
 

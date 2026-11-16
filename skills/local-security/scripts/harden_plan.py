@@ -26,7 +26,12 @@ MIN_MANUAL_LEVEL = 2
 
 logger = logging.getLogger("seguridad.harden_plan")
 
-DEFAULT_BASELINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "references", "hardening-baseline.md")
+DEFAULT_BASELINE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "references",
+    "hardening-baseline.md",
+)
 
 
 def _setup_logging(verbose: bool = False) -> None:
@@ -98,7 +103,11 @@ def probe_current() -> dict[str, Any]:
         rc = run_cmd(f"systemctl is-active {unit} 2>/dev/null", timeout=10).strip()
         state[f"svc:{unit}"] = rc or "unknown"
     state["journald_storage"] = (
-        run_cmd("grep '^Storage=' /etc/systemd/journald.conf 2>/dev/null | cut -d= -f2", timeout=10).strip() or "?"
+        run_cmd(
+            "grep '^Storage=' /etc/systemd/journald.conf 2>/dev/null | cut -d= -f2",
+            timeout=10,
+        ).strip()
+        or "?"
     )
     return state
 
@@ -167,7 +176,12 @@ def build_plan(level: int, baseline_ids: list[str], current: dict[str, Any]) -> 
 
 
 def render_md(plan: list[dict[str, Any]], level: int) -> str:
-    lines = [f"# Plan de hardening — Nivel {level}", "", f"Controles con gap: {len(plan)}", ""]
+    lines = [
+        f"# Plan de hardening — Nivel {level}",
+        "",
+        f"Controles con gap: {len(plan)}",
+        "",
+    ]
     for item in plan:
         lines.append(f"## {item['control']} ({item['severity']}, {item['risk']})")
         lines.append(f"- Actual: `{item['current']}` → Deseado: `{item['desired']}`")
@@ -179,7 +193,13 @@ def render_md(plan: list[dict[str, Any]], level: int) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Plan de hardening desde el baseline canonico (solo lectura).")
-    parser.add_argument("--level", type=int, choices=[1, 2, 3], default=2, help="Nivel CIS objetivo (defecto 2)")
+    parser.add_argument(
+        "--level",
+        type=int,
+        choices=[1, 2, 3],
+        default=2,
+        help="Nivel CIS objetivo (defecto 2)",
+    )
     parser.add_argument("--baseline", default=DEFAULT_BASELINE, help="Ruta al baseline canonico")
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
     parser.add_argument("--md", default="", help="Fichero Markdown de salida")
@@ -199,7 +219,10 @@ def main(argv: list[str] | None = None) -> int:
         try:
             with open(args.json, "w", encoding="utf-8") as fh:
                 json.dump(
-                    {"level": args.level, "baseline_controls": len(ids), "plan": plan}, fh, indent=2, ensure_ascii=False
+                    {"level": args.level, "baseline_controls": len(ids), "plan": plan},
+                    fh,
+                    indent=2,
+                    ensure_ascii=False,
                 )
                 fh.write("\n")
         except (OSError, TypeError, ValueError) as exc:

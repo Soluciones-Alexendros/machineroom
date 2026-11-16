@@ -45,7 +45,11 @@ class InstallFailure(ValueError):  # noqa: N818  # plan contract name (component
         super().__init__(format_failure(component, function, detail))
 
     def to_dict(self) -> dict[str, str]:
-        return {"component": self.component, "function": self.function, "detail": self.detail}
+        return {
+            "component": self.component,
+            "function": self.function,
+            "detail": self.detail,
+        }
 
 
 def format_failure(component: str, function: str, detail: str) -> str:
@@ -79,9 +83,19 @@ def migrate_legacy_runtime(home: Path | None = None) -> dict[str, Any]:
                 "migrate_legacy_runtime",
                 f"two runtimes present: {legacy} and {target}; remove one before migrating",
             )
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "already migrated"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "already migrated",
+        }
     if not legacy.exists() and not legacy.is_symlink():
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "no legacy runtime"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "no legacy runtime",
+        }
     if legacy.is_symlink():
         raise InstallFailure(
             "runtime",
@@ -93,18 +107,31 @@ def migrate_legacy_runtime(home: Path | None = None) -> dict[str, Any]:
     except OSError as exc:
         if legacy.exists() and not target.exists():
             raise InstallFailure(
-                "runtime", "migrate_legacy_runtime", f"cannot move {legacy} to {target}: {exc}"
+                "runtime",
+                "migrate_legacy_runtime",
+                f"cannot move {legacy} to {target}: {exc}",
             ) from exc
         raise InstallFailure(
-            "runtime", "migrate_legacy_runtime", f"move left both paths inconsistent ({legacy} -> {target}): {exc}"
+            "runtime",
+            "migrate_legacy_runtime",
+            f"move left both paths inconsistent ({legacy} -> {target}): {exc}",
         ) from exc
-    return {"migrated": True, "from": str(legacy), "to": str(target), "detail": "migrated legacy runtime"}
+    return {
+        "migrated": True,
+        "from": str(legacy),
+        "to": str(target),
+        "detail": "migrated legacy runtime",
+    }
 
 
 def require_runtime(home: Path | None = None) -> Path:
     root = runtime_root(home)
     if root.is_symlink():
-        raise InstallFailure("runtime", "require_runtime", f"runtime must be a real directory, not a symlink: {root}")
+        raise InstallFailure(
+            "runtime",
+            "require_runtime",
+            f"runtime must be a real directory, not a symlink: {root}",
+        )
     if not root.is_dir():
         raise InstallFailure(
             "runtime",
@@ -236,14 +263,22 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
     """
     source = source.resolve()
     if destination.is_symlink():
-        raise InstallFailure("runtime", "sync_payload", f"runtime destination is a symlink: {destination}")
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            f"runtime destination is a symlink: {destination}",
+        )
     destination = destination.resolve() if destination.exists() else destination.absolute()
     try:
         destination.relative_to(source)
     except ValueError:
         pass
     else:
-        raise InstallFailure("runtime", "sync_payload", f"runtime destination is inside source: {destination}")
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            f"runtime destination is inside source: {destination}",
+        )
     for privileged in ("/", "/etc", "/usr", "/var", "/root"):
         if destination == Path(privileged):
             raise InstallFailure("runtime", "sync_payload", f"privileged runtime rejected: {destination}")

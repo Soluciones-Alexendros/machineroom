@@ -232,7 +232,12 @@ def check_adr_citations(root: Path) -> None:
                     continue
                 # Ignore prose that is not a status word (e.g. "ADR-0006 reviews")
                 norm_cite = normalize_status_token(cited_status)
-                if norm_cite not in {"accepted", "proposed", "superseded", "deprecated"}:
+                if norm_cite not in {
+                    "accepted",
+                    "proposed",
+                    "superseded",
+                    "deprecated",
+                }:
                     continue
                 _path, file_status = catalog[adr_id]
                 norm_file = normalize_status_token(file_status)

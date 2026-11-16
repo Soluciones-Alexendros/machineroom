@@ -34,7 +34,11 @@ class StateDirError(ValueError):
         super().__init__(format_state_failure(component, function, detail))
 
     def to_dict(self) -> dict[str, str]:
-        return {"component": self.component, "function": self.function, "detail": self.detail}
+        return {
+            "component": self.component,
+            "function": self.function,
+            "detail": self.detail,
+        }
 
 
 def format_state_failure(component: str, function: str, detail: str) -> str:
@@ -85,18 +89,38 @@ def migrate_state(repo: Path | str, *, dry_run: bool = False) -> dict[str, Any]:
                 "migrate_state",
                 f"two state directories present: {legacy} and {target}; remove one before migrating",
             )
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "already migrated"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "already migrated",
+        }
     if not legacy.exists() and not legacy.is_symlink():
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "no legacy state"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "no legacy state",
+        }
     if legacy.is_symlink():
         raise StateDirError("state", "migrate_state", f"legacy state must be a real directory: {legacy}")
     if dry_run:
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "dry-run"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "dry-run",
+        }
     try:
         legacy.rename(target)
     except OSError as exc:
         raise StateDirError("state", "migrate_state", f"cannot move {legacy} to {target}: {exc}") from exc
-    return {"migrated": True, "from": str(legacy), "to": str(target), "detail": "migrated legacy state"}
+    return {
+        "migrated": True,
+        "from": str(legacy),
+        "to": str(target),
+        "detail": "migrated legacy state",
+    }
 
 
 def excluded_prefixes() -> tuple[str, ...]:

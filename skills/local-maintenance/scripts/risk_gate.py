@@ -313,7 +313,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validador determinista pre-ejecución (clasifica R0/R1/R2/R3).")
     parser.add_argument("command", nargs="?", default=None, help="Comando a validar entre comillas")
     parser.add_argument("snapshot_id", nargs="?", default="", help="ID de snapshot previo")
-    parser.add_argument("approved", nargs="?", default="false", help='"true" si hay aprobación humana explícita')
+    parser.add_argument(
+        "approved",
+        nargs="?",
+        default="false",
+        help='"true" si hay aprobación humana explícita',
+    )
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)

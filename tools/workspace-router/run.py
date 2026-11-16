@@ -27,7 +27,12 @@ from project_load import (  # noqa: E402
     handoff_for_phase,
     load_project,
 )
-from state_paths import StateDirError, format_state_failure, migrate_state, state_dir  # noqa: E402
+from state_paths import (
+    StateDirError,
+    format_state_failure,
+    migrate_state,
+    state_dir,
+)
 from status_bump import advance_status, load_status, migrate_status  # noqa: E402
 
 
@@ -117,10 +122,18 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--repo", default=".", help="Target repository path")
     ap.add_argument("--phase", choices=PHASES, help="Pipeline phase")
     ap.add_argument("--init", action="store_true", help="Create .machineroom scaffold")
-    ap.add_argument("--migrate", action="store_true", help="Move legacy .machineroom to .machineroom")
+    ap.add_argument(
+        "--migrate",
+        action="store_true",
+        help="Move legacy .machineroom to .machineroom",
+    )
     ap.add_argument("--list", action="store_true", help="List allowed skills (read-only)")
     ap.add_argument("--status", action="store_true", help="Show status.yaml (read-only)")
-    ap.add_argument("--migrate-status", action="store_true", help="Persist status schema migration explicitly")
+    ap.add_argument(
+        "--migrate-status",
+        action="store_true",
+        help="Persist status schema migration explicitly",
+    )
     ap.add_argument(
         "--bump",
         action="store_true",
@@ -170,7 +183,10 @@ def _cmd_migrate_state(repo: Path, args: argparse.Namespace) -> int:
     try:
         data = migrate_state(repo, dry_run=args.dry_run)
     except StateDirError as exc:
-        print(format_state_failure(exc.component, exc.function, exc.detail), file=sys.stderr)
+        print(
+            format_state_failure(exc.component, exc.function, exc.detail),
+            file=sys.stderr,
+        )
         return _fail(exc.detail)
     print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else data["detail"])
     return 0
@@ -196,7 +212,13 @@ def _cmd_migrate_status(repo: Path, args: argparse.Namespace) -> int:
 
 def _cmd_awaiting(repo: Path, args: argparse.Namespace) -> int:
     try:
-        data = advance_status(repo, phase=args.phase, note=args.note, evidence_ok=False, allow_awaiting=True)
+        data = advance_status(
+            repo,
+            phase=args.phase,
+            note=args.note,
+            evidence_ok=False,
+            allow_awaiting=True,
+        )
     except ValueError as exc:
         return _fail(exc)
     print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else f"awaiting_agent phase={args.phase}")

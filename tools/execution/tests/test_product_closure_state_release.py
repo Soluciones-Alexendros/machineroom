@@ -37,7 +37,16 @@ def _store(repo: Path, phase: str = "DEFINE", op: str = "specify", **kw: Any) ->
     digest = work_digest(repo)
     return store_result(
         repo,
-        OpResult(op, "succeeded", 0, 1, "", "write-workspace", run_id=str(uuid.uuid4()), plan_digest=DIG),
+        OpResult(
+            op,
+            "succeeded",
+            0,
+            1,
+            "",
+            "write-workspace",
+            run_id=str(uuid.uuid4()),
+            plan_digest=DIG,
+        ),
         phase=phase,
         skill=skill,
         target=target,
@@ -88,7 +97,11 @@ def test_v28_resolve_awaiting_public(tmp_path: Path) -> None:
     assert st.get("awaiting_agent") is True
     rid = _store(tmp_path)
     resolved = resolve_awaiting_agent(
-        tmp_path, run_id=rid, phase="DEFINE", skill="plan-specification", target="/fixture"
+        tmp_path,
+        run_id=rid,
+        phase="DEFINE",
+        skill="plan-specification",
+        target="/fixture",
     )
     assert resolved.get("awaiting_agent") is False
     s = advance_status(
@@ -141,7 +154,12 @@ def _init_release_repo(tmp: Path, version: str, notes_section: str | None) -> Pa
     subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.name", "t"], cwd=tmp, check=True, capture_output=True)
     # Fixtures must not inherit host commit.gpgsign; GPG I/O failures are not readiness signals.
-    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=tmp, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "commit.gpgsign", "false"],
+        cwd=tmp,
+        check=True,
+        capture_output=True,
+    )
     (tmp / "package.json").write_text(json.dumps({"version": version}))
     cl = "# Changelog\n\n"
     if notes_section is not None:

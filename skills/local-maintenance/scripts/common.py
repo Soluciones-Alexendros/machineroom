@@ -228,7 +228,12 @@ def run(cmd: str, timeout: int = 10) -> str:
             check=False,
         )
         if proc.returncode != 0:
-            logger.debug("run rc=%s stderr=%s cmd=%r", proc.returncode, (proc.stderr or "")[:200], cmd)
+            logger.debug(
+                "run rc=%s stderr=%s cmd=%r",
+                proc.returncode,
+                (proc.stderr or "")[:200],
+                cmd,
+            )
         return proc.stdout or ""
     except subprocess.TimeoutExpired:
         logger.warning("run timeout cmd=%r", cmd)
@@ -670,7 +675,11 @@ def _pkg01_pacman(runner: Callable[..., Any] | None) -> int:
 
 
 def _pkg01_apt(runner: Callable[..., Any] | None) -> int:
-    out = _run_with(runner, "apt list --upgradable 2>/dev/null | grep -vE '^(Listing|Listando)' ", 60)
+    out = _run_with(
+        runner,
+        "apt list --upgradable 2>/dev/null | grep -vE '^(Listing|Listando)' ",
+        60,
+    )
     return count_nonempty(out)
 
 
@@ -782,7 +791,14 @@ def check_pkg_03(collector: FindingCollector, pkg_mgr: str, runner: Callable[...
         else:
             # Fallback: el directorio de modulos del kernel en ejecucion ya no
             # existe (kernel actualizado sin reiniciar) -> lista de candidatos.
-            for kernel_pkg in ("linux", "linux-lts", "linux-zen", "linux-hardened", "linux-omarchy", "linux-cachyos"):
+            for kernel_pkg in (
+                "linux",
+                "linux-lts",
+                "linux-zen",
+                "linux-hardened",
+                "linux-omarchy",
+                "linux-cachyos",
+            ):
                 kv = _run_with(runner, f"pacman -Q {kernel_pkg} 2>/dev/null | awk '{{print $2}}'").strip()
                 if kv:
                     installed_kernel = kv
@@ -853,15 +869,24 @@ def check_pkg_05(collector: FindingCollector, pkg_mgr: str, runner: Callable[...
     if pkg_mgr == "pacman":
         orphans = _run_with(runner, "pacman -Qtdq 2>/dev/null", 60)
         orphan_count = count_nonempty(orphans)
-        detail, fix = (f"pacman -Qtdq -> {orphan_count} paquetes", "Revisar y eliminar con pacman -Rns $(pacman -Qtdq)")
+        detail, fix = (
+            f"pacman -Qtdq -> {orphan_count} paquetes",
+            "Revisar y eliminar con pacman -Rns $(pacman -Qtdq)",
+        )
     elif pkg_mgr == "apt":
         orphans = _run_with(runner, "apt autoremove --dry-run 2>/dev/null | grep '^Remv'", 120)
         orphan_count = count_nonempty(orphans)
-        detail, fix = (f"apt autoremove --dry-run -> {orphan_count}", "Ejecutar apt autoremove --purge")
+        detail, fix = (
+            f"apt autoremove --dry-run -> {orphan_count}",
+            "Ejecutar apt autoremove --purge",
+        )
     elif pkg_mgr == "dnf":
         orphans = _run_with(runner, "dnf repoquery --unneeded 2>/dev/null", 60)
         orphan_count = count_nonempty(orphans)
-        detail, fix = (f"dnf repoquery --unneeded -> {orphan_count}", "Ejecutar dnf autoremove")
+        detail, fix = (
+            f"dnf repoquery --unneeded -> {orphan_count}",
+            "Ejecutar dnf autoremove",
+        )
     else:
         collector.add(
             "PKG-05",
@@ -891,7 +916,16 @@ def check_pkg_05(collector: FindingCollector, pkg_mgr: str, runner: Callable[...
         )
     else:
         collector.add(
-            "PKG-05", "hygiene", "P3", "Sin paquetes huerfanos", "Limpio", "PKG-05", "PASS", "0 huerfanos", "", "R0"
+            "PKG-05",
+            "hygiene",
+            "P3",
+            "Sin paquetes huerfanos",
+            "Limpio",
+            "PKG-05",
+            "PASS",
+            "0 huerfanos",
+            "",
+            "R0",
         )
 
 
@@ -1223,14 +1257,25 @@ def check_fs_09(collector: FindingCollector, runner: Callable[..., Any] | None =
         )
     else:
         collector.add(
-            "FS-09", "hygiene", "P3", "Sin symlinks rotos", "Correcto", "FS-09", "PASS", "0 symlinks rotos", "", "R0"
+            "FS-09",
+            "hygiene",
+            "P3",
+            "Sin symlinks rotos",
+            "Correcto",
+            "FS-09",
+            "PASS",
+            "0 symlinks rotos",
+            "",
+            "R0",
         )
 
 
 def check_fs_10_disk(collector: FindingCollector, runner: Callable[..., Any] | None = None) -> None:
     """FS-10: uso de disco critico (higiene)."""
     df_out = _run_with(
-        runner, "df -h -x tmpfs -x devtmpfs -x squashfs --output=source,target,pcent 2>/dev/null | tail -n +2", 15
+        runner,
+        "df -h -x tmpfs -x devtmpfs -x squashfs --output=source,target,pcent 2>/dev/null | tail -n +2",
+        15,
     )
     seen = set()
     for line in df_out.splitlines():
@@ -1343,13 +1388,33 @@ def check_fs_11_inodes(collector: FindingCollector, runner: Callable[..., Any] |
 def check_log_06(collector: FindingCollector, runner: Callable[..., Any] | None = None) -> None:
     """LOG-06: errores en journal ultimas 24h."""
     emerg = to_int(
-        _run_with(runner, "journalctl -p emerg --since '24 hours ago' --no-pager 2>/dev/null | grep -c .", 60)
+        _run_with(
+            runner,
+            "journalctl -p emerg --since '24 hours ago' --no-pager 2>/dev/null | grep -c .",
+            60,
+        )
     )
     alert = to_int(
-        _run_with(runner, "journalctl -p alert --since '24 hours ago' --no-pager 2>/dev/null | grep -c .", 60)
+        _run_with(
+            runner,
+            "journalctl -p alert --since '24 hours ago' --no-pager 2>/dev/null | grep -c .",
+            60,
+        )
     )
-    crit = to_int(_run_with(runner, "journalctl -p crit --since '24 hours ago' --no-pager 2>/dev/null | grep -c .", 60))
-    err = to_int(_run_with(runner, "journalctl -p err --since '24 hours ago' --no-pager 2>/dev/null | grep -c .", 60))
+    crit = to_int(
+        _run_with(
+            runner,
+            "journalctl -p crit --since '24 hours ago' --no-pager 2>/dev/null | grep -c .",
+            60,
+        )
+    )
+    err = to_int(
+        _run_with(
+            runner,
+            "journalctl -p err --since '24 hours ago' --no-pager 2>/dev/null | grep -c .",
+            60,
+        )
+    )
     journal_errors = emerg + alert + crit + err
     if journal_errors > MAX_JOURNAL_ERRORS:
         collector.add(

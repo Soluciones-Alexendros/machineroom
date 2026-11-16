@@ -191,15 +191,31 @@ def get_package_info(pkg_mgr: str) -> dict[str, Any]:
         orphan_count = to_int(run("pacman -Qtdq 2>/dev/null | wc -l", timeout=30).strip())
         foreign_count = to_int(run("pacman -Qmq 2>/dev/null | wc -l", timeout=30).strip())
         pacnew_count = to_int(
-            run("find /etc -name '*.pacnew' -o -name '*.pacsave' 2>/dev/null | wc -l", timeout=30).strip()
+            run(
+                "find /etc -name '*.pacnew' -o -name '*.pacsave' 2>/dev/null | wc -l",
+                timeout=30,
+            ).strip()
         )
         cache_size_mb = to_int(run("du -sm /var/cache/pacman/pkg 2>/dev/null | cut -f1", timeout=30).strip())
     elif pkg_mgr == "apt":
         pkg_count = to_int(run("dpkg -l 2>/dev/null | grep '^ii' | wc -l", timeout=30).strip())
-        orphan_count = to_int(run("apt autoremove --dry-run 2>/dev/null | grep '^Remv' | wc -l", timeout=60).strip())
-        foreign_count = to_int(run("apt list --manual-installed 2>/dev/null | tail -n +2 | wc -l", timeout=60).strip())
+        orphan_count = to_int(
+            run(
+                "apt autoremove --dry-run 2>/dev/null | grep '^Remv' | wc -l",
+                timeout=60,
+            ).strip()
+        )
+        foreign_count = to_int(
+            run(
+                "apt list --manual-installed 2>/dev/null | tail -n +2 | wc -l",
+                timeout=60,
+            ).strip()
+        )
         pacnew_count = to_int(
-            run("find /etc -name '*.dpkg-*' -o -name '*.ucf-*' 2>/dev/null | wc -l", timeout=30).strip()
+            run(
+                "find /etc -name '*.dpkg-*' -o -name '*.ucf-*' 2>/dev/null | wc -l",
+                timeout=30,
+            ).strip()
         )
         cache_size_mb = to_int(run("du -sm /var/cache/apt/archives 2>/dev/null | cut -f1", timeout=30).strip())
     elif pkg_mgr == "dnf":
@@ -207,7 +223,10 @@ def get_package_info(pkg_mgr: str) -> dict[str, Any]:
         orphan_count = to_int(run("dnf repoquery --unneeded 2>/dev/null | wc -l", timeout=60).strip())
         foreign_count = to_int(run("dnf list extras 2>/dev/null | tail -n +2 | wc -l", timeout=60).strip())
         pacnew_count = to_int(
-            run("find /etc -name '*.rpmnew' -o -name '*.rpmsave' 2>/dev/null | wc -l", timeout=30).strip()
+            run(
+                "find /etc -name '*.rpmnew' -o -name '*.rpmsave' 2>/dev/null | wc -l",
+                timeout=30,
+            ).strip()
         )
         cache_size_mb = to_int(run("du -sm /var/cache/dnf 2>/dev/null | cut -f1", timeout=30).strip())
 
@@ -229,7 +248,10 @@ def get_journal_info() -> dict[str, Any]:
         disk_usage = "0B"
 
     errors_24h = to_int(
-        run("journalctl -p 0..3 --since '24 hours ago' --no-pager 2>/dev/null | grep -c .", timeout=30).strip()
+        run(
+            "journalctl -p 0..3 --since '24 hours ago' --no-pager 2>/dev/null | grep -c .",
+            timeout=30,
+        ).strip()
     )
 
     coredumps = to_int(run("coredumpctl list 2>/dev/null | tail -1 | awk '{print $1}'", timeout=15).strip())
@@ -244,7 +266,11 @@ def get_firmware_info() -> dict[str, Any]:
     if fwupd_available:
         updates_available = to_int(run("fwupdmgr get-updates 2>/dev/null | grep -c '^Device:'", timeout=30).strip())
         devices = to_int(run("fwupdmgr get-devices 2>/dev/null | grep -c '^Device:'", timeout=30).strip())
-    return {"fwupd_available": fwupd_available, "updates_available": updates_available, "devices": devices}
+    return {
+        "fwupd_available": fwupd_available,
+        "updates_available": updates_available,
+        "devices": devices,
+    }
 
 
 def get_modern_stack() -> dict[str, Any]:
@@ -312,7 +338,12 @@ def _setup_logging(verbose: bool = False) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Fingerprint del sistema (solo lectura).")
-    parser.add_argument("output_file", nargs="?", default="system-profile.json", help="Fichero JSON de salida")
+    parser.add_argument(
+        "output_file",
+        nargs="?",
+        default="system-profile.json",
+        help="Fichero JSON de salida",
+    )
     parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)

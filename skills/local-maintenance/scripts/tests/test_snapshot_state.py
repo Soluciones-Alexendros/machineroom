@@ -77,7 +77,11 @@ def test_detect_pkg_mgr_golden() -> None:
 
 
 def test_snapshot_detect_pkgmgr_pacman(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(snapshot_state, "which", lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None)
+    monkeypatch.setattr(
+        snapshot_state,
+        "which",
+        lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None,
+    )
     mgr = snapshot_state.detect_pkg_mgr()
     assert mgr == "pacman"
 
@@ -104,7 +108,10 @@ def test_snapshot_create_basic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     snap_dir = tmp_path / "snapshots"
     snap_dir.mkdir()
     with (
-        patch("snapshot_state.which", lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None),
+        patch(
+            "snapshot_state.which",
+            lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None,
+        ),
         patch("snapshot_state.run_capture", return_value=(0, "pkg1\npkg2")),
         patch("snapshot_state.run", return_value="pkg1\npkg2"),
     ):

@@ -19,7 +19,11 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tools" / "workspace-router"))
 
-from harness.model_scope import ModelScopeError, model_in_scope, resolve_pi_model  # noqa: E402
+from harness.model_scope import (
+    ModelScopeError,
+    model_in_scope,
+    resolve_pi_model,
+)
 from harness.pi import PiSubagentAdapter  # noqa: E402
 from orchestrator.run import _build_adapter  # noqa: E402
 
@@ -89,7 +93,9 @@ def test_orchestrator_uses_the_scoped_default(monkeypatch: pytest.MonkeyPatch) -
     assert adapter.model == "opencode-go/deepseek-v4.1-flash"
 
 
-def test_orchestrator_rejects_beam_free_on_opencode_go(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_orchestrator_rejects_beam_free_on_opencode_go(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("MR_PI_MODEL", "opencode-go/beam-free")
     with pytest.raises(ModelScopeError):
         _build_adapter("pi")

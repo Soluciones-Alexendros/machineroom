@@ -24,7 +24,12 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from harness import naming  # noqa: E402
-from harness.runtime import InstallFailure, format_failure, make_relative_symlink, write_user_hooks_config  # noqa: E402
+from harness.runtime import (
+    InstallFailure,
+    format_failure,
+    make_relative_symlink,
+    write_user_hooks_config,
+)
 
 MANIFEST_NAME = ".machineroom-full-manifest.json"
 JOURNAL_NAME = ".machineroom-full-journal.json"
@@ -196,15 +201,25 @@ def _verify_installed_link(resource: Resource, destination: Path, *, user_scope:
     link_text = Path(os.readlink(destination))
     if user_scope:
         if link_text.is_absolute():
-            raise InstallFailure(component, "install_full", f"user link must be relative: {destination} -> {link_text}")
+            raise InstallFailure(
+                component,
+                "install_full",
+                f"user link must be relative: {destination} -> {link_text}",
+            )
         try:
             destination.resolve().relative_to(source_root.resolve())
         except ValueError as exc:
             raise InstallFailure(
-                component, "install_full", f"link escapes runtime: {destination} -> {destination.resolve()}"
+                component,
+                "install_full",
+                f"link escapes runtime: {destination} -> {destination.resolve()}",
             ) from exc
     elif not link_text.is_absolute():
-        raise InstallFailure(component, "install_full", f"project link must be absolute: {destination} -> {link_text}")
+        raise InstallFailure(
+            component,
+            "install_full",
+            f"project link must be absolute: {destination} -> {link_text}",
+        )
     if destination.resolve() != _source_of(resource).resolve():
         raise InstallFailure(
             component,
@@ -515,7 +530,7 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 json.dumps(
                     {
-                        "status": "conflict" if isinstance(exc, ConflictError) else "failed",
+                        "status": ("conflict" if isinstance(exc, ConflictError) else "failed"),
                         "detail": exc.detail,
                         "failures": [failure],
                     }
@@ -523,8 +538,15 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 1
     except (ValueError, OSError) as exc:
-        failure = {"component": "runtime", "function": "install_full", "detail": str(exc)}
-        print(format_failure(failure["component"], failure["function"], failure["detail"]), file=sys.stderr)
+        failure = {
+            "component": "runtime",
+            "function": "install_full",
+            "detail": str(exc),
+        }
+        print(
+            format_failure(failure["component"], failure["function"], failure["detail"]),
+            file=sys.stderr,
+        )
         if args.json:
             print(json.dumps({"status": "failed", "detail": str(exc), "failures": [failure]}))
         return 1

@@ -87,18 +87,36 @@ def write_text(path: str, content: str) -> None:
 
 def capture_packages(pkg_mgr: str, snapshot_path: str) -> None:
     if pkg_mgr == "pacman":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("pacman -Q 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-explicit.txt", run("pacman -Qe 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-orphans.txt", run("pacman -Qtdq 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-foreign.txt", run("pacman -Qmq 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("pacman -Q 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-explicit.txt",
+            run("pacman -Qe 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-orphans.txt",
+            run("pacman -Qtdq 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-foreign.txt",
+            run("pacman -Qmq 2>/dev/null", timeout=30),
+        )
     elif pkg_mgr == "apt":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("dpkg --get-selections 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("dpkg --get-selections 2>/dev/null", timeout=30),
+        )
         write_text(
             f"{snapshot_path}/packages-explicit.txt",
             run("apt list --manual-installed 2>/dev/null | tail -n +2", timeout=60),
         )
     elif pkg_mgr == "dnf":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("rpm -qa 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("rpm -qa 2>/dev/null", timeout=30),
+        )
         write_text(
             f"{snapshot_path}/packages-explicit.txt",
             run("dnf list installed 2>/dev/null | tail -n +2", timeout=60),
@@ -385,7 +403,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("snapshot_id", nargs="?", default=None, help="ID del snapshot")
     parser.add_argument("--snapshot-dir", default=None, help="Override directorio base de snapshots")
     parser.add_argument("--list", action="store_true", help="Listar snapshots existentes")
-    parser.add_argument("--rollback", default="", help="ID del snapshot contra el que comparar/restaurar")
+    parser.add_argument(
+        "--rollback",
+        default="",
+        help="ID del snapshot contra el que comparar/restaurar",
+    )
     parser.add_argument("--execute", action="store_true", help="Ejecutar rollback (por defecto dry-run)")
     parser.add_argument(
         "--restore-root",

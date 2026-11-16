@@ -79,13 +79,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Machineroom DAG orchestrator")
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument(
-        "--plan", type=Path, help="Plan document with aw-plan block (validated; activates when not dry-run)"
+        "--plan",
+        type=Path,
+        help="Plan document with aw-plan block (validated; activates when not dry-run)",
     )
     parser.add_argument("--adapter", choices=("pi", "cursor"), required=True)
     parser.add_argument("--max-parallel", type=int, default=4)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true", default=True)
-    parser.add_argument("--no-worktree", action="store_true", help="Call the harness adapter without WorktreeAdapter")
+    parser.add_argument(
+        "--no-worktree",
+        action="store_true",
+        help="Call the harness adapter without WorktreeAdapter",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     repo = args.repo.resolve()

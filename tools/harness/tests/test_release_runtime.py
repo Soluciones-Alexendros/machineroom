@@ -52,7 +52,13 @@ def test_home_sync_command_refuses_development_checkout(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["HOME"] = str(home)
     proc = subprocess.run(
-        ["bash", str(ROOT / "scripts" / "runtime-sync.sh"), "sync", "--from", str(ROOT)],
+        [
+            "bash",
+            str(ROOT / "scripts" / "runtime-sync.sh"),
+            "sync",
+            "--from",
+            str(ROOT),
+        ],
         cwd=ROOT,
         env=env,
         capture_output=True,

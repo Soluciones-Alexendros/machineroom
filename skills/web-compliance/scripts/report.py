@@ -143,10 +143,18 @@ def _write_report(path: str, md: str) -> int | None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Informe de cierre Auditoría 360°")
     ap.add_argument("entrada", help="JSON de scoring (o de checks con --from-checks)")
-    ap.add_argument("--from-checks", action="store_true", help="La entrada es JSON de checks; calcula el scoring")
+    ap.add_argument(
+        "--from-checks",
+        action="store_true",
+        help="La entrada es JSON de checks; calcula el scoring",
+    )
     ap.add_argument("--config", help="Directorio de configs")
     ap.add_argument("--md", help="Guardar informe Markdown")
     args = ap.parse_args(argv)

@@ -3,12 +3,18 @@
   "skills": [
     {
       "name": "local-maintenance",
-      "description": "Systematic Linux system maintenance by IA agent: hygiene, updates, ordering, optimization and suggestions. Graduated modes (health-check/quick audit, complete audit, routine, optimization, cleanup) with read-only execution by default, deterministic command validation by risk level, reversible snapshots and system health KPIs (health score 0-100, P0-P4 findings, system fingerprint, temporal diff). Defensive security (hardening, records/forensics, vulns, scans, AppArmor) NOT this skill: handled by sister local-security skill. Use when asked: auditing a Linux system, health-check, OS health status, routine review, cleaning packages/caches/logs, orphan pacman/AUR, boot or resource optimization, or periodic maintenance of Arch/EndeavourOS/CachyOS/Debian/RHEL. Includes guided interaction to select objective, mode and depth according to context. Not for defensive security hardening or forensics (→ local-security). Uses Bash/Write for host mutations only via run_registered.",
+      "description": "Systematic Linux system maintenance with hygiene, updates, optimization and health KPIs. Use when auditing a Linux system, routine review, cleaning packages/caches/logs, orphan pacman/AUR, boot or resource optimization, OS health-check, or periodic maintenance of Arch/EndeavourOS/CachyOS/Debian/RHEL. Not for defensive security hardening or forensics (→ local-security).",
       "domain": "local",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "local-maintenance"
+        "['local-maintenance'",
+        "'local'",
+        "'maintenance'",
+        "'linux'",
+        "'health'",
+        "'cleanup'",
+        "'optimization']"
       ],
       "triggers": [
         "audit-full",
@@ -34,12 +40,18 @@
     },
     {
       "name": "local-security",
-      "description": "Defensive Linux host security: posture, light forensic record management, CVEs, sysctl/SSH hardening, AppArmor/SELinux, auditd and fail2ban. Use when the operator requests system security audit, host hardening or auth log review. Not for application code vulnerabilities (→ web-owasp) nor disk cleanup (→ local-maintenance). Uses Bash/Write for host hardening only via run_registered.",
+      "description": "Defensive Linux host security: posture, forensic record management, CVEs, sysctl/SSH hardening, AppArmor/SELinux, auditd and fail2ban. Use when the operator requests system security audit, host hardening or auth log review. Not for application code vulnerabilities (→ web-owasp) nor disk cleanup (→ local-maintenance).",
       "domain": "local",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "local-security"
+        "['local-security'",
+        "'local'",
+        "'security'",
+        "'hardening'",
+        "'apparmor'",
+        "'forensics'",
+        "'cve']"
       ],
       "triggers": [
         "apparmor",
@@ -54,27 +66,27 @@
     },
     {
       "name": "plan-continue",
-      "description": "Machineroom orchestrator: continue from roadmap or .machineroom status; when missing, audit the repo, scaffold project.yaml/status.yaml, and route DEFINE→SCHEMAS→IMPLEMENT→VALIDATE→INTEGRATE→STATUS. Use when asking where to start, plan mode, repo starting, or bringing a project up to date. Not for release close or version publication (→ project-publish). Uses Write/Bash to scaffold .machineroom and run phase routing.",
+      "description": "Machineroom phase router: continue from roadmap or .machineroom status, scaffold project.yaml/status.yaml, and route DEFINE→SCHEMAS→IMPLEMENT→VALIDATE→INTEGRATE→STATUS. Use when asking where to start, plan mode, repo starting, or bringing a project up to date. Not for release close or version publication (→ project-publish); not for repo health board (→ project-audit).",
       "domain": "plan",
       "type": "orchestrator",
       "language": "en",
       "keywords": [
-        "plan-continue"
+        "['plan-continue'",
+        "'plan'",
+        "'phase-router'",
+        "'status-bump'",
+        "'workspace']"
       ],
       "triggers": [
         "C4",
         "acoplamiento",
-        "audita repo",
         "audítalo y publícalo",
         "ciclo de vida",
         "deepening",
-        "inicio de plan",
         "mapa de módulos",
         "pon al día proyecto",
         "por donde empiezo",
         "qué hago con este repo",
-        "repo standard",
-        "repo starting",
         "revisa la arquitectura"
       ],
       "entry": "skills/plan-continue/SKILL.md",
@@ -82,12 +94,17 @@
     },
     {
       "name": "plan-specification",
-      "description": "Write a structured specification before writing any code, then decompose it into small verifiable tasks with explicit acceptance criteria. The spec is the shared source of truth — it defines what we build, why, and how we know it is done. Use when starting a project or feature, when requirements are ambiguous, or when the change touches multiple modules. Not for single-line fixes or typo corrections. Uses Write/Bash for SPEC/PLAN/TASKS and local validation.",
+      "description": "Write a structured specification before writing any code, then decompose it into small verifiable tasks with explicit acceptance criteria. Use when starting a project or feature, when requirements are ambiguous, or when the change touches multiple modules. Not for single-line fixes or typo corrections (→ plan-validators for implementation).",
       "domain": "plan",
       "type": "orchestrator",
       "language": "en",
       "keywords": [
-        "plan-specification"
+        "['plan-specification'",
+        "'plan'",
+        "'spec'",
+        "'tasks'",
+        "'acceptance-criteria'",
+        "'capability-map']"
       ],
       "triggers": [
         "desglosa tareas",
@@ -100,15 +117,18 @@
     },
     {
       "name": "plan-validators",
-      "description": "Drive implementation and QA with integrated tests: red-green-refactor, bug reproduction, test strategy, quality metrics and behavior coverage for routes, functions and jobs. Use when implementing or changing behavior, writing or reviewing tests, or planning coverage. Not for pure configuration, documentation or static content changes, nor production host debugging (→ local-maintenance). Uses Write/Bash for red/green project test suites.",
+      "description": "Drive implementation and QA with integrated tests: red-green-refactor, bug reproduction, test strategy, quality metrics and behavior coverage for routes, functions and jobs. Use when implementing or changing behavior, writing or reviewing tests, or planning coverage. Not for pure configuration, documentation or static content changes, nor production host debugging (→ local-maintenance).",
       "domain": "plan",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "plan-validators",
-        "tdd",
-        "test coverage",
-        "qa"
+        "['plan-validators'",
+        "'plan'",
+        "'tdd'",
+        "'test-coverage'",
+        "'qa'",
+        "'red-green'",
+        "'prove-it']"
       ],
       "triggers": [
         "cobertura de tests",
@@ -126,12 +146,17 @@
     },
     {
       "name": "project-architecture",
-      "description": "Code architecture verification and analysis. Use when analyzing code structure, dependencies, architectural drift, or refactoring opportunities. Use when the operator requests architectural analysis, dependency mapping, or code health assessment. Not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries); minor implementation without architecture analysis uses role-* skills.",
+      "description": "Code architecture verification and analysis. Use when analyzing code structure, dependencies, architectural drift, or refactoring opportunities. Not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries); minor implementation without architecture analysis uses role-* skills.",
       "domain": "project",
       "type": "audit",
       "language": "en",
       "keywords": [
-        "project-architecture"
+        "['project-architecture'",
+        "'project'",
+        "'architecture'",
+        "'dependency-mapping'",
+        "'drift'",
+        "'metrics']"
       ],
       "triggers": [
         "C4",
@@ -144,13 +169,45 @@
       "compatibility": "cursor, pi"
     },
     {
+      "name": "project-audit",
+      "description": "Repo health board and evolution plan: scan repository, generate status board (P0/P1/P2 findings, health score, Renovate/CI status), and produce evolution plan. Use when starting a project, bringing a repo up to date, or needing a status snapshot. Not for machineroom self-audit (→ project-machineroom); not for phase routing (→ plan-continue); not for dependency SCA/CVE scanning (→ project-libraries); not for architecture drift analysis (→ project-architecture).",
+      "domain": "project",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['project-audit'",
+        "'project'",
+        "'repo-audit'",
+        "'health-board'",
+        "'evolution-plan'",
+        "'status']"
+      ],
+      "triggers": [
+        "audita repo",
+        "estado del repo",
+        "evolution plan",
+        "health board",
+        "inicio de plan",
+        "repo standard",
+        "repo starting"
+      ],
+      "entry": "skills/project-audit/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
       "name": "project-libraries",
       "description": "Dependency audit (SCA/CVE): multi-language pipeline (npm/pip/cargo/go/maven/gradle/composer/gem) to detect vulnerabilities, malware, typosquatting, unused dependencies and outdated. Use when performing dependency audit, SCA, CVE scanning, supply chain security or SBOM generation. Not for code security review (→ web-owasp) nor web compliance audits (→ web-compliance).",
       "domain": "project",
-      "type": "audit",
+      "type": "atomic",
       "language": "en",
       "keywords": [
-        "project-libraries"
+        "['project-libraries'",
+        "'project'",
+        "'sca'",
+        "'cve'",
+        "'sbom'",
+        "'supply-chain'",
+        "'remediation']"
       ],
       "triggers": [
         "cve",
@@ -164,15 +221,18 @@
     },
     {
       "name": "project-machineroom",
-      "description": "Audit and improve the machineroom system itself: canon map, control plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom, checking harness A/B/C drift, or planning an approved change to the pipeline. Not for generic architecture reviews (→ project-architecture), continuing an arbitrary product plan (→ plan-continue), or publishing a release (→ project-publish). ES: autoauditoría machineroom, deriva de harnesses, mejora del propio sistema.",
+      "description": "Audit and improve the machineroom system itself: canon map, control plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom, checking harness A/B/C drift, or planning an approved change to the pipeline. Not for generic architecture reviews (→ project-architecture); not for continuing an arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish). Not for product-repo health (→ project-audit).",
       "domain": "project",
       "type": "orchestrator",
       "language": "en",
       "keywords": [
-        "project-machineroom",
-        "self-audit",
-        "harness-doctor",
-        "machineroom"
+        "['project-machineroom'",
+        "'project'",
+        "'self-audit'",
+        "'canon'",
+        "'harness'",
+        "'control-plane'",
+        "'doctor']"
       ],
       "triggers": [
         "audita machineroom",
@@ -189,16 +249,18 @@
     },
     {
       "name": "project-publish",
-      "description": "Close a GitHub repository or work increment with local quality gates, version publication, CI/CD audit, Husky, lint-staged, tests, e2e, PR and merge-watch. Use when configuring or running pre-commit/pre-push gates, publishing versions, or closing a plan. Not for implementing product features, test authorship (→ plan-validators), or forges distinct from github.com. Uses Bash/Write for local gates, git/gh publish via run_registered.",
+      "description": "Close a GitHub repository or work increment with local quality gates, version publication, CI/CD audit, Husky, lint-staged, tests, e2e, PR and merge-watch. Use when configuring or running pre-commit/pre-push gates, publishing versions, or closing a plan. Not for implementing product features, test authorship (→ plan-validators), or forges distinct from github.com.",
       "domain": "project",
-      "type": "atomic",
+      "type": "orchestrator",
       "language": "en",
       "keywords": [
-        "project-publish",
-        "husky",
-        "lint-staged",
-        "pre-commit",
-        "release"
+        "['project-publish'",
+        "'project'",
+        "'release'",
+        "'husky'",
+        "'lint-staged'",
+        "'ci-gate'",
+        "'versioning']"
       ],
       "triggers": [
         "changelog",
@@ -216,12 +278,18 @@
     },
     {
       "name": "role-back",
-      "description": "Specialist role for backend application work: data at rest and in motion, routes, deployments, robustness and application security. Includes general patterns for cache/KV, queues, rate limiting, object storage and search (Upstash and equivalents as providers). Use when implementing APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries). Uses Bash/Write to implement and mutate backend code.",
+      "description": "Specialist role for backend application work: data at rest and in motion, routes, deployments, robustness and application security. Includes patterns for cache/KV, queues, rate limiting, object storage and search. Use when implementing APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries).",
       "domain": "role",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "role-back"
+        "['role-back'",
+        "'role'",
+        "'backend'",
+        "'api'",
+        "'persistence'",
+        "'jobs'",
+        "'patterns']"
       ],
       "triggers": [
         "backend",
@@ -245,24 +313,18 @@
     },
     {
       "name": "role-clean-code",
-      "description": "Implements Clean Code principles to write expressive, maintainable software and refactor existing code safely in any language. Use when the operator asks for 'clean code', 'código limpio', refactoring, meaningful names, smaller functions, fewer code smells, or cleanup of duplicated logic. Not for architecture-only assessments (→ project-architecture), test-suite audits (→ plan-validators), or security reviews (→ web-owasp). Uses Bash/Write for mutative refactoring.",
+      "description": "Implements Clean Code principles to write expressive, maintainable software and refactor existing code safely in any language. Use when the operator asks for clean code, refactoring, meaningful names, smaller functions, fewer code smells, or cleanup of duplicated logic. Not for architecture-only assessments (→ project-architecture), test-suite audits (→ plan-validators), or security reviews (→ web-owasp).",
       "domain": "role",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "role-clean-code",
-        "clean code",
-        "código limpio",
-        "refactor",
-        "refactoring",
-        "refactorización",
-        "code smells",
-        "meaningful names",
-        "nombres significativos",
-        "small functions",
-        "funciones pequeñas",
-        "duplicated code",
-        "código duplicado"
+        "['role-clean-code'",
+        "'role'",
+        "'clean-code'",
+        "'refactor'",
+        "'naming'",
+        "'smells'",
+        "'protocols']"
       ],
       "triggers": [
         "clean code",
@@ -282,12 +344,18 @@
     },
     {
       "name": "role-design",
-      "description": "Specialist role for UI/UX and visual systems: intentional visual direction, typography, palette, motion, clean indented CSS, design tokens (DTCG/Style Dictionary), Tailwind v4 and reusable components. Use when designing or redesigning interfaces, building a design system, or polishing interaction. Not for a11y/SEO audits (→ web-compliance) nor frontend application logic (→ role-front). Uses Bash/Write to mutate tokens, CSS and visual surfaces.",
+      "description": "Specialist role for UI/UX and visual systems: intentional visual direction, typography, palette, motion, clean indented CSS, design tokens (DTCG/Style Dictionary), Tailwind v4 and reusable components. Use when designing or redesigning interfaces, building a design system, or polishing interaction. Not for a11y/SEO audits (→ web-compliance) nor frontend application logic (→ role-front).",
       "domain": "role",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "role-design"
+        "['role-design'",
+        "'role'",
+        "'design'",
+        "'tokens'",
+        "'tailwind'",
+        "'components'",
+        "'visual']"
       ],
       "triggers": [
         "design system",
@@ -301,12 +369,18 @@
     },
     {
       "name": "role-front",
-      "description": "Specialist role for frontend application work: UI stability, browser compatibility, state coherence across routes, and clear communication contracts between client and server. Use when implementing or fixing frontend features, client state, routing surfaces or interaction flows. Not for visual direction or design tokens (→ role-design), a11y/SEO audits (→ web-compliance), or performance audits (→ web-performance). Uses Bash/Write to implement and mutate frontend code.",
+      "description": "Specialist role for frontend application work: UI stability, browser compatibility, state coherence across routes, and clear communication contracts between client and server. Use when implementing or fixing frontend features, client state, routing surfaces or interaction flows. Not for visual direction or design tokens (→ role-design), a11y/SEO audits (→ web-compliance), or performance audits (→ web-performance).",
       "domain": "role",
       "type": "atomic",
       "language": "en",
       "keywords": [
-        "role-front"
+        "['role-front'",
+        "'role'",
+        "'frontend'",
+        "'state'",
+        "'routing'",
+        "'forms'",
+        "'contracts']"
       ],
       "triggers": [
         "componente",
@@ -330,7 +404,13 @@
       "type": "audit",
       "language": "en",
       "keywords": [
-        "web-compliance"
+        "['web-compliance'",
+        "'web'",
+        "'compliance'",
+        "'wcag'",
+        "'gdpr'",
+        "'seo'",
+        "'remediation']"
       ],
       "triggers": [
         "accesibilidad",
@@ -349,7 +429,13 @@
       "type": "audit",
       "language": "en",
       "keywords": [
-        "web-owasp"
+        "['web-owasp'",
+        "'web'",
+        "'owasp'",
+        "'injection'",
+        "'xss'",
+        "'authz'",
+        "'crypto']"
       ],
       "triggers": [
         "inyección",
@@ -368,7 +454,13 @@
       "type": "audit",
       "language": "en",
       "keywords": [
-        "web-performance"
+        "['web-performance'",
+        "'web'",
+        "'performance'",
+        "'cwv'",
+        "'lighthouse'",
+        "'caching'",
+        "'rendering']"
       ],
       "triggers": [
         "core web vitals",

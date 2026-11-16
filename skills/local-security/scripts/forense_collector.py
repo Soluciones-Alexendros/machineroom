@@ -66,7 +66,13 @@ def collect_auth(since: str) -> list[dict[str, Any]]:
     )
     for line in out.splitlines():
         if line.strip():
-            events.append({"ts": line[:15], "source": "journalctl:sshd", "summary": line.strip()[:300]})
+            events.append(
+                {
+                    "ts": line[:15],
+                    "source": "journalctl:sshd",
+                    "summary": line.strip()[:300],
+                }
+            )
     out = run_cmd("last -f /var/log/wtmp 2>/dev/null | head -20")
     for line in out.splitlines():
         if line.strip():
@@ -81,7 +87,13 @@ def collect_sudo(since: str) -> list[dict[str, Any]]:
     )
     for line in out.splitlines():
         if line.strip():
-            events.append({"ts": line[:15], "source": "journalctl:sudo", "summary": line.strip()[:300]})
+            events.append(
+                {
+                    "ts": line[:15],
+                    "source": "journalctl:sudo",
+                    "summary": line.strip()[:300],
+                }
+            )
     return events
 
 
@@ -113,11 +125,23 @@ def collect_pid(pid: str, since: str) -> list[dict[str, Any]]:
         out = run_cmd(f"ausearch -p {pid} -ts {since} 2>/dev/null | head -20")
         for line in out.splitlines():
             if line.strip():
-                events.append({"ts": "", "source": f"ausearch:pid:{pid}", "summary": line.strip()[:300]})
+                events.append(
+                    {
+                        "ts": "",
+                        "source": f"ausearch:pid:{pid}",
+                        "summary": line.strip()[:300],
+                    }
+                )
     out = run_cmd(f'journalctl _PID={pid} --since "{since}" --no-pager 2>/dev/null | head -20')
     for line in out.splitlines():
         if line.strip():
-            events.append({"ts": line[:15], "source": f"journalctl:pid:{pid}", "summary": line.strip()[:300]})
+            events.append(
+                {
+                    "ts": line[:15],
+                    "source": f"journalctl:pid:{pid}",
+                    "summary": line.strip()[:300],
+                }
+            )
     return events
 
 

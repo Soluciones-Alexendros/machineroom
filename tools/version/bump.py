@@ -36,8 +36,22 @@ KINDS = ("major", "minor", "patch")
 RANK = {"patch": 0, "minor": 1, "major": 2}
 
 ALIASES = {
-    "major": {"major", "actualizacion-mayor", "actualizacion", "breaking", "incompatible", "mayor"},
-    "minor": {"minor", "desarrollo-menor", "menor", "feature", "funcionalidad", "nueva-funcionalidad"},
+    "major": {
+        "major",
+        "actualizacion-mayor",
+        "actualizacion",
+        "breaking",
+        "incompatible",
+        "mayor",
+    },
+    "minor": {
+        "minor",
+        "desarrollo-menor",
+        "menor",
+        "feature",
+        "funcionalidad",
+        "nueva-funcionalidad",
+    },
     "patch": {"patch", "parche", "parcheado", "fix", "correccion", "hotfix", "rev"},
 }
 for _k in list(ALIASES):
@@ -185,7 +199,13 @@ def update_changelog(entries: list[tuple[str, str, str, str]], message: str | No
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Autoversionado semver por magnitud (major|minor|patch).")
     p.add_argument("--root", default=str(ROOT), help="raiz del repo")
-    p.add_argument("--type", "-t", dest="kind", default=None, help="magnitud: major|minor|patch (+alias ES)")
+    p.add_argument(
+        "--type",
+        "-t",
+        dest="kind",
+        default=None,
+        help="magnitud: major|minor|patch (+alias ES)",
+    )
     p.add_argument("--skills", default=None, help="lista coma-separada de skills")
     p.add_argument("--all", action="store_true", help="todas las skills")
     p.add_argument("--auto", action="store_true", help="detectar skills por git diff/status")
@@ -272,7 +292,13 @@ def _report_repo(top: str, root: Path) -> str | None:
     return repo_next
 
 
-def _emit_tag(args: Any, entries: list[tuple[str, str, str, str]], repo_next: str | None, top: str, root: Path) -> None:
+def _emit_tag(
+    args: Any,
+    entries: list[tuple[str, str, str, str]],
+    repo_next: str | None,
+    top: str,
+    root: Path,
+) -> None:
     if not (args.tag and not args.dry_run and repo_next):
         return
     names = ", ".join(s for s, _, _, _ in entries)

@@ -44,7 +44,10 @@ def _activate(root: Path, independent: bool = False) -> None:
         "schema_version": 1,
         "plan_id": "scheduler-fixture",
         "base_revision": "0" * 40,
-        "tasks": [_task("first", []), _task("second", [] if independent else ["first"])],
+        "tasks": [
+            _task("first", []),
+            _task("second", [] if independent else ["first"]),
+        ],
     }
     path = root / "plan.md"
     path.write_text("# Fixture\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
@@ -87,11 +90,20 @@ class ControlledAdapter:
 
             def verify(result: OpResult, repo: Path) -> list[dict[str, Any]]:
                 content = (repo / f"{task_id}.txt").read_text(encoding="utf-8")
-                return [{"kind": "implementation_deliverable", "ok": content == f"ok-{task_id}\n"}]
+                return [
+                    {
+                        "kind": "implementation_deliverable",
+                        "ok": content == f"ok-{task_id}\n",
+                    }
+                ]
 
             executed = run_verified(
                 task["operation"],
-                {"repo": str(context.repo), "path": f"{task_id}.txt", "content": f"ok-{task_id}\n"},
+                {
+                    "repo": str(context.repo),
+                    "path": f"{task_id}.txt",
+                    "content": f"ok-{task_id}\n",
+                },
                 repo=context.repo,
                 phase=task["phase"],
                 skill="role-back",

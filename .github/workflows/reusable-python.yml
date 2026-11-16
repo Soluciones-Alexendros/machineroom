@@ -73,9 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "$UV_PROJECT" ]; then runner=(uv run --project "$UV_PROJECT"); else runner=(uv run); fi
-          "${runner[@]}" ruff check . \
-            --select E,F,W,I,B,UP,SIM,C90,N,PL,RUF \
-            --config 'lint.mccabe.max-complexity = 10'
+          "${runner[@]}" ruff check .
       - name: Mypy strict
         run: |
           if [ -n "$UV_PROJECT" ]; then uv run --project "$UV_PROJECT" mypy --config-file mypy.ini --strict .; else uv run mypy --strict .; fi

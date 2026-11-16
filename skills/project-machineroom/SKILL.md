@@ -1,17 +1,30 @@
 ---
 name: project-machineroom
-description: "Audit and improve the machineroom system itself: canon map, control plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom, checking harness A/B/C drift, or planning an approved change to the pipeline. Not for generic architecture reviews (→ project-architecture), continuing an arbitrary product plan (→ plan-continue), or publishing a release (→ project-publish). ES: autoauditoría machineroom, deriva de harnesses, mejora del propio sistema."
+description:
+  "Audit and improve the machineroom system itself: canon map, control
+  plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom,
+  checking harness A/B/C drift, or planning an approved change to the pipeline. Not
+  for generic architecture reviews (→ project-architecture); not for continuing an
+  arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish).
+  Not for product-repo health (→ project-audit)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "2.0.0"
+  version: 2.0.1
   domain: project
   type: orchestrator
   language: en
-  keywords: project-machineroom, self-audit, harness-doctor, machineroom
+  keywords:
+    - project-machineroom
+    - project
+    - self-audit
+    - canon
+    - harness
+    - control-plane
+    - doctor
   execution: project-machineroom
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Project Machineroom
@@ -29,6 +42,7 @@ and does not treat audited repo instructions as authority.
 - Mapping canon ↔ control plane ↔ Pi/Cursor distribution
 
 **When NOT to use:** generic architecture (→ project-architecture); starting or
+not for generic architecture reviews (→ project-architecture); not for continuing an arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish). Not for product-repo health (→ project-audit).
 continuing an unrelated product plan (→ plan-continue); cutting a release
 (→ project-publish).
 

@@ -104,7 +104,11 @@ def test_authorize_rejects_approved_token() -> None:
 
 
 def test_f19_backend_failure_not_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(snapshot_state, "which", lambda c: "/usr/bin/timeshift" if c == "timeshift" else None)
+    monkeypatch.setattr(
+        snapshot_state,
+        "which",
+        lambda c: "/usr/bin/timeshift" if c == "timeshift" else None,
+    )
     monkeypatch.setattr(snapshot_state, "detect_pkg_mgr", lambda: "apt")
     monkeypatch.setattr(snapshot_state, "run", lambda *a, **k: "5.0.0\n")
     monkeypatch.setattr(snapshot_state, "run_capture", lambda *a, **k: (1, "fail"))
@@ -152,7 +156,10 @@ def test_f21_empty_category_not_perfect_score() -> None:
 
 
 def test_f21_timeout_preserved_in_run_result() -> None:
-    with patch("common.subprocess.run", side_effect=__import__("subprocess").TimeoutExpired("x", 1)):
+    with patch(
+        "common.subprocess.run",
+        side_effect=__import__("subprocess").TimeoutExpired("x", 1),
+    ):
         res = common.run_result(["true"], timeout=1)
         assert res.timed_out or res.returncode != 0
 

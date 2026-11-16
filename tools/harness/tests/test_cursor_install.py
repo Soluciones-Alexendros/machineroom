@@ -13,7 +13,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from harness.cursor_install import ConflictError, install_full, uninstall_full  # noqa: E402
+from harness.cursor_install import (
+    ConflictError,
+    install_full,
+    uninstall_full,
+)
 from harness.runtime import sync_payload  # noqa: E402
 
 
@@ -27,7 +31,7 @@ def _user_home(tmp_path: Path) -> Path:
 def test_full_install_idempotence_and_manifest(tmp_path: Path) -> None:
     target = tmp_path / "project"
     first = install_full(ROOT, target)
-    expected = 23
+    expected = 24
     assert first["installed"] == expected
     assert first["changed"] == expected
     assert first["components"] == "full"
@@ -54,7 +58,7 @@ def test_full_install_idempotence_and_manifest(tmp_path: Path) -> None:
     assert len(manifest["resources"]) == expected
 
 
-USER_SCOPE_COMPONENTS = 22  # 16 skills + 3 agents + hooks.json + 2 hook scripts
+USER_SCOPE_COMPONENTS = 23  # 17 skills + 3 agents + hooks.json + 2 hook scripts
 
 
 def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> None:
@@ -86,7 +90,9 @@ def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> No
     assert not hooks.exists()
 
 
-def test_user_scope_prunes_project_only_rule_from_previous_manifest(tmp_path: Path) -> None:
+def test_user_scope_prunes_project_only_rule_from_previous_manifest(
+    tmp_path: Path,
+) -> None:
     home = _user_home(tmp_path)
     target = home / ".cursor"
     # Seed a project-shaped install under the user path, then switch to user scope.

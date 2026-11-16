@@ -198,7 +198,10 @@ def _md_trend(history: list[Any] | None, overall: float) -> list[str]:
         "stable": "➡️ Estable",
         "first_run": "🆕 Primera ejecución",
     }
-    return [f"**Tendencia:** {trend_labels.get(trend, trend)} (anterior: {prev_score})", ""]
+    return [
+        f"**Tendencia:** {trend_labels.get(trend, trend)} (anterior: {prev_score})",
+        "",
+    ]
 
 
 def _md_summary(summary: dict[str, Any]) -> list[str]:
@@ -250,7 +253,11 @@ def _md_finding(f: dict[str, Any]) -> list[str]:
         f"- Categoría: {f.get('category', 'N/A')}",
         f"- Estado: {f.get('status', 'N/A')}",
     ]
-    for field, label in (("description", "Descripción"), ("evidence", "Evidencia"), ("remediation", "Remediación")):
+    for field, label in (
+        ("description", "Descripción"),
+        ("evidence", "Evidencia"),
+        ("remediation", "Remediación"),
+    ):
         value = f.get(field)
         if value:
             out.append(f"- {label}: {_html.escape(value)}")
@@ -358,7 +365,11 @@ def _html_diff(history: list[Any] | None, prev_data: dict[str, Any] | None, find
     return out + "        </div>\n"
 
 
-def render_html(data: dict[str, Any], history: list[Any] | None = None, prev_data: dict[str, Any] | None = None) -> str:
+def render_html(
+    data: dict[str, Any],
+    history: list[Any] | None = None,
+    prev_data: dict[str, Any] | None = None,
+) -> str:
     """Genera informe HTML."""
     meta = data.get("metadata", {})
     hs = data.get("health_score", {})

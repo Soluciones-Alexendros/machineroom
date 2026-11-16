@@ -101,7 +101,17 @@ def test_main_dry_run_tmp_root(tmp_path: Path) -> None:
         '---\nname: demo-skill\nmetadata:\n  version: "0.1.0"\n---\n\n# Demo\n',
         encoding="utf-8",
     )
-    rc = bump.main(["--root", str(tmp_path), "--type", "parche", "--skills", "demo-skill", "--dry-run"])
+    rc = bump.main(
+        [
+            "--root",
+            str(tmp_path),
+            "--type",
+            "parche",
+            "--skills",
+            "demo-skill",
+            "--dry-run",
+        ]
+    )
     assert rc == 0
     assert bump.read_skill_version(skill) == "0.1.0"
 

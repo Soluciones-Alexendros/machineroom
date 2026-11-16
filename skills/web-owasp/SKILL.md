@@ -1,16 +1,27 @@
 ---
 name: web-owasp
-description: "Code security review (OWASP): injection, XSS, authn/authz, cryptography, SSRF, secrets and misconfiguration. Use when performing security review, OWASP or searching for vulnerabilities in this code. Not for dependency CVEs (→ project-libraries) nor web compliance (→ web-compliance)."
+description:
+  "Code security review (OWASP): injection, XSS, authn/authz, cryptography,
+  SSRF, secrets and misconfiguration. Use when performing security review, OWASP or
+  searching for vulnerabilities in this code. Not for dependency CVEs (→ project-libraries)
+  nor web compliance (→ web-compliance)."
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: web
   type: audit
   language: en
-  keywords: web-owasp
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob"
+  keywords:
+    - web-owasp
+    - web
+    - owasp
+    - injection
+    - xss
+    - authz
+    - crypto
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob
 ---
 
 # Web OWASP
@@ -28,6 +39,8 @@ in this code.
 - OWASP security review
 
 ## Not for:
+
+not for dependency CVEs (→ project-libraries) nor web compliance (→ web-compliance). Compliance overlap (→ web-compliance).
 
 - OS hardening (→ local-security)
 - Release closure (→ project-publish)

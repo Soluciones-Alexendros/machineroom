@@ -59,7 +59,10 @@ def hook_payload(hook: Path = HOOK) -> dict[str, str]:
     except OSError as exc:
         raise ParityError("hook_payload", f"cannot run {hook}: {exc}") from exc
     if proc.returncode != 0:
-        raise ParityError("hook_payload", f"hook exited {proc.returncode}: {proc.stderr.strip()[:200]}")
+        raise ParityError(
+            "hook_payload",
+            f"hook exited {proc.returncode}: {proc.stderr.strip()[:200]}",
+        )
     try:
         payload = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
@@ -112,7 +115,10 @@ def check_hook_is_a_pointer() -> None:
     }
     copied = [line for line in body_lines if line in context]
     if copied:
-        raise ParityError("check_hook_is_a_pointer", f"summary copies {len(copied)} rule line(s) verbatim")
+        raise ParityError(
+            "check_hook_is_a_pointer",
+            f"summary copies {len(copied)} rule line(s) verbatim",
+        )
 
 
 def check_user_rule_script() -> None:
@@ -124,7 +130,12 @@ def check_user_rule_script() -> None:
         raise ParityError("check_user_rule_script", "helper does not reference rules/machineroom.mdc")
 
 
-CHECKS = (check_rule, check_hook_digest, check_hook_is_a_pointer, check_user_rule_script)
+CHECKS = (
+    check_rule,
+    check_hook_digest,
+    check_hook_is_a_pointer,
+    check_user_rule_script,
+)
 
 
 def main() -> int:

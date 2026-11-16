@@ -326,7 +326,9 @@ def test_a24_stale_content_blocks_complete(tmp_path: Path) -> None:
         )
 
 
-def test_a24b_sibling_write_does_not_invalidate_artifact_evidence(tmp_path: Path) -> None:
+def test_a24b_sibling_write_does_not_invalidate_artifact_evidence(
+    tmp_path: Path,
+) -> None:
     (tmp_path / ".machineroom").mkdir()
     rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish")
     (tmp_path / "sibling.txt").write_text("parallel writer")
@@ -461,8 +463,20 @@ def test_a32_idempotent_complete(tmp_path: Path) -> None:
     (tmp_path / "c").write_text("z")
     (tmp_path / ".machineroom").mkdir()
     rid = _store_ok(tmp_path, op="specify", phase="DEFINE")
-    s1 = advance_status(tmp_path, phase="DEFINE", skill="plan-specification", evidence_ok=True, run_id=rid)
-    s2 = advance_status(tmp_path, phase="DEFINE", skill="plan-specification", evidence_ok=True, run_id=rid)
+    s1 = advance_status(
+        tmp_path,
+        phase="DEFINE",
+        skill="plan-specification",
+        evidence_ok=True,
+        run_id=rid,
+    )
+    s2 = advance_status(
+        tmp_path,
+        phase="DEFINE",
+        skill="plan-specification",
+        evidence_ok=True,
+        run_id=rid,
+    )
     assert s1["state_revision"] == 1
     assert s2["state_revision"] == 1
     assert s2.get("_idempotent_replay") is True
@@ -502,7 +516,9 @@ def test_content_manifest_schema(tmp_path: Path) -> None:
 # --- V02 / D2: effective plan params (not globals alone) ---
 
 
-def test_v02_dispatch_plan_includes_effective_params(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v02_dispatch_plan_includes_effective_params(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Approved plan must include keep_versions/journal/pkg_mgr used by cleaners."""
 
     monkeypatch.setattr(cr._STATE, "snapshot_id", "snap-v02")
@@ -532,7 +548,9 @@ def test_v02_dispatch_plan_includes_effective_params(monkeypatch: pytest.MonkeyP
     assert p.get("journal_size") == "100M"
 
 
-def test_v02_handler_uses_plan_params_not_stale_globals(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v02_handler_uses_plan_params_not_stale_globals(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """After approval, handler must apply keep_versions from params even if global differs."""
 
     monkeypatch.setattr(cr._STATE, "keep_versions", 99)  # stale state

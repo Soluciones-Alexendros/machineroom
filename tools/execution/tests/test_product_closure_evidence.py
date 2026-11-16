@@ -132,7 +132,11 @@ def test_v04_valid_accepted(tmp_path: Path) -> None:
         require_complete_fields=True,
     )
     data = load_evidence(
-        tmp_path, rid, expected_phase="VALIDATE", expected_skill="project-publish", expected_target="/t"
+        tmp_path,
+        rid,
+        expected_phase="VALIDATE",
+        expected_skill="project-publish",
+        expected_target="/t",
     )
     assert data["run_id"] == rid
 

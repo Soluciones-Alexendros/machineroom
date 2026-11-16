@@ -51,7 +51,12 @@ def test_all_help_exit0() -> None:
 
 
 def test_all_invalid_args_exit2() -> None:
-    for s in ("scan_orchestrator.py", "vulns_check.py", "harden_plan.py", "apparmor_lifecycle.py"):
+    for s in (
+        "scan_orchestrator.py",
+        "vulns_check.py",
+        "harden_plan.py",
+        "apparmor_lifecycle.py",
+    ):
         r = _run(s, "--opcion-inexistente-xyz")
         assert r.returncode == EXIT_USAGE, s
     r = _run("forense_collector.py", "receta-inexistente-xyz")
@@ -67,7 +72,11 @@ def test_scan_check_exit0(tmp_path: Path) -> None:
 
 
 def test_cross_validate_golden() -> None:
-    res = {"rkhunter": {"warnings": 2}, "debsums": {"mismatches": 1}, "aide": {"changed_entries": True}}
+    res = {
+        "rkhunter": {"warnings": 2},
+        "debsums": {"mismatches": 1},
+        "aide": {"changed_entries": True},
+    }
     cv = scan_orchestrator.cross_validate(res)
     assert len(cv["indeterminados"]) == EXPECTED_INDETERMINADOS and cv["validados"] == []
     cv2 = scan_orchestrator.cross_validate({"rkhunter": {}, "debsums": {}, "aide": {}})
@@ -242,7 +251,10 @@ def test_vulns_main_with_network_json(tmp_path: Path) -> None:
     out = tmp_path / "vulns.json"
     with (
         patch("vulns_check.has_network", return_value=True),
-        patch("vulns_check.check_apt", return_value={"status": "ok", "upgradable": 5, "security": 2}),
+        patch(
+            "vulns_check.check_apt",
+            return_value={"status": "ok", "upgradable": 5, "security": 2},
+        ),
         patch("vulns_check.check_snap", return_value={"status": "ok", "pending": 1}),
         patch("vulns_check.check_flatpak", return_value={"status": "ok", "pending": 3}),
     ):
@@ -275,7 +287,10 @@ def test_scan_run_cmd_success() -> None:
 
 
 def test_scan_run_cmd_timeout() -> None:
-    with patch("scan_orchestrator.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "scan_orchestrator.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("cmd", 10),
+    ):
         rc, out = scan_orchestrator.run_cmd("sleep 100", timeout=1)
         assert rc == 1
         assert out == ""
@@ -431,7 +446,9 @@ def test_harden_run_cmd_oserror() -> None:
 
 def test_harden_probe_current(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        harden_plan, "run_cmd", lambda cmd, timeout=10: "permitrootlogin no\npasswordauthentication yes\n"
+        harden_plan,
+        "run_cmd",
+        lambda cmd, timeout=10: "permitrootlogin no\npasswordauthentication yes\n",
     )
     state = harden_plan.probe_current()
     assert state["SSH-01"] == "no"
@@ -472,7 +489,10 @@ def test_forense_run_cmd_success() -> None:
 
 
 def test_forense_run_cmd_timeout() -> None:
-    with patch("forense_collector.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "forense_collector.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("cmd", 10),
+    ):
         out = forense_collector.run_cmd("sleep 100", timeout=1)
         assert out == ""
 
@@ -579,6 +599,8 @@ def test_apparmor_save_state(tmp_path: Path) -> None:
     assert data["profiles"]["p"]["stage"] == "enforce"
 
 
-def test_apparmor_validate_logprof_parseable_no_tool(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_apparmor_validate_logprof_parseable_no_tool(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(apparmor_lifecycle, "which", lambda cmd: None)
     assert apparmor_lifecycle.validate_logprof_parseable("test-prof") is False

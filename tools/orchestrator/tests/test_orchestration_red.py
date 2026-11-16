@@ -41,7 +41,12 @@ def _fixture_repo(tmp_path: Path) -> Path:
         capture_output=True,
         env=_clean_git_env(),
     )
-    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "commit.gpgsign", "false"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
     return repo
 
 
@@ -86,7 +91,11 @@ class DependentReaderAdapter:
 
 def _activate_dependency_plan(repo: Path) -> None:
     revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     data = {
         "schema_version": 1,
@@ -164,7 +173,11 @@ class ReadOnlyAdapter:
 
 def _activate_readonly_plan(repo: Path) -> None:
     revision = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     data = {
         "schema_version": 1,

@@ -186,7 +186,12 @@ def _invoke_handler(ctx: _ExecContext, handler: Any, *, start: float, run_id: st
 
 def _execute_argv(ctx: _ExecContext, *, argv: list[str], cwd: str | None, run_id: str) -> OpResult:
     if not argv:
-        return _blocked(ctx.operation_id, "no handler and no argv_template", ctx.spec.effect, digest=ctx.digest)
+        return _blocked(
+            ctx.operation_id,
+            "no handler and no argv_template",
+            ctx.spec.effect,
+            digest=ctx.digest,
+        )
     return _run_subprocess(
         ctx.operation_id,
         argv,

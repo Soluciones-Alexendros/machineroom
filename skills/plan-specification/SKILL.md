@@ -1,17 +1,28 @@
 ---
 name: plan-specification
-description: "Write a structured specification before writing any code, then decompose it into small verifiable tasks with explicit acceptance criteria. The spec is the shared source of truth — it defines what we build, why, and how we know it is done. Use when starting a project or feature, when requirements are ambiguous, or when the change touches multiple modules. Not for single-line fixes or typo corrections. Uses Write/Bash for SPEC/PLAN/TASKS and local validation."
+description:
+  Write a structured specification before writing any code, then decompose
+  it into small verifiable tasks with explicit acceptance criteria. Use when starting
+  a project or feature, when requirements are ambiguous, or when the change touches
+  multiple modules. Not for single-line fixes or typo corrections (→ plan-validators
+  for implementation).
 license: MIT
 metadata:
-  author: "addyosmani (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: plan
   type: orchestrator
   language: en
-  keywords: plan-specification
+  keywords:
+    - plan-specification
+    - plan
+    - spec
+    - tasks
+    - acceptance-criteria
+    - capability-map
   execution: plan-specification
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash, Write"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 
 # Plan Specification
@@ -31,6 +42,7 @@ is a tangled mess.
 - Work must be parallelized or ordered by dependency
 
 **When NOT to use:** Single-line fixes, typo corrections, or changes where
+not for single-line fixes or typo corrections (→ plan-validators for implementation).
 requirements are unambiguous and already well-defined as tasks.
 
 ## Process

@@ -28,7 +28,12 @@ def _minimal_source(tmp_path: Path) -> Path:
     src = tmp_path / "src"
     (src / "skills" / "fixture").mkdir(parents=True)
     (src / "skills" / "fixture" / "SKILL.md").write_text("---\nname: fixture\n---\n")
-    for relative in (".cursor/agents", ".cursor/hooks", ".cursor/rules", "extensions/machineroom"):
+    for relative in (
+        ".cursor/agents",
+        ".cursor/hooks",
+        ".cursor/rules",
+        "extensions/machineroom",
+    ):
         (src / relative).mkdir(parents=True)
     (src / ".cursor" / "hooks.json").write_text(
         '{"version":1,"hooks":{"sessionStart":[{"command":"python3 .cursor/hooks/session_start.py"}]}}\n'

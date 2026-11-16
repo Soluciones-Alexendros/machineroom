@@ -74,7 +74,12 @@ def _configs_coherentes() -> None:
     assert len(ids) >= MIN_REGISTRY_CHECKS, f"Registry con {len(ids)} checks (<{MIN_REGISTRY_CHECKS})"
     for c in reg["checks"]:
         assert c["pilar"] in reg["pilares"], f"{c['id']} con pilar desconocido {c['pilar']}"
-        assert c["severidad"] in ("Crítico", "Alto", "Medio", "Bajo"), f"{c['id']} severidad inválida"
+        assert c["severidad"] in (
+            "Crítico",
+            "Alto",
+            "Medio",
+            "Bajo",
+        ), f"{c['id']} severidad inválida"
     peso = sum(p["peso"] for p in reg["pilares"].values())
     assert abs(peso - 1.0) < WEIGHT_TOLERANCE, f"Pesos de pilares suman {peso} (debe ser 1.0)"
 
@@ -118,7 +123,14 @@ def _audit_pass_fixture() -> None:
 def _audit_fail_fixture() -> None:
     res = audit_page.audit(file=os.path.join(FIXTURES, "page_fail.html"))
     c = _by_key(res)
-    esperado_fail = ["html_lang", "viewport", "skip_link", "jsonld", "headings", "title"]
+    esperado_fail = [
+        "html_lang",
+        "viewport",
+        "skip_link",
+        "jsonld",
+        "headings",
+        "title",
+    ]
     for k in esperado_fail:
         assert c[k]["status"] in ("FAIL", "WARN"), f"{k} debería fallar: {c[k]}"
     assert c["form_labels"]["status"] in ("FAIL", "WARN"), "labels deberían fallar"
@@ -207,7 +219,10 @@ def _score_from_audit() -> None:
 
 @test("score: un FAIL no es pisado por un PASS posterior del mismo check")
 def _score_fail_not_overwritten() -> None:
-    checks = [{"id": "ACC-04", "resultado": "FAIL"}, {"id": "ACC-04", "resultado": "PASS"}]
+    checks = [
+        {"id": "ACC-04", "resultado": "FAIL"},
+        {"id": "ACC-04", "resultado": "PASS"},
+    ]
     sc = score_mod.score(checks)
     acc04 = [h for h in sc["hallazgos"] if h["id"] == "ACC-04"]
     assert acc04, "ACC-04 debería seguir siendo hallazgo FAIL"
@@ -233,7 +248,11 @@ def _report_markdown() -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Smoke test integrado de auditoria-360-web (exit 0/1)")
     ap.parse_args(argv)
     print("=" * 60)

@@ -8,7 +8,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from validate.naming_gate import ADR_FILENAME, ALLOWED_FILES, candidate_files, scan  # noqa: E402
+from validate.naming_gate import (
+    ADR_FILENAME,
+    ALLOWED_FILES,
+    candidate_files,
+    scan,
+)
 
 
 def test_repository_is_clean() -> None:

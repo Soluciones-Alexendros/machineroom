@@ -100,7 +100,7 @@ def _confined_plan_path(repo: Path, path: Path | str) -> tuple[Path, str]:
 def activate_plan(repo: Path | str, plan_path: Path | str) -> dict[str, Any]:
     """Select exactly one parsed plan and initialize its task states."""
     _ensure_tools_on_path()
-    from contracts.plan import load_plan  # noqa: PLC0415
+    from contracts.plan import load_plan
 
     root = Path(repo).resolve()
     resolved, relative = _confined_plan_path(root, plan_path)
@@ -121,7 +121,11 @@ def activate_plan(repo: Path | str, plan_path: Path | str) -> dict[str, Any]:
         }
         out["plan_digest"] = document.digest
         out["tasks"] = {
-            str(task["id"]): {"state": "pending", "depends_on": list(task["depends_on"])} for task in document.tasks
+            str(task["id"]): {
+                "state": "pending",
+                "depends_on": list(task["depends_on"]),
+            }
+            for task in document.tasks
         }
         out["phase"] = str(document.tasks[0]["phase"])
         out["state_revision"] = int(out.get("state_revision") or 0) + 1
@@ -134,7 +138,7 @@ def activate_plan(repo: Path | str, plan_path: Path | str) -> dict[str, Any]:
 def load_active_plan(repo: Path | str) -> PlanDocument:
     """Load the selected plan and reject identity drift."""
     _ensure_tools_on_path()
-    from contracts.plan import load_plan  # noqa: PLC0415
+    from contracts.plan import load_plan
 
     root = Path(repo).resolve()
     status = load_status(root)
@@ -246,7 +250,7 @@ def _apply_task_completion(  # noqa: PLR0913  # locked completion context
     replay: dict[str, bool],
 ) -> dict[str, Any]:
     """Pure-ish status mutation for one successful task (load_evidence under lock)."""
-    from execution.evidence import load_evidence  # noqa: PLC0415
+    from execution.evidence import load_evidence
 
     current_document = load_active_plan(root)
     current_task = _task_definition(current_document, task_id)
@@ -322,7 +326,7 @@ def complete_task(
     document = load_active_plan(root)
     task = _task_definition(document, task_id)
     _ensure_tools_on_path()
-    from execution.registry import get_operation  # noqa: PLC0415
+    from execution.registry import get_operation
 
     spec = get_operation(str(task["operation"]))
     replay = {"idempotent": False}
@@ -546,7 +550,9 @@ def _ensure_tools_on_path() -> None:
 
 def _validated_evidence(ctx: _AdvanceContext) -> dict[str, Any]:
     """Revalidate evidence UNDER lock so stale content cannot complete (H19)."""
-    from execution.evidence import load_evidence  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
+    from execution.evidence import (
+        load_evidence,
+    )  # import opcional: requiere tools/ en sys.path
 
     evidence = load_evidence(
         ctx.root,
@@ -606,7 +612,11 @@ def _apply_completion(
     state_revision = cur_rev + 1
     advance = int(out.get("advance") or 0) + 1
     now = _utc_stamp()
-    progress = {"state_revision": state_revision, "advance": advance, "product_version": product_version}
+    progress = {
+        "state_revision": state_revision,
+        "advance": advance,
+        "product_version": product_version,
+    }
 
     history = list(out.get("history") or [])
     history.append(_completion_entry(ctx, progress, evidence, now))
@@ -758,7 +768,9 @@ def resolve_awaiting_agent(  # noqa: PLR0913  # API pública: keyword-only
     tools = Path(__file__).resolve().parents[1]
     if str(tools) not in sys.path:
         sys.path.insert(0, str(tools))
-    from execution.evidence import load_evidence  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
+    from execution.evidence import (
+        load_evidence,
+    )  # import opcional: requiere tools/ en sys.path
 
     def _resolve(data: dict[str, Any]) -> dict[str, Any]:
         data = dict(data)

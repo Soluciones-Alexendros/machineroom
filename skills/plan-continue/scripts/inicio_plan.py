@@ -299,7 +299,13 @@ def _fallos_git(git: dict[str, Any]) -> list[dict[str, Any]]:
         cambios = git.get("cambios_sin_commit", 0)
         fallos.append(_fallo("P2", "git", f"árbol sucio ({cambios} cambios sin commit)"))
     if git.get("atras"):
-        fallos.append(_fallo("P1", "git", f"el clon va {git['atras']} commit(s) por detrás del remoto"))
+        fallos.append(
+            _fallo(
+                "P1",
+                "git",
+                f"el clon va {git['atras']} commit(s) por detrás del remoto",
+            )
+        )
     if git.get("adelante") and git.get("atras"):
         fallos.append(_fallo("P1", "git", "rama divergente del remoto"))
     return fallos
