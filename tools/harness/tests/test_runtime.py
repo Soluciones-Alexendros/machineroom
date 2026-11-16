@@ -13,7 +13,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from harness.cursor_install import ConflictError, install_full, uninstall_full  # noqa: E402
+from harness.cursor_install import (
+    ConflictError,
+    install_full,
+    uninstall_full,
+)  # noqa: E402
 from harness.doctor import cursor_full_check, skill_link_check  # noqa: E402
 from harness.runtime import make_relative_symlink, sync_payload  # noqa: E402
 
@@ -94,8 +98,12 @@ def test_user_scope_relative_links_from_runtime(tmp_path: Path) -> None:
     assert not Path(os.readlink(hooks)).is_absolute()
     assert hooks.resolve() == (runtime / ".cursor" / "hooks.json").resolve()
     data = json.loads(hooks.read_text(encoding="utf-8"))
-    commands = [entry["command"] for entries in data["hooks"].values() for entry in entries]
-    assert commands and not any(".cursor/hooks/" in command for command in commands), commands
+    commands = [
+        entry["command"] for entries in data["hooks"].values() for entry in entries
+    ]
+    assert commands and not any(
+        ".cursor/hooks/" in command for command in commands
+    ), commands
     skill = target / "skills" / "plan-continue"
     assert skill.is_symlink()
     assert not Path(os.readlink(skill)).is_absolute()
@@ -128,7 +136,9 @@ def test_user_scope_preserves_foreign_hooks_file(tmp_path: Path) -> None:
     (target / "hooks.json").write_text('{"version": 1, "hooks": {}}', encoding="utf-8")
     with pytest.raises(ConflictError, match="real file/dir conflict"):
         install_full(ROOT, target, user_scope=True)
-    assert (target / "hooks.json").read_text(encoding="utf-8") == '{"version": 1, "hooks": {}}'
+    assert (target / "hooks.json").read_text(
+        encoding="utf-8"
+    ) == '{"version": 1, "hooks": {}}'
 
 
 def test_user_scope_migrates_prior_checkout_manifest(tmp_path: Path) -> None:
@@ -150,7 +160,9 @@ def test_user_scope_migrates_prior_checkout_manifest(tmp_path: Path) -> None:
         "omitted": ["rules/machineroom.mdc"],
         "version": "7.1.2",
     }
-    (target / ".machineroom-full-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (target / ".machineroom-full-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
     result = install_full(ROOT, target, user_scope=True)
     assert result["status"] == "ok"
     assert old.resolve() == (runtime / "skills" / "plan-continue").resolve()

@@ -243,7 +243,9 @@ MANIFESTS = {
 
 # Solo directorios dedicados a tests (no "integration"/"testing" genéricos)
 TEST_DIR_NAMES = {"test", "tests", "spec", "specs", "__tests__", "e2e", "unittest"}
-TEST_FILE_RE = re.compile(r"(^test_|_test\.|\.test\.|\.spec\.|_spec\.|^conftest\.py$)", re.IGNORECASE)
+TEST_FILE_RE = re.compile(
+    r"(^test_|_test\.|\.test\.|\.spec\.|_spec\.|^conftest\.py$)", re.IGNORECASE
+)
 
 PASCALCASE_EXTS = {
     ".tsx",
@@ -283,22 +285,32 @@ STANDARD_NAME_PREFIXES = (
 
 # Nombres de tipo sin substring "secret"/"secreto" (CodeQL sensitive string literals).
 CREDENTIAL_PATTERNS = {
-    "Clave privada PEM": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
+    "Clave privada PEM": re.compile(
+        r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"
+    ),
     "AWS Access Key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-    "GitHub Token": re.compile(r"\b(?:ghp|gho|ghu|ghs|ghr|github_pat)_[A-Za-z0-9_]{20,}\b"),
+    "GitHub Token": re.compile(
+        r"\b(?:ghp|gho|ghu|ghs|ghr|github_pat)_[A-Za-z0-9_]{20,}\b"
+    ),
     "Slack Token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
     "Google API Key": re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b"),
-    "JWT hardcodeado": re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{5,}\b"),
+    "JWT hardcodeado": re.compile(
+        r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{5,}\b"
+    ),
     "Asignación de credencial": re.compile(
         r"(?i)\b(password|passwd|secret|api[_-]?key|token|auth[_-]?token)\b"
         r"\s*[:=]\s*['\"][^'\"]{8,}['\"]"
     ),
-    "Cadena de conexión": re.compile(r"(?i)\b(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis|amqp)://[^@\s]+@"),
+    "Cadena de conexión": re.compile(
+        r"(?i)\b(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis|amqp)://[^@\s]+@"
+    ),
 }
 
 # Falso positivo conocido: token de diseño CSS (`--…`) o handle opaco de fixture.
 # No relaja password, api_key, secret ni otros valores de token.
-DESIGN_TOKEN_ASSIGN_RE = re.compile(r"""(?i)\btoken\b\s*[:=]\s*['"](?:--[A-Za-z0-9_-]+|opaque-handle\.json)['"]""")
+DESIGN_TOKEN_ASSIGN_RE = re.compile(
+    r"""(?i)\btoken\b\s*[:=]\s*['"](?:--[A-Za-z0-9_-]+|opaque-handle\.json)['"]"""
+)
 
 MARKER_RE = re.compile(r"\b(TODO|FIXME|HACK|XXX|BUG)\b")
 
@@ -439,7 +451,9 @@ def version_is_unpinned(ver: str | None) -> bool:
         return True
     if ver in ("*", "latest"):
         return True
-    return bool(ver.startswith(("http:", "https:", "git+", "file:", "link:", "workspace:")))
+    return bool(
+        ver.startswith(("http:", "https:", "git+", "file:", "link:", "workspace:"))
+    )
 
 
 MIN_VERSION_FIELDS = 2
@@ -515,7 +529,9 @@ def _index_root(ctx: _ScanCtx, root: str) -> bool:
         ctx.report["error"] = f"No se puede leer la raíz: {exc}"
         return False
     for key, candidates in STANDARD_FILES.items():
-        ctx.report["ficheros_estandar"][key] = any(c in root_entries for c in candidates)
+        ctx.report["ficheros_estandar"][key] = any(
+            c in root_entries for c in candidates
+        )
     for ci in CI_PATHS:
         if os.path.exists(os.path.join(root, ci)):
             ctx.report["ci_detectado"].append(ci)
@@ -544,7 +560,9 @@ def _scan_naming(ctx: _ScanCtx, r: str, basename: str, ext: str) -> None:
         ctx.report["nombrado"]["no_ascii"].append(r)
 
 
-def _scan_tests(ctx: _ScanCtx, r: str, basename: str, lang: str | None, is_test: bool) -> None:
+def _scan_tests(
+    ctx: _ScanCtx, r: str, basename: str, lang: str | None, is_test: bool
+) -> None:
     if lang in CODE_LANGS:
         if is_test:
             ctx.report["tests"]["ficheros_test"] += 1
@@ -579,10 +597,14 @@ def _scan_text(ctx: _ScanCtx, text: str, raw: bytes, r: str, confidence: str) ->
     for name, pat in CREDENTIAL_PATTERNS.items():
         for m in pat.finditer(text):
             # Solo metadatos: nunca m.group() / valor / snippet (CodeQL clear-text).
-            if name == "Asignación de credencial" and DESIGN_TOKEN_ASSIGN_RE.fullmatch(text[m.start() : m.end()]):
+            if name == "Asignación de credencial" and DESIGN_TOKEN_ASSIGN_RE.fullmatch(
+                text[m.start() : m.end()]
+            ):
                 continue
             line_no = text.count("\n", 0, m.start()) + 1
-            ctx.report["hallazgos_patrones"].append(_pattern_hit(name, r, line_no, confidence))
+            ctx.report["hallazgos_patrones"].append(
+                _pattern_hit(name, r, line_no, confidence)
+            )
             break  # una coincidencia por tipo y fichero basta
 
     if confidence == "alta":
@@ -590,7 +612,9 @@ def _scan_text(ctx: _ScanCtx, text: str, raw: bytes, r: str, confidence: str) ->
             ctx.marker_hits[m.group(1)] += 1
 
 
-def _wants_content(size: int, binary: bool, ext: str, basename: str, confidence: str) -> bool:
+def _wants_content(
+    size: int, binary: bool, ext: str, basename: str, confidence: str
+) -> bool:
     return (
         not binary
         and 0 < size <= MAX_PATTERN_SCAN_BYTES
@@ -673,9 +697,13 @@ def _build_summary(ctx: _ScanCtx, root: str) -> None:
     report["resumen"] = {
         "total_ficheros": ctx.total_files,
         "total_bytes": ctx.total_bytes,
-        "lenguaje_principal": ctx.lang_bytes.most_common(1)[0][0] if ctx.lang_bytes else None,
+        "lenguaje_principal": (
+            ctx.lang_bytes.most_common(1)[0][0] if ctx.lang_bytes else None
+        ),
         "n_hallazgos_patrones": len(report["hallazgos_patrones"]),
-        "n_hallazgos_alta": sum(1 for s in report["hallazgos_patrones"] if s.get("confianza") == "alta"),
+        "n_hallazgos_alta": sum(
+            1 for s in report["hallazgos_patrones"] if s.get("confianza") == "alta"
+        ),
         "n_env_versionados": len(report["env_versionados"]),
         "n_duplicados": len(report["duplicados"]),
         "n_vacios": len(report["higiene"].get("vacios", [])),
@@ -688,8 +716,12 @@ def _build_summary(ctx: _ScanCtx, root: str) -> None:
     report["nombrado"] = {k: v for k, v in report["nombrado"].items()}
     # Alias de escritura para consumidores del JSON. Ningún sink (print/write) los lee.
     report["secretos_potenciales"] = report["hallazgos_patrones"]
-    report["resumen"]["n_secretos_potenciales"] = report["resumen"]["n_hallazgos_patrones"]
-    report["resumen"]["n_secretos_alta_confianza"] = report["resumen"]["n_hallazgos_alta"]
+    report["resumen"]["n_secretos_potenciales"] = report["resumen"][
+        "n_hallazgos_patrones"
+    ]
+    report["resumen"]["n_secretos_alta_confianza"] = report["resumen"][
+        "n_hallazgos_alta"
+    ]
 
 
 def scan(root: str) -> dict[str, Any]:
@@ -728,7 +760,9 @@ def _package_json_findings(root: str) -> list[str]:
             for section in ("dependencies", "devDependencies"):
                 for dep, ver in (data.get(section) or {}).items():
                     if version_is_unpinned(str(ver)):
-                        findings.append(f"{rel_pkg}: dependencia sin fijar '{dep}': '{ver}' ({section})")
+                        findings.append(
+                            f"{rel_pkg}: dependencia sin fijar '{dep}': '{ver}' ({section})"
+                        )
         except (json.JSONDecodeError, OSError) as exc:
             findings.append(f"{rel_pkg}: no se pudo parsear ({exc})")
     return findings
@@ -737,7 +771,9 @@ def _package_json_findings(root: str) -> list[str]:
 def _lockfile_findings(root: str) -> list[str]:
     root_pkg = os.path.join(root, "package.json")
     locks = ("package-lock.json", "pnpm-lock.yaml", "yarn.lock")
-    if os.path.isfile(root_pkg) and not any(os.path.isfile(os.path.join(root, lock)) for lock in locks):
+    if os.path.isfile(root_pkg) and not any(
+        os.path.isfile(os.path.join(root, lock)) for lock in locks
+    ):
         return ["package.json sin fichero lock (package-lock/pnpm-lock/yarn.lock)"]
     return []
 
@@ -751,7 +787,9 @@ def _requirements_findings(root: str) -> list[str]:
         with open(req, encoding="utf-8") as fh:
             for i, line in enumerate(fh, 1):
                 if pip_line_unpinned(line):
-                    findings.append(f"requirements.txt:{i}: dependencia sin versión: '{line.strip()}'")
+                    findings.append(
+                        f"requirements.txt:{i}: dependencia sin versión: '{line.strip()}'"
+                    )
     except OSError:
         pass
     return findings
@@ -770,7 +808,9 @@ def _pyproject_findings(root: str) -> list[str]:
             r"""["']([A-Za-z0-9_.\-]+)["']\s*=\s*["'](\*|latest)["']""",
             text,
         ):
-            findings.append(f"pyproject.toml: dependencia sin fijar '{m.group(1)}': '{m.group(2)}'")
+            findings.append(
+                f"pyproject.toml: dependencia sin fijar '{m.group(1)}': '{m.group(2)}'"
+            )
     except OSError:
         pass
     return findings
@@ -789,7 +829,9 @@ def _cargo_findings(root: str) -> list[str]:
             text,
             re.MULTILINE,
         ):
-            findings.append(f"Cargo.toml: dependencia sin fijar '{m.group(1)}': '{m.group(2)}'")
+            findings.append(
+                f"Cargo.toml: dependencia sin fijar '{m.group(1)}': '{m.group(2)}'"
+            )
     except OSError:
         pass
     return findings
@@ -855,7 +897,9 @@ def check_tracked_artifacts(root: str) -> list[str]:
         if TRACKED_ARTIFACT_RE.search(path):
             # .env.example no es artefacto peligroso
             base = os.path.basename(path)
-            if base.lower().startswith(".env") and any(base.lower().endswith(suf) for suf in ENV_SAFE_SUFFIXES):
+            if base.lower().startswith(".env") and any(
+                base.lower().endswith(suf) for suf in ENV_SAFE_SUFFIXES
+            ):
                 continue
             findings.append(path)
     return findings[:100]
@@ -899,7 +943,11 @@ def _md_manifests(rep: dict[str, Any]) -> list[str]:
     lines = ["", "## Manifiestos"]
     for kind, paths in rep["manifiestos"].items():
         head = ", ".join(paths[:MAX_LISTED_MANIFESTS])
-        extra = f" (+{len(paths) - MAX_LISTED_MANIFESTS} más)" if len(paths) > MAX_LISTED_MANIFESTS else ""
+        extra = (
+            f" (+{len(paths) - MAX_LISTED_MANIFESTS} más)"
+            if len(paths) > MAX_LISTED_MANIFESTS
+            else ""
+        )
         lines.append(f"- {kind}: {head}{extra}")
     return lines
 
@@ -924,7 +972,11 @@ def _md_alerts(rep: dict[str, Any]) -> list[str]:
 def _md_env_files(rep: dict[str, Any]) -> list[str]:
     if not rep.get("env_versionados"):
         return []
-    return ["", "### Ficheros .env versionados", *[f"- `{e}`" for e in rep["env_versionados"][:30]]]
+    return [
+        "",
+        "### Ficheros .env versionados",
+        *[f"- `{e}`" for e in rep["env_versionados"][:30]],
+    ]
 
 
 def _md_findings(rep: dict[str, Any]) -> list[str]:
@@ -943,7 +995,11 @@ def _md_findings(rep: dict[str, Any]) -> list[str]:
 def _md_deps(rep: dict[str, Any]) -> list[str]:
     if not rep["salud_dependencias"]:
         return []
-    return ["", "### Salud de dependencias", *[f"- {f}" for f in rep["salud_dependencias"][:40]]]
+    return [
+        "",
+        "### Salud de dependencias",
+        *[f"- {f}" for f in rep["salud_dependencias"][:40]],
+    ]
 
 
 def _md_artifacts(rep: dict[str, Any]) -> list[str]:
@@ -959,12 +1015,20 @@ def _md_artifacts(rep: dict[str, Any]) -> list[str]:
 def _md_markers(rep: dict[str, Any]) -> list[str]:
     if not rep["marcadores"]:
         return []
-    return ["", "### Marcadores (solo confianza alta)", *[f"- {m}: {n}" for m, n in rep["marcadores"].items()]]
+    return [
+        "",
+        "### Marcadores (solo confianza alta)",
+        *[f"- {m}: {n}" for m, n in rep["marcadores"].items()],
+    ]
 
 
 def _md_tests(rep: dict[str, Any]) -> list[str]:
     t = rep["tests"]
-    ratio = f" | ratio: {t['ficheros_test'] / t['ficheros_codigo']:.2%}" if t["ficheros_codigo"] else ""
+    ratio = (
+        f" | ratio: {t['ficheros_test'] / t['ficheros_codigo']:.2%}"
+        if t["ficheros_codigo"]
+        else ""
+    )
     lines = [
         "",
         "### Tests",

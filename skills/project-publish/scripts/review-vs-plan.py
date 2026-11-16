@@ -20,11 +20,15 @@ from pathlib import Path
 
 SECRET_PATTERNS = [
     # Asignaciones tipo password = "valor", secret: xyz (con frontera de palabra).
-    re.compile(r"(?i)\b(password|passwd|secret|api[_-]?key|private[_-]?key)\b\s*[:=]\s*\S+"),
+    re.compile(
+        r"(?i)\b(password|passwd|secret|api[_-]?key|private[_-]?key)\b\s*[:=]\s*\S+"
+    ),
     # Tokens/bearers con valor sustancial.
     re.compile(r"(?i)\b(token|bearer)\b\s*[:=]\s*['\"]?[A-Za-z0-9_\-./+]{8,}"),
     # Exportaciones de entorno: export GITHUB_TOKEN=... / SECRET_FOO=bar.
-    re.compile(r"(?i)^\+?\s*(?:export\s+)?[A-Z_]*(PASSWORD|SECRET|TOKEN|PRIVATE_KEY|API_KEY)[A-Z_]*\s*=\s*\S+"),
+    re.compile(
+        r"(?i)^\+?\s*(?:export\s+)?[A-Z_]*(PASSWORD|SECRET|TOKEN|PRIVATE_KEY|API_KEY)[A-Z_]*\s*=\s*\S+"
+    ),
 ]
 FILE_RE = re.compile(r"[\w\-./]+\.(?:ts|tsx|js|jsx|py|sh|md|json|yaml|yml|toml)")
 
@@ -59,7 +63,11 @@ def main() -> int:
         return 1
 
     full_diff = run(["git", "diff", ref]).stdout
-    added = [ln for ln in full_diff.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+    added = [
+        ln
+        for ln in full_diff.splitlines()
+        if ln.startswith("+") and not ln.startswith("+++")
+    ]
     leaks = [ln for ln in added if any(p.search(ln) for p in SECRET_PATTERNS)][:5]
     if leaks:
         print("BLOQUEO: posibles secretos en el diff:")
@@ -70,11 +78,15 @@ def main() -> int:
     planned = set(FILE_RE.findall(plan_content))
     if planned:
         changed = set(files)
-        hit = {p for p in planned if any(p == c or c.endswith("/" + p) for c in changed)}
+        hit = {
+            p for p in planned if any(p == c or c.endswith("/" + p) for c in changed)
+        }
         cov = len(hit) / len(planned)
         print(f"Cobertura plan->diff: {cov:.0%} ({len(hit)}/{len(planned)})")
         if cov < MIN_COVERAGE:
-            print("AVISO: cobertura baja; verifica que el resultado del plan este en el diff.")
+            print(
+                "AVISO: cobertura baja; verifica que el resultado del plan este en el diff."
+            )
     else:
         print("Sin ficheros mencionables en el plan; se acepta el diff tal cual.")
 

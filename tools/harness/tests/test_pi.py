@@ -22,7 +22,10 @@ def _commands(names: list[str], origin: str = "package") -> list[dict[str, Any]]
         {
             "name": f"skill:{name}",
             "source": "skill",
-            "sourceInfo": {"origin": origin, "path": f"/package/skills/{name}/SKILL.md"},
+            "sourceInfo": {
+                "origin": origin,
+                "path": f"/package/skills/{name}/SKILL.md",
+            },
         }
         for name in names
     ]
@@ -40,16 +43,22 @@ def test_rpc_response_requires_successful_get_commands() -> None:
         pi.skill_commands({"type": "response", "success": False})
 
 
-def test_discovery_checks_names_and_package_origin(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_discovery_checks_names_and_package_origin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/pi")
     monkeypatch.setattr(pi, "rpc_commands", lambda cwd: _commands(["one", "two"]))
     check = pi.pi_discovery_check(Path("."), {"one", "two"})
     assert check.outcome == "pass"
 
 
-def test_discovery_rejects_missing_or_non_package_skill(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_discovery_rejects_missing_or_non_package_skill(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/pi")
-    monkeypatch.setattr(pi, "rpc_commands", lambda cwd: _commands(["one"], origin="top-level"))
+    monkeypatch.setattr(
+        pi, "rpc_commands", lambda cwd: _commands(["one"], origin="top-level")
+    )
     check = pi.pi_discovery_check(Path("."), {"one", "two"})
     assert check.outcome == "fail"
     assert "two" in check.detail or "package" in check.detail
@@ -72,7 +81,9 @@ def _rpc_body() -> str:
     )
 
 
-def test_rpc_retries_a_transient_startup_failure(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_rpc_retries_a_transient_startup_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     """An empty non-zero startup is retried. A timeout spends its budget once."""
     calls = {"n": 0}
     sleeps: list[float] = []
@@ -83,7 +94,9 @@ def test_rpc_retries_a_transient_startup_failure(monkeypatch: pytest.MonkeyPatch
             self.pid = 4242
             self.returncode = 0
 
-        def communicate(self, _payload: str, timeout: int | None = None) -> tuple[str, str]:
+        def communicate(
+            self, _payload: str, timeout: int | None = None
+        ) -> tuple[str, str]:
             del timeout
             if calls["n"] < 3:  # noqa: PLR2004  # fail the first two of three attempts
                 self.returncode = 1
@@ -103,7 +116,9 @@ def test_rpc_retries_a_transient_startup_failure(monkeypatch: pytest.MonkeyPatch
     assert sleeps == [0.2, 0.4]
 
 
-def test_rpc_timeout_is_not_retried(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_rpc_timeout_is_not_retried(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     calls = {"n": 0}
 
     class _Process:
@@ -112,7 +127,9 @@ def test_rpc_timeout_is_not_retried(monkeypatch: pytest.MonkeyPatch, tmp_path: P
             self.pid = 4242
             self.returncode = -9
 
-        def communicate(self, _payload: str, timeout: int | None = None) -> tuple[str, str]:
+        def communicate(
+            self, _payload: str, timeout: int | None = None
+        ) -> tuple[str, str]:
             raise subprocess.TimeoutExpired(cmd="pi", timeout=timeout or 1)
 
         def wait(self, timeout: int | None = None) -> int:

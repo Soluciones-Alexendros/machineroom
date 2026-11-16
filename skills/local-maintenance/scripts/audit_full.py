@@ -48,7 +48,9 @@ logger = logging.getLogger("mantenimiento.audit_full")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -66,7 +68,9 @@ def sshd_eff_get(key: str) -> str:
     return ""
 
 
-def run_extended_checks(collector: FindingCollector, pkg_mgr: str, runner: Callable[..., Any] | None = None) -> None:
+def run_extended_checks(
+    collector: FindingCollector, pkg_mgr: str, runner: Callable[..., Any] | None = None
+) -> None:
     """Fase 2: controles extendidos de higiene (solo audit_full)."""
     r = runner if runner is not None else run_check
     print(f"{log_tag} Fase 2: Controles extendidos de higiene (P2-P4)...")
@@ -90,17 +94,32 @@ def run_extended_checks(collector: FindingCollector, pkg_mgr: str, runner: Calla
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Auditoria completa de higiene/updates (P0-P4).")
-    parser.add_argument("output_file", nargs="?", default=None, help="Fichero JSON de salida")
-    parser.add_argument("profile_file", nargs="?", default="system-profile.json", help="Perfil del sistema")
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser = argparse.ArgumentParser(
+        description="Auditoria completa de higiene/updates (P0-P4)."
+    )
+    parser.add_argument(
+        "output_file", nargs="?", default=None, help="Fichero JSON de salida"
+    )
+    parser.add_argument(
+        "profile_file",
+        nargs="?",
+        default="system-profile.json",
+        help="Perfil del sistema",
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
-    output_file = args.output_file or f"audit-full-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    output_file = (
+        args.output_file or f"audit-full-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    )
     profile_file = args.profile_file
 
     try:
-        distro_family, pkg_mgr, distro_id, version_id, version_codename = load_profile_family(profile_file)
+        distro_family, pkg_mgr, distro_id, version_id, version_codename = (
+            load_profile_family(profile_file)
+        )
     except (OSError, ValueError) as exc:
         logger.error("no se pudo cargar perfil %r: %s", profile_file, exc)
         return 1
@@ -117,7 +136,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         output = collector.build_output(
-            "audit-full", distro_id, distro_family, running_kernel, duration, version_id, version_codename
+            "audit-full",
+            distro_id,
+            distro_family,
+            running_kernel,
+            duration,
+            version_id,
+            version_codename,
         )
     except (ValueError, TypeError, OSError) as exc:
         logger.error("no se pudo construir salida de auditoria: %s", exc)

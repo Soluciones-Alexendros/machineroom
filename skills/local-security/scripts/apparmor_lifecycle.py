@@ -32,13 +32,17 @@ from typing import Any
 logger = logging.getLogger("seguridad.apparmor")
 
 STAGES = ("genprof", "complain", "soak", "logprof", "enforce")
-DEFAULT_STATE = os.path.expanduser("~/.local/share/system-security/apparmor-lifecycle.json")
+DEFAULT_STATE = os.path.expanduser(
+    "~/.local/share/system-security/apparmor-lifecycle.json"
+)
 
 
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -95,26 +99,36 @@ def cmd_status(state: dict[str, Any]) -> int:
         print("sin perfiles en seguimiento")
         return 0
     for name, info in profiles.items():
-        print(f"{name}: etapa={info.get('stage', '?')} soak_desde={info.get('soak_since', '-')}")
+        print(
+            f"{name}: etapa={info.get('stage', '?')} soak_desde={info.get('soak_since', '-')}"
+        )
     return 0
 
 
-def advance(state_path: str, profile: str, stage: str, days: int = 0, execute: bool = False) -> int:
+def advance(
+    state_path: str, profile: str, stage: str, days: int = 0, execute: bool = False
+) -> int:
     state = load_state(state_path)
     profiles = state.setdefault("profiles", {})
     info = profiles.setdefault(profile, {"stage": "none"})
     idx_new = STAGES.index(stage)
     idx_cur = STAGES.index(info["stage"]) if info.get("stage") in STAGES else -1
     if idx_new < idx_cur:
-        print(f"retroceso no permitido: {info.get('stage')} -> {stage} (usar disable manual)")
+        print(
+            f"retroceso no permitido: {info.get('stage')} -> {stage} (usar disable manual)"
+        )
         return 1
     if stage == "soak":
         info["soak_since"] = utcnow()
         info["soak_days"] = days
-        print(f"soak iniciado para {profile}: {days} dias de uso real desde {info['soak_since']}")
+        print(
+            f"soak iniciado para {profile}: {days} dias de uso real desde {info['soak_since']}"
+        )
     if stage == "enforce":
         if not validate_logprof_parseable(profile):
-            print(f"BLOQUEADO: aa-logprof no parsea /etc/apparmor.d/{profile} (ver playbook §10)")
+            print(
+                f"BLOQUEADO: aa-logprof no parsea /etc/apparmor.d/{profile} (ver playbook §10)"
+            )
             return 1
         if execute:
             print(
@@ -125,7 +139,9 @@ def advance(state_path: str, profile: str, stage: str, days: int = 0, execute: b
             )
             return 3
         else:
-            print(f"[dry-run] aa-enforce /etc/apparmor.d/{profile} (host mutate blocked without registry)")
+            print(
+                f"[dry-run] aa-enforce /etc/apparmor.d/{profile} (host mutate blocked without registry)"
+            )
         info["stage"] = stage
     else:
         cmds = {
@@ -143,14 +159,24 @@ def advance(state_path: str, profile: str, stage: str, days: int = 0, execute: b
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Ciclo de vida de perfiles AppArmor (dry-run por defecto).")
+    parser = argparse.ArgumentParser(
+        description="Ciclo de vida de perfiles AppArmor (dry-run por defecto)."
+    )
     common_opts = argparse.ArgumentParser(add_help=False)
-    common_opts.add_argument("--state", default=DEFAULT_STATE, help="Fichero de estado JSON")
-    common_opts.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    common_opts.add_argument(
+        "--state", default=DEFAULT_STATE, help="Fichero de estado JSON"
+    )
+    common_opts.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     parser.add_argument("--state", default=DEFAULT_STATE, help="Fichero de estado JSON")
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("status", help="Estado de perfiles en seguimiento", parents=[common_opts])
+    sub.add_parser(
+        "status", help="Estado de perfiles en seguimiento", parents=[common_opts]
+    )
     p = sub.add_parser("genprof", help="Generar perfil base", parents=[common_opts])
     p.add_argument("--profile", required=True)
     p.add_argument("--binary", default="")
@@ -159,11 +185,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("soak", help="Iniciar soak de uso real", parents=[common_opts])
     p.add_argument("--profile", required=True)
     p.add_argument("--days", type=int, default=3)
-    p = sub.add_parser("logprof", help="Procesar logs con aa-logprof", parents=[common_opts])
+    p = sub.add_parser(
+        "logprof", help="Procesar logs con aa-logprof", parents=[common_opts]
+    )
     p.add_argument("--profile", required=True)
-    p = sub.add_parser("enforce", help="Pasar a enforce (valida parseo)", parents=[common_opts])
+    p = sub.add_parser(
+        "enforce", help="Pasar a enforce (valida parseo)", parents=[common_opts]
+    )
     p.add_argument("--profile", required=True)
-    p.add_argument("--execute", action="store_true", help="Mostrar comando real (no lo ejecuta)")
+    p.add_argument(
+        "--execute", action="store_true", help="Mostrar comando real (no lo ejecuta)"
+    )
     return parser
 
 

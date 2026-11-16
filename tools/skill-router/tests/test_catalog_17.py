@@ -23,7 +23,11 @@ NEW = "project-audit"
 
 
 def _catalog_dirs() -> list[Path]:
-    return sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
+    return sorted(
+        p
+        for p in (ROOT / "skills").iterdir()
+        if p.is_dir() and (p / "SKILL.md").is_file()
+    )
 
 
 def test_catalog_has_seventeen_skills() -> None:
@@ -38,7 +42,9 @@ def test_catalog_has_seventeen_skills() -> None:
 
 def test_directory_name_matches_frontmatter() -> None:
     for path in _catalog_dirs():
-        frontmatter = path.joinpath("SKILL.md").read_text(encoding="utf-8").split("---", 2)[1]
+        frontmatter = (
+            path.joinpath("SKILL.md").read_text(encoding="utf-8").split("---", 2)[1]
+        )
         match = re.search(r"^name:\s*(\S+)\s*$", frontmatter, re.MULTILINE)
         assert match is not None, path
         assert match.group(1) == path.name, path
@@ -61,8 +67,12 @@ def test_index_lists_the_same_catalog() -> None:
 
 
 def test_router_and_registry_reference_the_renamed_skill() -> None:
-    intent = (ROOT / "tools" / "skill-router" / "intent-map.yaml").read_text(encoding="utf-8")
-    registry = (ROOT / "tools" / "execution" / "registry.yaml").read_text(encoding="utf-8")
+    intent = (ROOT / "tools" / "skill-router" / "intent-map.yaml").read_text(
+        encoding="utf-8"
+    )
+    registry = (ROOT / "tools" / "execution" / "registry.yaml").read_text(
+        encoding="utf-8"
+    )
     assert RENAMED in intent
     assert RENAMED in registry
     assert REMOVED not in intent

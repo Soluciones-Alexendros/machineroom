@@ -79,29 +79,47 @@ def selftest() -> list[str]:
     cases = [
         ("#000000", "#FFFFFF", 21.0, True),
         ("#767676", "#FFFFFF", 4.54, True),
-        ("#767676", "#FFFF00", 4.23, False),  # corregido: el material fuente indicaba 2.59 (erróneo)
+        (
+            "#767676",
+            "#FFFF00",
+            4.23,
+            False,
+        ),  # corregido: el material fuente indicaba 2.59 (erróneo)
         ("#777777", "#FFFFFF", 4.48, False),
     ]
     failures: list[str] = []
     for fg, bg, expected_ratio, expected_aa in cases:
         r = check(fg, bg)
         if abs(r["ratio"] - expected_ratio) > RATIO_TOLERANCE or r["aa"] != expected_aa:
-            failures.append(f"{fg} sobre {bg}: ratio={r['ratio']} (esperado {expected_ratio}), aa={r['aa']}")
+            failures.append(
+                f"{fg} sobre {bg}: ratio={r['ratio']} (esperado {expected_ratio}), aa={r['aa']}"
+            )
     return failures
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Contraste WCAG entre dos colores")
     ap.add_argument("fg", nargs="?", help="Color de texto (#RRGGBB)")
     ap.add_argument("bg", nargs="?", help="Color de fondo (#RRGGBB)")
-    ap.add_argument("--large", action="store_true", help="Texto grande (>=18pt o 14pt bold)")
+    ap.add_argument(
+        "--large", action="store_true", help="Texto grande (>=18pt o 14pt bold)"
+    )
     ap.add_argument("--selftest", action="store_true", help="Ejecutar tests internos")
     args = ap.parse_args(argv)
 
     if args.selftest:
         failures = selftest()
-        print(json.dumps({"selftest": "PASS" if not failures else "FAIL", "failures": failures}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"selftest": "PASS" if not failures else "FAIL", "failures": failures},
+                ensure_ascii=False,
+            )
+        )
         return 0 if not failures else 1
 
     if not args.fg or not args.bg:

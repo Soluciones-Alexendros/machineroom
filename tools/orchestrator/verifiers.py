@@ -51,11 +51,17 @@ def content_acceptance_verifier(task: dict[str, Any]) -> Verifier:
 
     def verify(result: OpResult, staging: Path) -> list[dict[str, Any]]:
         if result.outcome != "succeeded":
-            return [{"kind": kind, "ok": False, "detail": result.detail or "not succeeded"} for kind in kinds]
+            return [
+                {"kind": kind, "ok": False, "detail": result.detail or "not succeeded"}
+                for kind in kinds
+            ]
         if not write_scope:
             detail = (result.detail or "").strip()
             ok = bool(detail)
-            return [{"kind": kind, "ok": ok, "detail": detail or "empty read-only detail"} for kind in kinds]
+            return [
+                {"kind": kind, "ok": ok, "detail": detail or "empty read-only detail"}
+                for kind in kinds
+            ]
         failures: list[str] = []
         for relative in write_scope:
             path = staging / relative

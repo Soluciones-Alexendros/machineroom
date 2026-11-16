@@ -18,7 +18,9 @@ def load() -> Any:
 def write_skill(root: Path, name: str, body: str, desc: str | None = None) -> None:
     skill = root / "skills" / name
     skill.mkdir(parents=True)
-    description = desc or (f"{name} capability. Use when the operator asks for it. Not for other families.")
+    description = desc or (
+        f"{name} capability. Use when the operator asks for it. Not for other families."
+    )
     (skill / "SKILL.md").write_text(
         f"""---
 name: {name}
@@ -120,7 +122,9 @@ def test_catalog_mismatch(tmp_path: Path) -> None:
     seed_catalog(tmp_path, ["plan-demo", "web-ghost"])
     for rel in ("README.md", "docs/TAXONOMY.md"):
         path = tmp_path / rel
-        text = path.read_text(encoding="utf-8").replace("`plan-demo`", "`plan-demo` `web-ghost`")
+        text = path.read_text(encoding="utf-8").replace(
+            "`plan-demo`", "`plan-demo` `web-ghost`"
+        )
         path.write_text(text, encoding="utf-8")
     errors = run_root(tmp_path)
     assert any("token inexistente" in e or "bloque distinto" in e for e in errors)

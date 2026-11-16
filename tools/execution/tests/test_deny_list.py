@@ -85,7 +85,9 @@ def test_allow_exceptions(command: str) -> None:
     assert _hook({"command": command})["permission"] == "allow"
 
 
-@pytest.mark.parametrize("command", ["curl https://example.com", "wget http://x/y", "git status"])
+@pytest.mark.parametrize(
+    "command", ["curl https://example.com", "wget http://x/y", "git status"]
+)
 def test_network_and_unmatched_ask(command: str) -> None:
     assert _hook({"command": command})["permission"] == "ask"
 
@@ -146,10 +148,14 @@ def test_shell_matcher_is_the_single_formula() -> None:
     assert raw["matcher"] == hook_matcher
     policy = load_policy(ROOT)
     assert policy.matcher.pattern == hook_matcher
-    source = (ROOT / "extensions" / "machineroom" / "index.ts").read_text(encoding="utf-8")
+    source = (ROOT / "extensions" / "machineroom" / "index.ts").read_text(
+        encoding="utf-8"
+    )
     assert "apt-get|sshd" not in source
     for command in ("echo ~/.ssh/config", "ssh host", "sshd", "git status"):
-        assert bool(policy.matcher.search(command)) == bool(re.compile(hook_matcher).search(command))
+        assert bool(policy.matcher.search(command)) == bool(
+            re.compile(hook_matcher).search(command)
+        )
 
 
 def test_missing_matcher_is_a_structured_failure(tmp_path: Path) -> None:
@@ -160,8 +166,15 @@ def test_missing_matcher_is_a_structured_failure(tmp_path: Path) -> None:
             {
                 "version": 1,
                 "deny": [{"id": "rm-rf", "pattern": r"\brm\s+-rf\b", "message": "no"}],
-                "network": {"id": "outbound-network", "pattern": r"\bcurl\b", "message": "ask"},
-                "allow": {"helpOrVersion": "--help", "tmpPrefixes": ["/tmp/machineroom-"]},
+                "network": {
+                    "id": "outbound-network",
+                    "pattern": r"\bcurl\b",
+                    "message": "ask",
+                },
+                "allow": {
+                    "helpOrVersion": "--help",
+                    "tmpPrefixes": ["/tmp/machineroom-"],
+                },
             }
         ),
         encoding="utf-8",

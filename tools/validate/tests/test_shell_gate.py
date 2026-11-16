@@ -151,7 +151,9 @@ def test_wget_network_is_ask() -> None:
 def test_decide_fallback_ask_for_unclassified_match() -> None:
     # Hook matcher may fire on strings the deny/network branches do not classify.
     mod = _load_gate()
-    assert mod.decide({"command": "echo matched-but-unclassified"})["permission"] == "ask"
+    assert (
+        mod.decide({"command": "echo matched-but-unclassified"})["permission"] == "ask"
+    )
 
 
 def _hook_matcher() -> re.Pattern[str]:

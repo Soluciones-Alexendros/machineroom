@@ -21,7 +21,9 @@ from project_load import (  # noqa: E402
 
 class TestProjectLoad(unittest.TestCase):
     def test_validate_ok(self):
-        validate_project({"profile": "P1", "phases": ["DEFINE", "STATUS"], "skills": {}})
+        validate_project(
+            {"profile": "P1", "phases": ["DEFINE", "STATUS"], "skills": {}}
+        )
 
     def test_validate_bad_profile(self):
         with self.assertRaises(ProjectConfigError):
@@ -60,11 +62,15 @@ class TestProjectLoad(unittest.TestCase):
 
     def test_integrate_handoffs(self):
         self.assertEqual(
-            handoff_for_phase({"handoffs": {"integrate_publish": "project-publish"}}, "INTEGRATE"),
+            handoff_for_phase(
+                {"handoffs": {"integrate_publish": "project-publish"}}, "INTEGRATE"
+            ),
             "project-publish",
         )
         self.assertEqual(
-            handoff_for_phase({"handoffs": {"integrate_hooks": "project-publish"}}, "INTEGRATE"),
+            handoff_for_phase(
+                {"handoffs": {"integrate_hooks": "project-publish"}}, "INTEGRATE"
+            ),
             "project-publish",
         )
 

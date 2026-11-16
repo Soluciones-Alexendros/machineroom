@@ -37,7 +37,11 @@ def plan_schedule(document: Any) -> list[list[str]]:
     completed: set[str] = set()
     waves: list[list[str]] = []
     while pending:
-        ready = sorted(task_id for task_id, dependencies in pending.items() if dependencies <= completed)
+        ready = sorted(
+            task_id
+            for task_id, dependencies in pending.items()
+            if dependencies <= completed
+        )
         if not ready:
             raise ValueError("dependency cycle in active plan")
         waves.append(ready)
@@ -73,11 +77,14 @@ class Scheduler:
         status = load_status(self.repo)
         for task_id, task in status["tasks"].items():
             if task.get("state") in {"running", "awaiting_agent", "awaiting_approval"}:
-                block_task(self.repo, task_id, detail="interrupted run; reconcile before retry")
+                block_task(
+                    self.repo, task_id, detail="interrupted run; reconcile before retry"
+                )
 
     def dry_run(self) -> RunSummary:
         results = tuple(
-            AdapterResult("simulated", detail=f"planned: {','.join(wave)}") for wave in plan_schedule(self.document)
+            AdapterResult("simulated", detail=f"planned: {','.join(wave)}")
+            for wave in plan_schedule(self.document)
         )
         return RunSummary("simulated", results)
 
@@ -91,16 +98,26 @@ class Scheduler:
         try:
             result = self.adapter.execute(task, context)
         except Exception as exc:
-            result = AdapterResult("failed", detail=f"adapter error: {type(exc).__name__}: {exc}")
+            result = AdapterResult(
+                "failed", detail=f"adapter error: {type(exc).__name__}: {exc}"
+            )
         if result.outcome == "succeeded":
             if not result.run_id:
-                result = AdapterResult("failed", detail="succeeded adapter result has no evidence run_id")
+                result = AdapterResult(
+                    "failed", detail="succeeded adapter result has no evidence run_id"
+                )
             else:
                 try:
-                    complete_task(self.repo, task_id, run_id=result.run_id, target=str(self.repo))
+                    complete_task(
+                        self.repo, task_id, run_id=result.run_id, target=str(self.repo)
+                    )
                     return result
                 except Exception as exc:
-                    result = AdapterResult("failed", run_id=result.run_id, detail=f"completion failed: {exc}")
+                    result = AdapterResult(
+                        "failed",
+                        run_id=result.run_id,
+                        detail=f"completion failed: {exc}",
+                    )
         if result.outcome in {"blocked", "cancelled", "failed", "simulated"}:
             try:
                 if result.outcome == "blocked":
@@ -108,16 +125,24 @@ class Scheduler:
                 elif result.outcome == "cancelled":
                     cancel_task(self.repo, task_id, detail=result.detail)
                 else:
-                    fail_task(self.repo, task_id, detail=result.detail or result.outcome)
+                    fail_task(
+                        self.repo, task_id, detail=result.detail or result.outcome
+                    )
             except Exception as exc:
-                return AdapterResult("failed", detail=f"{result.detail}; state failure: {exc}")
+                return AdapterResult(
+                    "failed", detail=f"{result.detail}; state failure: {exc}"
+                )
         return result
 
-    def run(self) -> RunSummary:  # noqa: C901, PLR0912  # DAG loop: schedule/wait/stop branches
+    def run(
+        self,
+    ) -> RunSummary:  # noqa: C901, PLR0912  # DAG loop: schedule/wait/stop branches
         if self.adapter is None:
             raise ValueError("adapter required for non-dry-run execution")
         status = load_status(self.repo)
-        if not self.resume and any(task.get("state") != "pending" for task in status["tasks"].values()):
+        if not self.resume and any(
+            task.get("state") != "pending" for task in status["tasks"].values()
+        ):
             raise ValueError("resume=false requires pending tasks or an explicit reset")
         self._recover_interrupted()
         context = RunContext(
@@ -147,7 +172,9 @@ class Scheduler:
                                 break
                             if task in running.values():
                                 continue
-                            running[executor.submit(self._execute, task, context)] = task
+                            running[executor.submit(self._execute, task, context)] = (
+                                task
+                            )
                     if not running:
                         break
                     done, _pending = wait(tuple(running), return_when=FIRST_COMPLETED)
@@ -155,7 +182,10 @@ class Scheduler:
                         task = running.pop(future)
                         result = future.result()
                         results.append(result)
-                        if result.outcome != "succeeded" and task["on_failure"] == "stop":
+                        if (
+                            result.outcome != "succeeded"
+                            and task["on_failure"] == "stop"
+                        ):
                             stop_scheduling = True
                     if stop_scheduling and not running:
                         break
@@ -166,7 +196,9 @@ class Scheduler:
         states = [task.get("state") for task in final["tasks"].values()]
         if any(state == "failed" for state in states):
             outcome = "failed"
-        elif self.cancel_event.is_set() or any(state == "cancelled" for state in states):
+        elif self.cancel_event.is_set() or any(
+            state == "cancelled" for state in states
+        ):
             outcome = "cancelled"
         elif states and all(state == "succeeded" for state in states):
             outcome = "pass"
@@ -190,10 +222,16 @@ class Scheduler:
             patch = sorted(candidates)[-1]
             manifest_path = patch.with_suffix(".manifest.json")
             if not manifest_path.is_file():
-                raise ValueError(f"succeeded task {task_id} missing manifest for resume")
+                raise ValueError(
+                    f"succeeded task {task_id} missing manifest for resume"
+                )
             items.append({"patch": patch, "manifest": manifest_path})
         if items:
             # Order by plan dependency waves so rebuild stays topological.
-            order = {task_id: index for index, wave in enumerate(plan_schedule(self.document)) for task_id in wave}
+            order = {
+                task_id: index
+                for index, wave in enumerate(plan_schedule(self.document))
+                for task_id in wave
+            }
             items.sort(key=lambda item: order.get(Path(item["patch"]).stem, 10**9))
             workspace.rebuild_staging_from_artifacts(items)

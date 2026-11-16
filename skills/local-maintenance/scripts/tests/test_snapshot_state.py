@@ -19,7 +19,9 @@ EXIT_BLOCKED = 3
 SCRIPT = "snapshot_state.py"
 
 
-def _run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def _run(
+    *args: str, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     e = dict(os.environ)
     if env:
         e.update(env)
@@ -48,7 +50,9 @@ def test_invalid_snapshot_id_exit2(tmp_path: Path) -> None:
     assert r.returncode == EXIT_USAGE
 
 
-def test_error_snapshot_dir_es_fichero_exit1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_error_snapshot_dir_es_fichero_exit1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     blocker = tmp_path / "blocker"
     blocker.write_text("x", encoding="utf-8")
     # Backend callable after approval; CLI itself always rejects create.
@@ -77,19 +81,27 @@ def test_detect_pkg_mgr_golden() -> None:
 
 
 def test_snapshot_detect_pkgmgr_pacman(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(snapshot_state, "which", lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None)
+    monkeypatch.setattr(
+        snapshot_state,
+        "which",
+        lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None,
+    )
     mgr = snapshot_state.detect_pkg_mgr()
     assert mgr == "pacman"
 
 
 def test_snapshot_detect_pkgmgr_apt(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(snapshot_state, "which", lambda cmd: "/usr/bin/apt" if cmd == "apt" else None)
+    monkeypatch.setattr(
+        snapshot_state, "which", lambda cmd: "/usr/bin/apt" if cmd == "apt" else None
+    )
     mgr = snapshot_state.detect_pkg_mgr()
     assert mgr == "apt"
 
 
 def test_snapshot_detect_pkgmgr_dnf(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(snapshot_state, "which", lambda cmd: "/usr/bin/dnf" if cmd == "dnf" else None)
+    monkeypatch.setattr(
+        snapshot_state, "which", lambda cmd: "/usr/bin/dnf" if cmd == "dnf" else None
+    )
     mgr = snapshot_state.detect_pkg_mgr()
     assert mgr == "dnf"
 
@@ -104,7 +116,10 @@ def test_snapshot_create_basic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     snap_dir = tmp_path / "snapshots"
     snap_dir.mkdir()
     with (
-        patch("snapshot_state.which", lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None),
+        patch(
+            "snapshot_state.which",
+            lambda cmd: "/usr/bin/pacman" if cmd == "pacman" else None,
+        ),
         patch("snapshot_state.run_capture", return_value=(0, "pkg1\npkg2")),
         patch("snapshot_state.run", return_value="pkg1\npkg2"),
     ):
@@ -116,7 +131,9 @@ def test_snapshot_create_basic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
         assert meta["coverage"]
 
 
-def test_snapshot_create_cli_always_blocked(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_snapshot_create_cli_always_blocked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Env/flag never authorizes CLI create (V13/C05)."""
     monkeypatch.setenv("MACHINEROOM_EXECUTION_APPROVED", "1")
     snap_dir = tmp_path / "snapshots"
@@ -143,7 +160,9 @@ def test_snapshot_rollback_dry_run(tmp_path: Path) -> None:
     meta = snap_dir / "snap-test" / "metadata.json"
     meta.parent.mkdir(parents=True, exist_ok=True)
     meta.write_text('{"id": "snap-test", "packages": ["pkg1"]}', encoding="utf-8")
-    rc = snapshot_state.main(["--rollback", "snap-test", "--snapshot-dir", str(snap_dir)])
+    rc = snapshot_state.main(
+        ["--rollback", "snap-test", "--snapshot-dir", str(snap_dir)]
+    )
     assert rc == 0  # dry-run by default
 
 
@@ -153,13 +172,19 @@ def test_snapshot_rollback_execute_rejects_host_root(tmp_path: Path) -> None:
     meta = snap_dir / "snap-test" / "metadata.json"
     meta.parent.mkdir(parents=True, exist_ok=True)
     meta.write_text('{"id": "snap-test", "packages": ["pkg1"]}', encoding="utf-8")
-    (meta.parent / "etc-checksums.txt").write_text("abc123  /etc/fstab\n", encoding="utf-8")
+    (meta.parent / "etc-checksums.txt").write_text(
+        "abc123  /etc/fstab\n", encoding="utf-8"
+    )
     (meta.parent / "etc-backup.tar.gz").write_bytes(b"dummy")
     # Privileged host root must remain blocked
-    rc = snapshot_state.rollback_snapshot(str(snap_dir), "snap-test", execute=True, restore_root="/")
+    rc = snapshot_state.rollback_snapshot(
+        str(snap_dir), "snap-test", execute=True, restore_root="/"
+    )
     assert rc == EXIT_BLOCKED
     # Without --restore-root, program creates staging (bad tar → extract fail, not host write)
-    rc2 = snapshot_state.main(["--rollback", "snap-test", "--snapshot-dir", str(snap_dir), "--execute"])
+    rc2 = snapshot_state.main(
+        ["--rollback", "snap-test", "--snapshot-dir", str(snap_dir), "--execute"]
+    )
     assert rc2 != 0
 
 
@@ -169,7 +194,9 @@ def test_snapshot_rollback_execute_program_staging(tmp_path: Path) -> None:
     meta = snap_dir / "snap-test" / "metadata.json"
     meta.parent.mkdir(parents=True, exist_ok=True)
     meta.write_text('{"id": "snap-test"}', encoding="utf-8")
-    (meta.parent / "etc-checksums.txt").write_text("abc123  /etc/fstab\n", encoding="utf-8")
+    (meta.parent / "etc-checksums.txt").write_text(
+        "abc123  /etc/fstab\n", encoding="utf-8"
+    )
     tarball = meta.parent / "etc-backup.tar.gz"
     with tarfile.open(tarball, "w:gz") as tf:
         info = tarfile.TarInfo(name="etc/fstab")
@@ -190,5 +217,7 @@ def test_snapshot_rollback_execute_program_staging(tmp_path: Path) -> None:
     )
     assert rc_bad == EXIT_BLOCKED
     # Program-owned staging (no --restore-root)
-    rc = snapshot_state.main(["--rollback", "snap-test", "--snapshot-dir", str(snap_dir), "--execute"])
+    rc = snapshot_state.main(
+        ["--rollback", "snap-test", "--snapshot-dir", str(snap_dir), "--execute"]
+    )
     assert rc == 0

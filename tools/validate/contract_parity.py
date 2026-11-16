@@ -59,12 +59,17 @@ def hook_payload(hook: Path = HOOK) -> dict[str, str]:
     except OSError as exc:
         raise ParityError("hook_payload", f"cannot run {hook}: {exc}") from exc
     if proc.returncode != 0:
-        raise ParityError("hook_payload", f"hook exited {proc.returncode}: {proc.stderr.strip()[:200]}")
+        raise ParityError(
+            "hook_payload",
+            f"hook exited {proc.returncode}: {proc.stderr.strip()[:200]}",
+        )
     try:
         payload = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
         raise ParityError("hook_payload", f"hook stdout is not JSON: {exc}") from exc
-    if not isinstance(payload, dict) or not isinstance(payload.get("additional_context"), str):
+    if not isinstance(payload, dict) or not isinstance(
+        payload.get("additional_context"), str
+    ):
         raise ParityError("hook_payload", "hook payload lacks additional_context")
     return payload
 
@@ -108,11 +113,15 @@ def check_hook_is_a_pointer() -> None:
     body_lines = {
         line.strip()
         for line in RULE.read_text(encoding="utf-8").splitlines()
-        if len(line.strip()) > MIN_COPIED_LINE_CHARS and not line.strip().startswith("---")
+        if len(line.strip()) > MIN_COPIED_LINE_CHARS
+        and not line.strip().startswith("---")
     }
     copied = [line for line in body_lines if line in context]
     if copied:
-        raise ParityError("check_hook_is_a_pointer", f"summary copies {len(copied)} rule line(s) verbatim")
+        raise ParityError(
+            "check_hook_is_a_pointer",
+            f"summary copies {len(copied)} rule line(s) verbatim",
+        )
 
 
 def check_user_rule_script() -> None:
@@ -121,10 +130,17 @@ def check_user_rule_script() -> None:
         raise ParityError("check_user_rule_script", f"missing {USER_RULE_SCRIPT}")
     text = USER_RULE_SCRIPT.read_text(encoding="utf-8")
     if "rules/machineroom.mdc" not in text:
-        raise ParityError("check_user_rule_script", "helper does not reference rules/machineroom.mdc")
+        raise ParityError(
+            "check_user_rule_script", "helper does not reference rules/machineroom.mdc"
+        )
 
 
-CHECKS = (check_rule, check_hook_digest, check_hook_is_a_pointer, check_user_rule_script)
+CHECKS = (
+    check_rule,
+    check_hook_digest,
+    check_hook_is_a_pointer,
+    check_user_rule_script,
+)
 
 
 def main() -> int:

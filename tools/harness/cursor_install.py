@@ -24,7 +24,12 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from harness import naming  # noqa: E402
-from harness.runtime import InstallFailure, format_failure, make_relative_symlink, write_user_hooks_config  # noqa: E402
+from harness.runtime import (
+    InstallFailure,
+    format_failure,
+    make_relative_symlink,
+    write_user_hooks_config,
+)  # noqa: E402
 
 MANIFEST_NAME = ".machineroom-full-manifest.json"
 JOURNAL_NAME = ".machineroom-full-journal.json"
@@ -52,7 +57,9 @@ class Resource:
     relative: str
     kind: str
     source: Path | None = None
-    content: str | None = None  # retained for journal compatibility; unused for user hooks
+    content: str | None = (
+        None  # retained for journal compatibility; unused for user hooks
+    )
 
 
 def _config_dir(target: Path) -> Path:
@@ -70,7 +77,9 @@ def _hooks_config(source_root: Path, *, user_scope: bool) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
 
-def _resources(source_root: Path, *, user_scope: bool, prepare_user_hooks: bool = True) -> list[Resource]:
+def _resources(
+    source_root: Path, *, user_scope: bool, prepare_user_hooks: bool = True
+) -> list[Resource]:
     source_root = source_root.resolve()
     if user_scope and prepare_user_hooks:
         write_user_hooks_config(source_root)
@@ -84,8 +93,12 @@ def _resources(source_root: Path, *, user_scope: bool, prepare_user_hooks: bool 
         for source in sorted((source_root / ".cursor" / "agents").glob("*.md"))
     )
     if not user_scope:
-        resources.append(Resource(RULE_RELATIVE, "symlink", source_root / ".cursor" / RULE_RELATIVE))
-    resources.append(Resource("hooks.json", "symlink", source_root / ".cursor" / "hooks.json"))
+        resources.append(
+            Resource(RULE_RELATIVE, "symlink", source_root / ".cursor" / RULE_RELATIVE)
+        )
+    resources.append(
+        Resource("hooks.json", "symlink", source_root / ".cursor" / "hooks.json")
+    )
     resources.extend(
         Resource(f"hooks/{source.name}", "symlink", source)
         for source in sorted((source_root / ".cursor" / "hooks").glob("*.py"))
@@ -93,7 +106,8 @@ def _resources(source_root: Path, *, user_scope: bool, prepare_user_hooks: bool 
     missing = [
         str(resource.source)
         for resource in resources
-        if resource.kind == "symlink" and (resource.source is None or not resource.source.exists())
+        if resource.kind == "symlink"
+        and (resource.source is None or not resource.source.exists())
     ]
     if missing:
         raise ValueError(f"Cursor source resources missing: {missing}")
@@ -114,7 +128,9 @@ def _manifest_owns(relative: str, manifest: dict[str, Any] | None) -> bool:
     return any(entry["path"] == relative for entry in _manifest_entries(manifest))
 
 
-def _migratable(destination: Path, relative: str, manifest: dict[str, Any] | None) -> bool:
+def _migratable(
+    destination: Path, relative: str, manifest: dict[str, Any] | None
+) -> bool:
     """Prior install listed this path and it still resolves under the prior source_root."""
     if not _manifest_owns(relative, manifest) or manifest is None:
         return False
@@ -151,14 +167,19 @@ def _manifest_entries(manifest: dict[str, Any]) -> list[dict[str, str]]:
         if isinstance(item, str):
             entries.append({"path": item, "kind": "symlink"})
         else:
-            entries.append({"path": str(item["path"]), "kind": str(item.get("kind", "symlink"))})
+            entries.append(
+                {"path": str(item["path"]), "kind": str(item.get("kind", "symlink"))}
+            )
     return entries
 
 
 def _owned_generated(relative: str, manifest: dict[str, Any] | None) -> bool:
     if manifest is None:
         return False
-    return any(entry["path"] == relative and entry["kind"] == "generated" for entry in _manifest_entries(manifest))
+    return any(
+        entry["path"] == relative and entry["kind"] == "generated"
+        for entry in _manifest_entries(manifest)
+    )
 
 
 def _preflight_symlink(
@@ -173,38 +194,64 @@ def _preflight_symlink(
         return "changed"
     if state == "file":
         # Migrate owned generated hooks.json (previous user-scope layout) to a symlink.
-        if resource.relative == "hooks.json" and _owned_generated(resource.relative, manifest):
+        if resource.relative == "hooks.json" and _owned_generated(
+            resource.relative, manifest
+        ):
             return "changed"
-        raise ConflictError(f"real file/dir conflict: {destination}", component=component)
+        raise ConflictError(
+            f"real file/dir conflict: {destination}", component=component
+        )
     if state != "symlink":
-        raise ConflictError(f"real file/dir conflict: {destination}", component=component)
+        raise ConflictError(
+            f"real file/dir conflict: {destination}", component=component
+        )
     if not destination.exists():
-        raise ConflictError(f"broken symlink conflict: {destination}", component=component)
+        raise ConflictError(
+            f"broken symlink conflict: {destination}", component=component
+        )
     if destination.resolve() == _source_of(resource).resolve():
         return "skipped"
-    if _owned_by(destination, source_root) or _migratable(destination, resource.relative, manifest):
+    if _owned_by(destination, source_root) or _migratable(
+        destination, resource.relative, manifest
+    ):
         return "changed"
     raise ConflictError(f"foreign symlink conflict: {destination}", component=component)
 
 
-def _verify_installed_link(resource: Resource, destination: Path, *, user_scope: bool, source_root: Path) -> None:
+def _verify_installed_link(
+    resource: Resource, destination: Path, *, user_scope: bool, source_root: Path
+) -> None:
     component = resource.relative
     if not destination.is_symlink():
-        raise InstallFailure(component, "install_full", f"expected symlink after install: {destination}")
+        raise InstallFailure(
+            component, "install_full", f"expected symlink after install: {destination}"
+        )
     if not destination.exists():
-        raise InstallFailure(component, "install_full", f"broken symlink after install: {destination}")
+        raise InstallFailure(
+            component, "install_full", f"broken symlink after install: {destination}"
+        )
     link_text = Path(os.readlink(destination))
     if user_scope:
         if link_text.is_absolute():
-            raise InstallFailure(component, "install_full", f"user link must be relative: {destination} -> {link_text}")
+            raise InstallFailure(
+                component,
+                "install_full",
+                f"user link must be relative: {destination} -> {link_text}",
+            )
         try:
             destination.resolve().relative_to(source_root.resolve())
         except ValueError as exc:
             raise InstallFailure(
-                component, "install_full", f"link escapes runtime: {destination} -> {destination.resolve()}"
+                component,
+                "install_full",
+                f"link escapes runtime: {destination} -> {destination.resolve()}",
             ) from exc
     elif not link_text.is_absolute():
-        raise InstallFailure(component, "install_full", f"project link must be absolute: {destination} -> {link_text}")
+        raise InstallFailure(
+            component,
+            "install_full",
+            f"project link must be absolute: {destination} -> {link_text}",
+        )
     if destination.resolve() != _source_of(resource).resolve():
         raise InstallFailure(
             component,
@@ -222,7 +269,9 @@ def _preflight(
     changed = skipped = 0
     for resource in resources:
         destination = config / resource.relative
-        outcome = _preflight_symlink(resource, destination, _state(destination), source_root, manifest)
+        outcome = _preflight_symlink(
+            resource, destination, _state(destination), source_root, manifest
+        )
         if outcome == "changed":
             changed += 1
         else:
@@ -258,7 +307,11 @@ def _action(resource: Resource, destination: Path) -> str:
     state = _state(destination)
     if state == "absent":
         return "created"
-    if state == "symlink" and destination.exists() and destination.resolve() == _source_of(resource).resolve():
+    if (
+        state == "symlink"
+        and destination.exists()
+        and destination.resolve() == _source_of(resource).resolve()
+    ):
         return "unchanged"
     return "replaced"
 
@@ -272,7 +325,9 @@ def _snapshot(destination: Path, *, owned_generated: bool) -> dict[str, str]:
     return {"kind": "absent"}
 
 
-def _apply(resource: Resource, destination: Path, action: str, *, relative: bool) -> None:
+def _apply(
+    resource: Resource, destination: Path, action: str, *, relative: bool
+) -> None:
     if action == "unchanged":
         return
     if destination.is_symlink() or destination.is_file():
@@ -298,7 +353,10 @@ def _prune(  # noqa: PLR0913, PLR0917  # prune needs prior entries + journal/man
         destination = config / entry["path"]
         if not destination.is_symlink():
             continue
-        if not (_owned_by(destination, source_root) or _migratable(destination, entry["path"], manifest)):
+        if not (
+            _owned_by(destination, source_root)
+            or _migratable(destination, entry["path"], manifest)
+        ):
             continue
         record = {
             "destination": str(destination),
@@ -345,8 +403,12 @@ def install_full(  # noqa: C901  # user/project scope + link/verify branches
     else:
         source_root = source_root.resolve()
     if target in {Path("/"), Path("/etc"), Path("/usr"), Path("/var"), Path("/root")}:
-        raise InstallFailure("runtime", "install_full", f"privileged target rejected: {target}")
-    resources = _resources(source_root, user_scope=user_scope, prepare_user_hooks=not dry_run)
+        raise InstallFailure(
+            "runtime", "install_full", f"privileged target rejected: {target}"
+        )
+    resources = _resources(
+        source_root, user_scope=user_scope, prepare_user_hooks=not dry_run
+    )
     config = _config_dir(target)
     manifest_path = config / MANIFEST_NAME
     existing: dict[str, Any] | None = None
@@ -392,7 +454,9 @@ def install_full(  # noqa: C901  # user/project scope + link/verify branches
             journal["entries"].append(entry)
             _write_json(journal_path, journal)
             _apply(resource, destination, str(entry["action"]), relative=user_scope)
-            _verify_installed_link(resource, destination, user_scope=user_scope, source_root=source_root)
+            _verify_installed_link(
+                resource, destination, user_scope=user_scope, source_root=source_root
+            )
             entry["applied"] = True
             _write_json(journal_path, journal)
         previous_entries = _manifest_entries(existing) if existing else []
@@ -404,7 +468,10 @@ def install_full(  # noqa: C901  # user/project scope + link/verify branches
             "source_root": str(source_root),
             "components": "full",
             "scope": "user" if user_scope else "project",
-            "resources": [{"path": resource.relative, "kind": resource.kind} for resource in resources],
+            "resources": [
+                {"path": resource.relative, "kind": resource.kind}
+                for resource in resources
+            ],
             "omitted": omitted,
             "version": _json_version(source_root),
         }
@@ -442,7 +509,9 @@ def uninstall_full(  # noqa: C901  # owned/foreign/generated cleanup branches
     if target.name == ".cursor":
         sibling = target.resolve().parent / naming.RUNTIME_DIRNAME
         if sibling.is_dir() and (target / MANIFEST_NAME).is_file():
-            manifest_peek = json.loads((target / MANIFEST_NAME).read_text(encoding="utf-8"))
+            manifest_peek = json.loads(
+                (target / MANIFEST_NAME).read_text(encoding="utf-8")
+            )
             if manifest_peek.get("scope") == "user":
                 source_root = sibling
     config, manifest = _validated_manifest(source_root, target)
@@ -459,7 +528,9 @@ def uninstall_full(  # noqa: C901  # owned/foreign/generated cleanup branches
             if destination.is_symlink() or not destination.is_file():
                 retained.append(relative)
                 continue
-            if destination.read_text(encoding="utf-8") != _hooks_config(source_root.resolve(), user_scope=user_scope):
+            if destination.read_text(encoding="utf-8") != _hooks_config(
+                source_root.resolve(), user_scope=user_scope
+            ):
                 retained.append(relative)
                 continue
         elif not destination.is_symlink() or not _owned_by(destination, source_root):
@@ -489,7 +560,9 @@ def _json_version(source_root: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Install the complete Cursor harness")
-    parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument(
+        "--source", type=Path, default=Path(__file__).resolve().parents[2]
+    )
     parser.add_argument("--target", type=Path, required=True)
     parser.add_argument(
         "--user",
@@ -506,7 +579,9 @@ def main(argv: list[str] | None = None) -> int:
         result = (
             uninstall_full(source, args.target, dry_run=args.dry_run)
             if args.uninstall
-            else install_full(source, args.target, dry_run=args.dry_run, user_scope=args.user)
+            else install_full(
+                source, args.target, dry_run=args.dry_run, user_scope=args.user
+            )
         )
     except InstallFailure as exc:
         failure = exc.to_dict()
@@ -515,7 +590,9 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 json.dumps(
                     {
-                        "status": "conflict" if isinstance(exc, ConflictError) else "failed",
+                        "status": (
+                            "conflict" if isinstance(exc, ConflictError) else "failed"
+                        ),
                         "detail": exc.detail,
                         "failures": [failure],
                     }
@@ -523,13 +600,28 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 1
     except (ValueError, OSError) as exc:
-        failure = {"component": "runtime", "function": "install_full", "detail": str(exc)}
-        print(format_failure(failure["component"], failure["function"], failure["detail"]), file=sys.stderr)
+        failure = {
+            "component": "runtime",
+            "function": "install_full",
+            "detail": str(exc),
+        }
+        print(
+            format_failure(
+                failure["component"], failure["function"], failure["detail"]
+            ),
+            file=sys.stderr,
+        )
         if args.json:
-            print(json.dumps({"status": "failed", "detail": str(exc), "failures": [failure]}))
+            print(
+                json.dumps(
+                    {"status": "failed", "detail": str(exc), "failures": [failure]}
+                )
+            )
         return 1
     print(
-        json.dumps(result, ensure_ascii=False) if args.json else f"Cursor full {result['status']}: {result['target']}"
+        json.dumps(result, ensure_ascii=False)
+        if args.json
+        else f"Cursor full {result['status']}: {result['target']}"
     )
     return 0
 

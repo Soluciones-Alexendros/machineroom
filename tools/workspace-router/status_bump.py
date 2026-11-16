@@ -87,7 +87,11 @@ def migrate_status(repo: Path | str, *, write: bool = True) -> dict[str, Any]:
 def _confined_plan_path(repo: Path, path: Path | str) -> tuple[Path, str]:
     root = repo.resolve()
     candidate = Path(path)
-    resolved = (root / candidate).resolve() if not candidate.is_absolute() else candidate.resolve()
+    resolved = (
+        (root / candidate).resolve()
+        if not candidate.is_absolute()
+        else candidate.resolve()
+    )
     try:
         relative = resolved.relative_to(root).as_posix()
     except ValueError as exc:
@@ -109,9 +113,14 @@ def activate_plan(repo: Path | str, plan_path: Path | str) -> dict[str, Any]:
     def activate(data: dict[str, Any]) -> dict[str, Any]:
         current = data.get("active_plan")
         if current:
-            if current.get("path") == relative and current.get("digest") == document.digest:
+            if (
+                current.get("path") == relative
+                and current.get("digest") == document.digest
+            ):
                 return data
-            raise ValueError("another active plan or plan revision exists; explicit reset required")
+            raise ValueError(
+                "another active plan or plan revision exists; explicit reset required"
+            )
         out = dict(data)
         out["active_plan"] = {
             "plan_id": document.plan_id,
@@ -121,7 +130,11 @@ def activate_plan(repo: Path | str, plan_path: Path | str) -> dict[str, Any]:
         }
         out["plan_digest"] = document.digest
         out["tasks"] = {
-            str(task["id"]): {"state": "pending", "depends_on": list(task["depends_on"])} for task in document.tasks
+            str(task["id"]): {
+                "state": "pending",
+                "depends_on": list(task["depends_on"]),
+            }
+            for task in document.tasks
         }
         out["phase"] = str(document.tasks[0]["phase"])
         out["state_revision"] = int(out.get("state_revision") or 0) + 1
@@ -148,7 +161,9 @@ def load_active_plan(repo: Path | str) -> PlanDocument:
         "base_revision": document.base_revision,
         "digest": document.digest,
     }
-    if any(active.get(key) != value for key, value in expected.items()) or relative != active.get("path"):
+    if any(
+        active.get(key) != value for key, value in expected.items()
+    ) or relative != active.get("path"):
         raise ValueError("active plan identity or digest changed")
     if status.get("plan_digest") != document.digest:
         raise ValueError("active plan digest binding mismatch")
@@ -171,10 +186,15 @@ def _task_entry(data: dict[str, Any], task_id: str) -> dict[str, Any]:
 
 
 def _dependencies_complete(data: dict[str, Any], task: dict[str, Any]) -> bool:
-    return all(_task_entry(data, str(dependency)).get("state") == "succeeded" for dependency in task["depends_on"])
+    return all(
+        _task_entry(data, str(dependency)).get("state") == "succeeded"
+        for dependency in task["depends_on"]
+    )
 
 
-def _set_task_state(data: dict[str, Any], task_id: str, state: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def _set_task_state(
+    data: dict[str, Any], task_id: str, state: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
     out = dict(data)
     tasks = dict(out.get("tasks") or {})
     entry = dict(_task_entry(out, task_id))
@@ -218,7 +238,9 @@ def start_task(repo: Path | str, task_id: str) -> dict[str, Any]:
     return _with_status_lock(root, start)
 
 
-def await_task(repo: Path | str, task_id: str, *, state: str = "awaiting_agent") -> dict[str, Any]:
+def await_task(
+    repo: Path | str, task_id: str, *, state: str = "awaiting_agent"
+) -> dict[str, Any]:
     if state not in {"awaiting_agent", "awaiting_approval"}:
         raise ValueError(f"invalid awaiting state: {state}")
     root = Path(repo).resolve()
@@ -292,7 +314,11 @@ def _apply_task_completion(  # noqa: PLR0913  # locked completion context
     out["advance"] = int(out.get("advance") or 0) + 1
     out["last_skill"] = skill
     out["updated_at"] = _utc_stamp()
-    remaining = [item for item in current_document.tasks if out["tasks"][str(item["id"])].get("state") != "succeeded"]
+    remaining = [
+        item
+        for item in current_document.tasks
+        if out["tasks"][str(item["id"])].get("state") != "succeeded"
+    ]
     out["phase"] = str(remaining[0]["phase"]) if remaining else "STATUS"
     history = list(out.get("history") or [])
     history.append(
@@ -363,7 +389,9 @@ def fail_task(repo: Path | str, task_id: str, *, detail: str) -> dict[str, Any]:
     return _with_status_lock(root, fail)
 
 
-def _interrupt_task(repo: Path | str, task_id: str, *, state: str, detail: str) -> dict[str, Any]:
+def _interrupt_task(
+    repo: Path | str, task_id: str, *, state: str, detail: str
+) -> dict[str, Any]:
     root = Path(repo).resolve()
     document = load_active_plan(root)
     _task_definition(document, task_id)
@@ -371,7 +399,9 @@ def _interrupt_task(repo: Path | str, task_id: str, *, state: str, detail: str) 
     def interrupt(data: dict[str, Any]) -> dict[str, Any]:
         current = _task_entry(data, task_id).get("state")
         if current not in {"running", "awaiting_agent", "awaiting_approval"}:
-            raise ValueError(f"task {task_id} cannot transition to {state} from {current}")
+            raise ValueError(
+                f"task {task_id} cannot transition to {state} from {current}"
+            )
         out, entry = _set_task_state(data, task_id, state)
         entry["detail"] = detail[:500]
         out["tasks"][task_id] = entry
@@ -444,7 +474,9 @@ def _assert_phase_transition(
         # STATUS → DEFINE only as explicit restart
         return
     if tgt_i < cur_i:
-        raise ValueError(f"phase regress {current} → {target} rejected; use explicit restart operation if authorized")
+        raise ValueError(
+            f"phase regress {current} → {target} rejected; use explicit restart operation if authorized"
+        )
     raise ValueError(
         f"invalid phase jump {current} → {target}; "
         f"next allowed is {PHASES[cur_i + 1] if cur_i + 1 < len(PHASES) else current}"
@@ -546,7 +578,9 @@ def _ensure_tools_on_path() -> None:
 
 def _validated_evidence(ctx: _AdvanceContext) -> dict[str, Any]:
     """Revalidate evidence UNDER lock so stale content cannot complete (H19)."""
-    from execution.evidence import load_evidence  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
+    from execution.evidence import (
+        load_evidence,
+    )  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
 
     evidence = load_evidence(
         ctx.root,
@@ -598,7 +632,9 @@ def _apply_completion(
 
     cur_rev = int(out.get("state_revision") or 0)
     if ctx.expected_revision is not None and ctx.expected_revision != cur_rev:
-        raise ValueError(f"stale state_revision: expected {ctx.expected_revision}, have {cur_rev}")
+        raise ValueError(
+            f"stale state_revision: expected {ctx.expected_revision}, have {cur_rev}"
+        )
 
     product_version = str(out.get("version") or "0.1.0")
     if ctx.bump_product_version:
@@ -606,7 +642,11 @@ def _apply_completion(
     state_revision = cur_rev + 1
     advance = int(out.get("advance") or 0) + 1
     now = _utc_stamp()
-    progress = {"state_revision": state_revision, "advance": advance, "product_version": product_version}
+    progress = {
+        "state_revision": state_revision,
+        "advance": advance,
+        "product_version": product_version,
+    }
 
     history = list(out.get("history") or [])
     history.append(_completion_entry(ctx, progress, evidence, now))
@@ -758,7 +798,9 @@ def resolve_awaiting_agent(  # noqa: PLR0913  # API pública: keyword-only
     tools = Path(__file__).resolve().parents[1]
     if str(tools) not in sys.path:
         sys.path.insert(0, str(tools))
-    from execution.evidence import load_evidence  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
+    from execution.evidence import (
+        load_evidence,
+    )  # noqa: PLC0415  # import opcional: requiere tools/ en sys.path
 
     def _resolve(data: dict[str, Any]) -> dict[str, Any]:
         data = dict(data)
@@ -767,7 +809,9 @@ def resolve_awaiting_agent(  # noqa: PLR0913  # API pública: keyword-only
             return data
         awaiting_phase = str(data.get("awaiting_phase") or phase)
         if awaiting_phase != phase:
-            raise ValueError(f"awaiting_phase mismatch: status has {awaiting_phase}, got {phase}")
+            raise ValueError(
+                f"awaiting_phase mismatch: status has {awaiting_phase}, got {phase}"
+            )
         # Validate evidence under lock
         evidence = load_evidence(
             root,

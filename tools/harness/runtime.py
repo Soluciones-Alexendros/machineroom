@@ -35,7 +35,9 @@ _SEMVER = re.compile(r"\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.-]+)?")
 _RELEASE_ORIGIN = re.compile(rf"^release:({_SEMVER.pattern})$")
 
 
-class InstallFailure(ValueError):  # noqa: N818  # plan contract name (component/function/detail)
+class InstallFailure(
+    ValueError
+):  # noqa: N818  # plan contract name (component/function/detail)
     """Structured install/update failure: component + function + detail."""
 
     def __init__(self, component: str, function: str, detail: str) -> None:
@@ -45,7 +47,11 @@ class InstallFailure(ValueError):  # noqa: N818  # plan contract name (component
         super().__init__(format_failure(component, function, detail))
 
     def to_dict(self) -> dict[str, str]:
-        return {"component": self.component, "function": self.function, "detail": self.detail}
+        return {
+            "component": self.component,
+            "function": self.function,
+            "detail": self.detail,
+        }
 
 
 def format_failure(component: str, function: str, detail: str) -> str:
@@ -79,9 +85,19 @@ def migrate_legacy_runtime(home: Path | None = None) -> dict[str, Any]:
                 "migrate_legacy_runtime",
                 f"two runtimes present: {legacy} and {target}; remove one before migrating",
             )
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "already migrated"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "already migrated",
+        }
     if not legacy.exists() and not legacy.is_symlink():
-        return {"migrated": False, "from": str(legacy), "to": str(target), "detail": "no legacy runtime"}
+        return {
+            "migrated": False,
+            "from": str(legacy),
+            "to": str(target),
+            "detail": "no legacy runtime",
+        }
     if legacy.is_symlink():
         raise InstallFailure(
             "runtime",
@@ -93,18 +109,31 @@ def migrate_legacy_runtime(home: Path | None = None) -> dict[str, Any]:
     except OSError as exc:
         if legacy.exists() and not target.exists():
             raise InstallFailure(
-                "runtime", "migrate_legacy_runtime", f"cannot move {legacy} to {target}: {exc}"
+                "runtime",
+                "migrate_legacy_runtime",
+                f"cannot move {legacy} to {target}: {exc}",
             ) from exc
         raise InstallFailure(
-            "runtime", "migrate_legacy_runtime", f"move left both paths inconsistent ({legacy} -> {target}): {exc}"
+            "runtime",
+            "migrate_legacy_runtime",
+            f"move left both paths inconsistent ({legacy} -> {target}): {exc}",
         ) from exc
-    return {"migrated": True, "from": str(legacy), "to": str(target), "detail": "migrated legacy runtime"}
+    return {
+        "migrated": True,
+        "from": str(legacy),
+        "to": str(target),
+        "detail": "migrated legacy runtime",
+    }
 
 
 def require_runtime(home: Path | None = None) -> Path:
     root = runtime_root(home)
     if root.is_symlink():
-        raise InstallFailure("runtime", "require_runtime", f"runtime must be a real directory, not a symlink: {root}")
+        raise InstallFailure(
+            "runtime",
+            "require_runtime",
+            f"runtime must be a real directory, not a symlink: {root}",
+        )
     if not root.is_dir():
         raise InstallFailure(
             "runtime",
@@ -112,13 +141,17 @@ def require_runtime(home: Path | None = None) -> Path:
             f"runtime missing: {root} (run scripts/runtime-sync.sh install --version X.Y.Z)",
         )
     if not (root / "skills").is_dir() or not (root / "package.json").is_file():
-        raise InstallFailure("runtime", "require_runtime", f"runtime incomplete: {root}")
+        raise InstallFailure(
+            "runtime", "require_runtime", f"runtime incomplete: {root}"
+        )
     return root.resolve()
 
 
 def relative_link_text(source: Path, destination: Path) -> str:
     """Return a relative symlink text from destination to source (both may not exist yet)."""
-    return os.path.relpath(str(source.resolve()), start=str(destination.parent.resolve()))
+    return os.path.relpath(
+        str(source.resolve()), start=str(destination.parent.resolve())
+    )
 
 
 def make_relative_symlink(source: Path, destination: Path) -> None:
@@ -157,7 +190,9 @@ def _verify_payload_tree(root: Path, *, function: str) -> None:
     for relative in PAYLOAD_DIRS + PAYLOAD_CURSOR:
         path = root / relative
         if not path.is_dir():
-            raise InstallFailure(relative, function, f"payload missing directory: {path}")
+            raise InstallFailure(
+                relative, function, f"payload missing directory: {path}"
+            )
     for relative in PAYLOAD_FILES:
         path = root / relative
         if not path.is_file():
@@ -168,7 +203,9 @@ def _is_home_runtime(destination: Path) -> bool:
     """True when ``destination`` is the operator home runtime, even if it does not exist yet."""
     home_runtime = Path.home() / RUNTIME_DIRNAME
     dest = destination.resolve() if destination.exists() else destination.absolute()
-    expected = home_runtime.resolve() if home_runtime.exists() else home_runtime.absolute()
+    expected = (
+        home_runtime.resolve() if home_runtime.exists() else home_runtime.absolute()
+    )
     return dest == expected
 
 
@@ -195,11 +232,17 @@ def _require_home_release(source: Path, origin: str) -> str:
     try:
         document = json.loads(package_path.read_text(encoding="utf-8"))
     except OSError as exc:
-        raise InstallFailure("package.json", "sync_payload", f"unreadable package.json: {exc}") from exc
+        raise InstallFailure(
+            "package.json", "sync_payload", f"unreadable package.json: {exc}"
+        ) from exc
     except json.JSONDecodeError as exc:
-        raise InstallFailure("package.json", "sync_payload", f"invalid package.json: {exc}") from exc
+        raise InstallFailure(
+            "package.json", "sync_payload", f"invalid package.json: {exc}"
+        ) from exc
     if not isinstance(document, dict):
-        raise InstallFailure("package.json", "sync_payload", "package.json must be an object")
+        raise InstallFailure(
+            "package.json", "sync_payload", "package.json must be an object"
+        )
     packaged = document.get("version")
     if not isinstance(packaged, str) or packaged != version:
         raise InstallFailure(
@@ -210,7 +253,9 @@ def _require_home_release(source: Path, origin: str) -> str:
     return origin
 
 
-def install_verified_runtime(source: Path, destination: Path, version: str) -> dict[str, Any]:
+def install_verified_runtime(
+    source: Path, destination: Path, version: str
+) -> dict[str, Any]:
     """Install one verified release extract. A home install rewrites user hooks before the swap."""
     if _SEMVER.fullmatch(version) is None:
         raise InstallFailure(
@@ -236,17 +281,29 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
     """
     source = source.resolve()
     if destination.is_symlink():
-        raise InstallFailure("runtime", "sync_payload", f"runtime destination is a symlink: {destination}")
-    destination = destination.resolve() if destination.exists() else destination.absolute()
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            f"runtime destination is a symlink: {destination}",
+        )
+    destination = (
+        destination.resolve() if destination.exists() else destination.absolute()
+    )
     try:
         destination.relative_to(source)
     except ValueError:
         pass
     else:
-        raise InstallFailure("runtime", "sync_payload", f"runtime destination is inside source: {destination}")
+        raise InstallFailure(
+            "runtime",
+            "sync_payload",
+            f"runtime destination is inside source: {destination}",
+        )
     for privileged in ("/", "/etc", "/usr", "/var", "/root"):
         if destination == Path(privileged):
-            raise InstallFailure("runtime", "sync_payload", f"privileged runtime rejected: {destination}")
+            raise InstallFailure(
+                "runtime", "sync_payload", f"privileged runtime rejected: {destination}"
+            )
     stable_source: str | None = None
     if _is_home_runtime(destination):
         stable_source = _require_home_release(source, origin)
@@ -261,17 +318,23 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
         for relative in PAYLOAD_DIRS:
             src = source / relative
             if not src.is_dir():
-                raise InstallFailure(relative, "sync_payload", f"payload missing directory: {src}")
+                raise InstallFailure(
+                    relative, "sync_payload", f"payload missing directory: {src}"
+                )
             _copy_tree(src, staging / relative)
         for relative in PAYLOAD_CURSOR:
             src = source / relative
             if not src.is_dir():
-                raise InstallFailure(relative, "sync_payload", f"payload missing directory: {src}")
+                raise InstallFailure(
+                    relative, "sync_payload", f"payload missing directory: {src}"
+                )
             _copy_tree(src, staging / relative)
         for relative in PAYLOAD_FILES:
             src = source / relative
             if not src.is_file():
-                raise InstallFailure(relative, "sync_payload", f"payload missing file: {src}")
+                raise InstallFailure(
+                    relative, "sync_payload", f"payload missing file: {src}"
+                )
             dest = staging / relative
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
@@ -280,7 +343,9 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
             write_user_hooks_config(staging)
         _verify_payload_tree(staging, function="sync_payload")
 
-        version = json.loads((staging / "package.json").read_text(encoding="utf-8"))["version"]
+        version = json.loads((staging / "package.json").read_text(encoding="utf-8"))[
+            "version"
+        ]
         digest = _digest_tree(staging)
         manifest: dict[str, Any] = {
             "schema_version": 1,
@@ -289,7 +354,9 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
             "origin": origin,
             "source": stable_source if stable_source is not None else str(source),
         }
-        (staging / MANIFEST_NAME).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        (staging / MANIFEST_NAME).write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
 
         if destination.exists():
             backup = destination.parent / f"{RUNTIME_DIRNAME}-backup-{os.getpid()}"
@@ -325,14 +392,20 @@ def write_user_hooks_config(runtime: Path) -> Path:
         raw = path.read_text(encoding="utf-8")
         data: dict[str, Any] = json.loads(raw)
     except OSError as exc:
-        raise InstallFailure("hooks.json", "write_user_hooks_config", f"unreadable hooks.json: {exc}") from exc
+        raise InstallFailure(
+            "hooks.json", "write_user_hooks_config", f"unreadable hooks.json: {exc}"
+        ) from exc
     except json.JSONDecodeError as exc:
-        raise InstallFailure("hooks.json", "write_user_hooks_config", f"invalid hooks.json: {exc}") from exc
+        raise InstallFailure(
+            "hooks.json", "write_user_hooks_config", f"invalid hooks.json: {exc}"
+        ) from exc
     for entries in data.get("hooks", {}).values():
         for entry in entries:
             command = str(entry.get("command", ""))
             entry["command"] = command.replace("python3 .cursor/", "python3 ", 1)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     # Post-write validation: user-scope commands must not retain the project prefix.
     rewritten = json.loads(path.read_text(encoding="utf-8"))
     for entries in rewritten.get("hooks", {}).values():

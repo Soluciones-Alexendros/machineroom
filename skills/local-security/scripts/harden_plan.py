@@ -26,13 +26,20 @@ MIN_MANUAL_LEVEL = 2
 
 logger = logging.getLogger("seguridad.harden_plan")
 
-DEFAULT_BASELINE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "references", "hardening-baseline.md")
+DEFAULT_BASELINE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "references",
+    "hardening-baseline.md",
+)
 
 
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -98,7 +105,11 @@ def probe_current() -> dict[str, Any]:
         rc = run_cmd(f"systemctl is-active {unit} 2>/dev/null", timeout=10).strip()
         state[f"svc:{unit}"] = rc or "unknown"
     state["journald_storage"] = (
-        run_cmd("grep '^Storage=' /etc/systemd/journald.conf 2>/dev/null | cut -d= -f2", timeout=10).strip() or "?"
+        run_cmd(
+            "grep '^Storage=' /etc/systemd/journald.conf 2>/dev/null | cut -d= -f2",
+            timeout=10,
+        ).strip()
+        or "?"
     )
     return state
 
@@ -127,15 +138,23 @@ ROLLBACK = {
 RISK = {"SSH-01": "R2", "SSH-02": "R2", "SSH-05": "R2"}
 
 
-def build_plan(level: int, baseline_ids: list[str], current: dict[str, Any]) -> list[dict[str, Any]]:
+def build_plan(
+    level: int, baseline_ids: list[str], current: dict[str, Any]
+) -> list[dict[str, Any]]:
     plan: list[dict[str, Any]] = []
     prio = {1: "P1", 2: "P2"}.get(level, "P2")
     for ctrl, want in DESIRED.items():
         got = current.get(ctrl, "?")
-        ok = (got == want) or (want == "<=4" and got.isdigit() and int(got) <= MAX_AUTHTRIES)
+        ok = (got == want) or (
+            want == "<=4" and got.isdigit() and int(got) <= MAX_AUTHTRIES
+        )
         if ok:
             continue
-        family = ctrl.split("-")[0] if "-" in ctrl and not ctrl.startswith(("kernel", "net.", "fs.")) else "sysctl"
+        family = (
+            ctrl.split("-")[0]
+            if "-" in ctrl and not ctrl.startswith(("kernel", "net.", "fs."))
+            else "sysctl"
+        )
         plan.append(
             {
                 "control": ctrl,
@@ -167,23 +186,42 @@ def build_plan(level: int, baseline_ids: list[str], current: dict[str, Any]) -> 
 
 
 def render_md(plan: list[dict[str, Any]], level: int) -> str:
-    lines = [f"# Plan de hardening — Nivel {level}", "", f"Controles con gap: {len(plan)}", ""]
+    lines = [
+        f"# Plan de hardening — Nivel {level}",
+        "",
+        f"Controles con gap: {len(plan)}",
+        "",
+    ]
     for item in plan:
         lines.append(f"## {item['control']} ({item['severity']}, {item['risk']})")
         lines.append(f"- Actual: `{item['current']}` → Deseado: `{item['desired']}`")
         lines.append(f"- Rollback: `{item['rollback']}`")
         lines.append("")
-    lines.append("_Baseline canonico: references/hardening-baseline.md §11 (R1/R2 + rollback)._")
+    lines.append(
+        "_Baseline canonico: references/hardening-baseline.md §11 (R1/R2 + rollback)._"
+    )
     return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Plan de hardening desde el baseline canonico (solo lectura).")
-    parser.add_argument("--level", type=int, choices=[1, 2, 3], default=2, help="Nivel CIS objetivo (defecto 2)")
-    parser.add_argument("--baseline", default=DEFAULT_BASELINE, help="Ruta al baseline canonico")
+    parser = argparse.ArgumentParser(
+        description="Plan de hardening desde el baseline canonico (solo lectura)."
+    )
+    parser.add_argument(
+        "--level",
+        type=int,
+        choices=[1, 2, 3],
+        default=2,
+        help="Nivel CIS objetivo (defecto 2)",
+    )
+    parser.add_argument(
+        "--baseline", default=DEFAULT_BASELINE, help="Ruta al baseline canonico"
+    )
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
     parser.add_argument("--md", default="", help="Fichero Markdown de salida")
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
 
@@ -193,13 +231,18 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     current = probe_current()
     plan = build_plan(args.level, ids, current)
-    print(f"harden_plan: nivel {args.level}, {len(ids)} controles en baseline, {len(plan)} gaps")
+    print(
+        f"harden_plan: nivel {args.level}, {len(ids)} controles en baseline, {len(plan)} gaps"
+    )
 
     if args.json:
         try:
             with open(args.json, "w", encoding="utf-8") as fh:
                 json.dump(
-                    {"level": args.level, "baseline_controls": len(ids), "plan": plan}, fh, indent=2, ensure_ascii=False
+                    {"level": args.level, "baseline_controls": len(ids), "plan": plan},
+                    fh,
+                    indent=2,
+                    ensure_ascii=False,
                 )
                 fh.write("\n")
         except (OSError, TypeError, ValueError) as exc:

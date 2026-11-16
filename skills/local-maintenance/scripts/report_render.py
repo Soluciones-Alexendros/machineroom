@@ -25,7 +25,9 @@ logger = logging.getLogger("mantenimiento.report")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -83,7 +85,9 @@ def calculate_trend(current_score: float, previous_score: float | None) -> str:
 
 def severity_emoji(severity: str) -> str:
     """Devuelve emoji para severidad."""
-    return {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🔵", "P4": "⚪"}.get(severity, "❓")
+    return {"P0": "🔴", "P1": "🟠", "P2": "🟡", "P3": "🔵", "P4": "⚪"}.get(
+        severity, "❓"
+    )
 
 
 def severity_color(severity: str) -> str:
@@ -107,7 +111,9 @@ def _finding_label(finding: dict[str, Any]) -> str:
     return f"{finding.get('id', '?')} — {finding.get('title', 'sin titulo')}"
 
 
-def diff_findings(prev_findings: list[dict[str, Any]], curr_findings: list[dict[str, Any]]) -> dict[str, Any]:
+def diff_findings(
+    prev_findings: list[dict[str, Any]], curr_findings: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Diff temporal entre dos listas de hallazgos.
 
     nuevos: FAIL/WARN ahora, antes PASS/ausente. resueltos: FAIL/WARN antes,
@@ -140,7 +146,9 @@ def diff_findings(prev_findings: list[dict[str, Any]], curr_findings: list[dict[
     }
 
 
-def _extract_prev_findings(history: list[Any] | None, prev_data: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+def _extract_prev_findings(
+    history: list[Any] | None, prev_data: dict[str, Any] | None
+) -> list[dict[str, Any]] | None:
     if isinstance(prev_data, dict) and isinstance(prev_data.get("findings"), list):
         return cast("list[dict[str, Any]]", prev_data["findings"])
     if isinstance(history, list):
@@ -189,7 +197,9 @@ def _md_trend(history: list[Any] | None, overall: float) -> list[str]:
         return []
     prev = history[-2]
     prev_score = (
-        prev.get("health_score", {}).get("overall", 0) if isinstance(prev, dict) else prev.get("health_score", 0)
+        prev.get("health_score", {}).get("overall", 0)
+        if isinstance(prev, dict)
+        else prev.get("health_score", 0)
     )
     trend = calculate_trend(overall, prev_score)
     trend_labels = {
@@ -198,7 +208,10 @@ def _md_trend(history: list[Any] | None, overall: float) -> list[str]:
         "stable": "➡️ Estable",
         "first_run": "🆕 Primera ejecución",
     }
-    return [f"**Tendencia:** {trend_labels.get(trend, trend)} (anterior: {prev_score})", ""]
+    return [
+        f"**Tendencia:** {trend_labels.get(trend, trend)} (anterior: {prev_score})",
+        "",
+    ]
 
 
 def _md_summary(summary: dict[str, Any]) -> list[str]:
@@ -222,7 +235,9 @@ def _md_summary(summary: dict[str, Any]) -> list[str]:
     return out
 
 
-def _md_diff(history: list[Any] | None, prev_data: dict[str, Any] | None, findings: list[Any]) -> list[str]:
+def _md_diff(
+    history: list[Any] | None, prev_data: dict[str, Any] | None, findings: list[Any]
+) -> list[str]:
     prev_findings = _extract_prev_findings(history, prev_data)
     if prev_findings is None:
         return []
@@ -250,7 +265,11 @@ def _md_finding(f: dict[str, Any]) -> list[str]:
         f"- Categoría: {f.get('category', 'N/A')}",
         f"- Estado: {f.get('status', 'N/A')}",
     ]
-    for field, label in (("description", "Descripción"), ("evidence", "Evidencia"), ("remediation", "Remediación")):
+    for field, label in (
+        ("description", "Descripción"),
+        ("evidence", "Evidencia"),
+        ("remediation", "Remediación"),
+    ):
         value = f.get(field)
         if value:
             out.append(f"- {label}: {_html.escape(value)}")
@@ -298,7 +317,10 @@ def render_markdown(
 
 def _html_severity_badges(summary: dict[str, Any]) -> str:
     by_sev = summary.get("by_severity", {})
-    return "".join(f'<span class="badge {sev}">{sev}: {by_sev.get(sev, 0)}</span> ' for sev in SEVERITIES)
+    return "".join(
+        f'<span class="badge {sev}">{sev}: {by_sev.get(sev, 0)}</span> '
+        for sev in SEVERITIES
+    )
 
 
 def _html_finding(f: dict[str, Any], sev: str) -> str:
@@ -337,7 +359,9 @@ def _html_findings(findings: list[Any]) -> str:
     return out + "        </div>\n"
 
 
-def _html_diff(history: list[Any] | None, prev_data: dict[str, Any] | None, findings: list[Any]) -> str:
+def _html_diff(
+    history: list[Any] | None, prev_data: dict[str, Any] | None, findings: list[Any]
+) -> str:
     prev_findings = _extract_prev_findings(history, prev_data)
     if prev_findings is None:
         return ""
@@ -358,7 +382,11 @@ def _html_diff(history: list[Any] | None, prev_data: dict[str, Any] | None, find
     return out + "        </div>\n"
 
 
-def render_html(data: dict[str, Any], history: list[Any] | None = None, prev_data: dict[str, Any] | None = None) -> str:
+def render_html(
+    data: dict[str, Any],
+    history: list[Any] | None = None,
+    prev_data: dict[str, Any] | None = None,
+) -> str:
     """Genera informe HTML."""
     meta = data.get("metadata", {})
     hs = data.get("health_score", {})
@@ -366,7 +394,11 @@ def render_html(data: dict[str, Any], history: list[Any] | None = None, prev_dat
     summary = data.get("summary", {})
     overall = hs.get("overall", 0)
 
-    score_color = "#28a745" if overall >= SCORE_GOOD else "#ffc107" if overall >= SCORE_WARN else "#dc3545"
+    score_color = (
+        "#28a745"
+        if overall >= SCORE_GOOD
+        else "#ffc107" if overall >= SCORE_WARN else "#dc3545"
+    )
 
     html = f"""<!DOCTYPE html>
 <html lang="es">
@@ -532,19 +564,29 @@ def _render_optimize(data: dict[str, Any]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
 
-    parser = argparse.ArgumentParser(description="Genera informe de mantenimiento-linux")
-    parser.add_argument("--input", "-i", required=True, help="Archivo JSON de auditoría")
+    parser = argparse.ArgumentParser(
+        description="Genera informe de mantenimiento-linux"
+    )
+    parser.add_argument(
+        "--input", "-i", required=True, help="Archivo JSON de auditoría"
+    )
     parser.add_argument("--output", "-o", default="report.md", help="Archivo de salida")
-    parser.add_argument("--format", "-f", choices=["md", "html"], default="md", help="Formato de salida")
+    parser.add_argument(
+        "--format", "-f", choices=["md", "html"], default="md", help="Formato de salida"
+    )
     parser.add_argument("--history", help="Directorio de historial")
-    parser.add_argument("--prev", default="", help="Auditoria previa JSON para diff temporal")
+    parser.add_argument(
+        "--prev", default="", help="Auditoria previa JSON para diff temporal"
+    )
     parser.add_argument(
         "--mode",
         choices=["report", "optimize"],
         default="report",
         help="Modo de generación",
     )
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
 
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)

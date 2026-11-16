@@ -19,7 +19,9 @@ from typing import Any
 # Cargar score desde el mismo directorio para evitar conflictos de imports
 _SCRIPTS_DIR = os.path.dirname(__file__)
 _score_path = os.path.join(_SCRIPTS_DIR, "score.py")
-_score_spec = importlib.util.spec_from_file_location("web_compliance_score", _score_path)
+_score_spec = importlib.util.spec_from_file_location(
+    "web_compliance_score", _score_path
+)
 if _score_spec is None or _score_spec.loader is None:
     raise ImportError(f"Could not load score module from {_score_path}")
 _score_module = importlib.util.module_from_spec(_score_spec)
@@ -44,12 +46,18 @@ def render(sc: dict[str, Any]) -> str:
     lines.append("# INFORME DE CIERRE — AUDITORÍA 360°")
     lines.append(f"**Objetivo:** {sc.get('target') or '(sin especificar)'}  ")
     lines.append(f"**Fecha:** {fecha}  ")
-    lines.append("**Estándares:** WCAG 2.2 AA · EN 301 549 · Google Search Essentials · Consent Mode v2 · RGPD\n")
+    lines.append(
+        "**Estándares:** WCAG 2.2 AA · EN 301 549 · Google Search Essentials · Consent Mode v2 · RGPD\n"
+    )
 
     lines.append("## 1. Resumen ejecutivo\n")
     pct = sc["pct_global"]
     lines.append(f"- **Dictamen: {sc['dictamen']}** — {sc['motivo_dictamen']}")
-    lines.append(f"- Cumplimiento global: **{pct}%**" if pct is not None else "- Cumplimiento global: SIN DATOS")
+    lines.append(
+        f"- Cumplimiento global: **{pct}%**"
+        if pct is not None
+        else "- Cumplimiento global: SIN DATOS"
+    )
     lines.append(
         f"- FAIL críticos: **{sc['fails_criticos']}** · Hallazgos totales: {sc['total_hallazgos']}"
         f" · Pendientes de verificación: {sc['pendientes']}"
@@ -67,7 +75,9 @@ def render(sc: dict[str, Any]) -> str:
         )
     lines.append("")
 
-    lines.append("## 3. Hallazgos y acciones correctivas (priorización por severidad)\n")
+    lines.append(
+        "## 3. Hallazgos y acciones correctivas (priorización por severidad)\n"
+    )
     if not sc["hallazgos"]:
         lines.append("Sin hallazgos FAIL/WARN. ✅\n")
     for h in sc["hallazgos"]:
@@ -75,7 +85,9 @@ def render(sc: dict[str, Any]) -> str:
         sev = h["severidad"]
         pilar = h["pilar"]
         sprint = SPRINT.get(sev, "Backlog")
-        lines.append(f"- **Severidad:** {sev} · **Pilar:** {pilar} · **Sprint:** {sprint}")
+        lines.append(
+            f"- **Severidad:** {sev} · **Pilar:** {pilar} · **Sprint:** {sprint}"
+        )
         lines.append(f"- **Estándar:** {h['estandar']}")
         if h["evidencia"]:
             lines.append(f"- **Evidencia:** {h['evidencia']}")
@@ -88,19 +100,31 @@ def render(sc: dict[str, Any]) -> str:
     ok = sc["fails_criticos"] == 0 and sc["dictamen"] == "POSITIVO"
     lines.append("| Verificación | Resultado |")
     lines.append("|---|---|")
-    lines.append(f"| 0 FAIL críticos en Accesibilidad y Técnico | {'✅' if sc['fails_criticos'] == 0 else '❌'} |")
+    lines.append(
+        f"| 0 FAIL críticos en Accesibilidad y Técnico | {'✅' if sc['fails_criticos'] == 0 else '❌'} |"
+    )
     for _pid, p in sc["pilares"].items():
         if p["pct"] is None:
             lines.append(f"| {p['nombre']} evaluado | \u2796 sin datos |")
         else:
-            lines.append(f"| {p['nombre']}: {p['pct']}% PASS | {'✅' if p['semaforo'] == 'VERDE' else '❌'} |")
-    lines.append(f"| **Dictamen global** | **{'✅ POSITIVO' if ok else '❌ ' + sc['dictamen']}** |")
+            lines.append(
+                f"| {p['nombre']}: {p['pct']}% PASS | {'✅' if p['semaforo'] == 'VERDE' else '❌'} |"
+            )
+    lines.append(
+        f"| **Dictamen global** | **{'✅ POSITIVO' if ok else '❌ ' + sc['dictamen']}** |"
+    )
     lines.append("")
     lines.append("## 5. Próximos pasos\n")
     lines.append("1. Ejecutar Sprint 1 (FAIL críticos) y re-auditar de forma parcial.")
-    lines.append("2. Completar checks 🔎 PENDING con los protocolos manuales de references/.")
-    lines.append("3. Aplicar roadmap RICE completo y mejoras proactivas (references/remediation.md).")
-    lines.append("4. Fijar re-auditoría trimestral y declaración de accesibilidad (EN 301 549).")
+    lines.append(
+        "2. Completar checks 🔎 PENDING con los protocolos manuales de references/."
+    )
+    lines.append(
+        "3. Aplicar roadmap RICE completo y mejoras proactivas (references/remediation.md)."
+    )
+    lines.append(
+        "4. Fijar re-auditoría trimestral y declaración de accesibilidad (EN 301 549)."
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -119,7 +143,9 @@ def _load_input(path: str) -> tuple[Any, int | None]:
 def _build_scoring(data: Any, args: argparse.Namespace) -> dict[str, Any]:
     if args.from_checks:
         if not isinstance(data, dict):
-            raise ValueError("con --from-checks la entrada debe ser objeto con 'checks'")
+            raise ValueError(
+                "con --from-checks la entrada debe ser objeto con 'checks'"
+            )
         sc: dict[str, Any] = score(data.get("checks", []), config_dir=args.config)
         sc["target"] = data.get("target")
         return sc
@@ -127,7 +153,9 @@ def _build_scoring(data: Any, args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("el JSON de scoring debe ser un objeto")
     for clave in ("dictamen", "pilares", "hallazgos"):
         if clave not in data:
-            raise ValueError(f"el JSON de scoring no trae '{clave}' (¿olvidaste --from-checks?)")
+            raise ValueError(
+                f"el JSON de scoring no trae '{clave}' (¿olvidaste --from-checks?)"
+            )
     return data
 
 
@@ -143,10 +171,18 @@ def _write_report(path: str, md: str) -> int | None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Informe de cierre Auditoría 360°")
     ap.add_argument("entrada", help="JSON de scoring (o de checks con --from-checks)")
-    ap.add_argument("--from-checks", action="store_true", help="La entrada es JSON de checks; calcula el scoring")
+    ap.add_argument(
+        "--from-checks",
+        action="store_true",
+        help="La entrada es JSON de checks; calcula el scoring",
+    )
     ap.add_argument("--config", help="Directorio de configs")
     ap.add_argument("--md", help="Guardar informe Markdown")
     args = ap.parse_args(argv)

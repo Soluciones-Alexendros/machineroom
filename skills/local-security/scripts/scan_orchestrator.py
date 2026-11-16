@@ -28,7 +28,9 @@ logger = logging.getLogger("seguridad.scan")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -99,8 +101,12 @@ def scan_rkhunter() -> dict[str, Any]:
 def scan_aide() -> dict[str, Any]:
     if which("aide") is None:
         return {"status": "skip", "reason": "aide no instalado"}
-    _, timers = run_cmd("systemctl list-timers --all --no-pager 2>/dev/null | grep -i aide", timeout=15)
-    _rc, out = run_cmd("aide --check --config=/etc/aide/aide.conf 2>/dev/null | tail -30", timeout=600)
+    _, timers = run_cmd(
+        "systemctl list-timers --all --no-pager 2>/dev/null | grep -i aide", timeout=15
+    )
+    _rc, out = run_cmd(
+        "aide --check --config=/etc/aide/aide.conf 2>/dev/null | tail -30", timeout=600
+    )
     changed = "Changed entries" in out
     return {
         "status": "ok",
@@ -121,7 +127,9 @@ def scan_debsums() -> dict[str, Any]:
 def scan_lynis() -> dict[str, Any]:
     if which("lynis") is None:
         return {"status": "skip", "reason": "lynis no instalado"}
-    _, out = run_cmd("lynis audit system --quick --no-log 2>/dev/null | tail -20", timeout=600)
+    _, out = run_cmd(
+        "lynis audit system --quick --no-log 2>/dev/null | tail -20", timeout=600
+    )
     return {
         "status": "ok",
         "tail": out.strip().splitlines()[-20:] if out.strip() else [],
@@ -145,25 +153,45 @@ def cross_validate(results: dict[str, Any]) -> dict[str, Any]:
     if rk.get("warnings"):
         undetermined.append(f"rkhunter: {rk['warnings']} warnings (revisar muestra)")
     if isinstance(ds.get("mismatches"), int) and ds["mismatches"] > 0:
-        undetermined.append(f"debsums: {ds['mismatches']} discrepancias (distinguir edicion propia)")
+        undetermined.append(
+            f"debsums: {ds['mismatches']} discrepancias (distinguir edicion propia)"
+        )
     if aide.get("changed_entries"):
         undetermined.append("aide: Changed entries (todo cambio necesita explicacion)")
     if not undetermined:
         discarded.append("sin candidatos entre los escaneres ejecutados")
-    return {"validados": validated, "descartados": discarded, "indeterminados": undetermined}
+    return {
+        "validados": validated,
+        "descartados": discarded,
+        "indeterminados": undetermined,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Orquesta escaneos con validacion cruzada (solo lectura).")
-    parser.add_argument("--check", action="store_true", help="Solo disponibilidad (defecto)")
-    parser.add_argument("--run", action="store_true", help="Ejecutar escaneres disponibles (solo lectura)")
+    parser = argparse.ArgumentParser(
+        description="Orquesta escaneos con validacion cruzada (solo lectura)."
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="Solo disponibilidad (defecto)"
+    )
+    parser.add_argument(
+        "--run",
+        action="store_true",
+        help="Ejecutar escaneres disponibles (solo lectura)",
+    )
     parser.add_argument("--json", default="", help="Fichero JSON de salida")
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
 
     avail = check_availability()
-    results: dict[str, Any] = {"availability": avail, "scans": {}, "cross_validation": {}}
+    results: dict[str, Any] = {
+        "availability": avail,
+        "scans": {},
+        "cross_validation": {},
+    }
     if args.run:
         results["scans"]["clamav"] = scan_clamav()
         results["scans"]["rkhunter"] = scan_rkhunter()
@@ -171,7 +199,9 @@ def main(argv: list[str] | None = None) -> int:
         results["scans"]["debsums"] = scan_debsums()
         results["scans"]["lynis"] = scan_lynis()
         results["cross_validation"] = cross_validate(results["scans"])
-        print("Escaneos completados (solo lectura). Veredicto: candidatos, no veredictos.")
+        print(
+            "Escaneos completados (solo lectura). Veredicto: candidatos, no veredictos."
+        )
     else:
         for name in SCANNERS:
             info = avail.get(name, {})

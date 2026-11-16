@@ -16,7 +16,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 
 def _parity() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("contract_parity", ROOT / "tools" / "validate" / "contract_parity.py")
+    spec = importlib.util.spec_from_file_location(
+        "contract_parity", ROOT / "tools" / "validate" / "contract_parity.py"
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -43,10 +45,14 @@ def test_hook_is_a_pointer_not_a_copy() -> None:
     parity.check_hook_is_a_pointer()
 
 
-def test_stale_digest_is_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_stale_digest_is_detected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     parity = _parity()
     fake_rule = tmp_path / "machineroom.mdc"
-    fake_rule.write_text("---\ndescription: x\nalwaysApply: true\n---\n\n# Otro\n", encoding="utf-8")
+    fake_rule.write_text(
+        "---\ndescription: x\nalwaysApply: true\n---\n\n# Otro\n", encoding="utf-8"
+    )
     monkeypatch.setattr(parity, "RULE", fake_rule)
     with pytest.raises(parity.ParityError) as caught:
         parity.check_hook_digest()

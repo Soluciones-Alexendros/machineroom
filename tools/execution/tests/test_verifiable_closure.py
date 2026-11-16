@@ -101,8 +101,14 @@ def test_a04_param_change_invalidates(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr("execution.ops.provider_from_env", P)
     register_handler("clean_temp", lambda p: 0)
-    assert run_registered("clean_temp", {"snapshot_id": "a"}, target="/t").outcome == "succeeded"
-    assert run_registered("clean_temp", {"snapshot_id": "b"}, target="/t").outcome == "blocked"
+    assert (
+        run_registered("clean_temp", {"snapshot_id": "a"}, target="/t").outcome
+        == "succeeded"
+    )
+    assert (
+        run_registered("clean_temp", {"snapshot_id": "b"}, target="/t").outcome
+        == "blocked"
+    )
 
 
 def test_a06_deny_default(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -128,7 +134,9 @@ def test_a07_handler_receives_plan_params(monkeypatch: pytest.MonkeyPatch) -> No
         return 0
 
     register_handler("clean_temp", handler)
-    r = run_registered("clean_temp", {"snapshot_id": "snap-x", "keep_versions": 3}, target="/host")
+    r = run_registered(
+        "clean_temp", {"snapshot_id": "snap-x", "keep_versions": 3}, target="/host"
+    )
     assert r.outcome == "succeeded"
     assert seen[0]["snapshot_id"] == "snap-x"
     assert seen[0]["keep_versions"] == DEFAULT_KEEP_VERSIONS
@@ -231,7 +239,9 @@ def _phase_meta(phase: str, op: str = "local_gates") -> dict[str, Any]:
     }
 
 
-def _store_ok(tmp_path: Path, op: str = "local_gates", phase: str = "VALIDATE", **kwargs: Any) -> str:
+def _store_ok(
+    tmp_path: Path, op: str = "local_gates", phase: str = "VALIDATE", **kwargs: Any
+) -> str:
     meta = _phase_meta(phase, op)
     meta.update(kwargs)
     art = tmp_path / "artifact.txt"
@@ -313,7 +323,9 @@ def test_a23_artifact_content_mismatch(tmp_path: Path) -> None:
 
 def test_a24_stale_content_blocks_complete(tmp_path: Path) -> None:
     (tmp_path / ".machineroom").mkdir()
-    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish")
+    rid = _store_ok(
+        tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish"
+    )
     # Stale means the declared artifact bytes changed, not an unrelated sibling file.
     (tmp_path / "artifact.txt").write_text("mutated")
     with pytest.raises(ValueError, match=r"stale|mismatch"):
@@ -326,11 +338,17 @@ def test_a24_stale_content_blocks_complete(tmp_path: Path) -> None:
         )
 
 
-def test_a24b_sibling_write_does_not_invalidate_artifact_evidence(tmp_path: Path) -> None:
+def test_a24b_sibling_write_does_not_invalidate_artifact_evidence(
+    tmp_path: Path,
+) -> None:
     (tmp_path / ".machineroom").mkdir()
-    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish")
+    rid = _store_ok(
+        tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish"
+    )
     (tmp_path / "sibling.txt").write_text("parallel writer")
-    data = load_evidence(tmp_path, rid, revalidate_content=True, expected_phase="VALIDATE")
+    data = load_evidence(
+        tmp_path, rid, revalidate_content=True, expected_phase="VALIDATE"
+    )
     assert data["outcome"] == "succeeded"
 
 
@@ -340,7 +358,9 @@ def test_a25_admin_only_ok(tmp_path: Path) -> None:
     (tmp_path / ".machineroom").mkdir()
     rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE")
     (tmp_path / ".machineroom" / "status.yaml").write_text("phase: DEFINE\n")
-    data = load_evidence(tmp_path, rid, revalidate_content=True, expected_phase="VALIDATE")
+    data = load_evidence(
+        tmp_path, rid, revalidate_content=True, expected_phase="VALIDATE"
+    )
     assert data["outcome"] == "succeeded"
 
 
@@ -461,8 +481,20 @@ def test_a32_idempotent_complete(tmp_path: Path) -> None:
     (tmp_path / "c").write_text("z")
     (tmp_path / ".machineroom").mkdir()
     rid = _store_ok(tmp_path, op="specify", phase="DEFINE")
-    s1 = advance_status(tmp_path, phase="DEFINE", skill="plan-specification", evidence_ok=True, run_id=rid)
-    s2 = advance_status(tmp_path, phase="DEFINE", skill="plan-specification", evidence_ok=True, run_id=rid)
+    s1 = advance_status(
+        tmp_path,
+        phase="DEFINE",
+        skill="plan-specification",
+        evidence_ok=True,
+        run_id=rid,
+    )
+    s2 = advance_status(
+        tmp_path,
+        phase="DEFINE",
+        skill="plan-specification",
+        evidence_ok=True,
+        run_id=rid,
+    )
     assert s1["state_revision"] == 1
     assert s2["state_revision"] == 1
     assert s2.get("_idempotent_replay") is True
@@ -502,7 +534,9 @@ def test_content_manifest_schema(tmp_path: Path) -> None:
 # --- V02 / D2: effective plan params (not globals alone) ---
 
 
-def test_v02_dispatch_plan_includes_effective_params(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v02_dispatch_plan_includes_effective_params(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Approved plan must include keep_versions/journal/pkg_mgr used by cleaners."""
 
     monkeypatch.setattr(cr._STATE, "snapshot_id", "snap-v02")
@@ -517,7 +551,9 @@ def test_v02_dispatch_plan_includes_effective_params(monkeypatch: pytest.MonkeyP
 
     def fake_registered(op: str, params: dict[str, Any], target: str = ".") -> OpResult:
         captured["params"] = dict(params)
-        return OpResult(op, "succeeded", 0, 1, "", "mutate-host", run_id="x", plan_digest="d")
+        return OpResult(
+            op, "succeeded", 0, 1, "", "mutate-host", run_id="x", plan_digest="d"
+        )
 
     monkeypatch.setattr(cr, "run_registered", fake_registered)
     # ensure import path for dispatch
@@ -532,7 +568,9 @@ def test_v02_dispatch_plan_includes_effective_params(monkeypatch: pytest.MonkeyP
     assert p.get("journal_size") == "100M"
 
 
-def test_v02_handler_uses_plan_params_not_stale_globals(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v02_handler_uses_plan_params_not_stale_globals(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """After approval, handler must apply keep_versions from params even if global differs."""
 
     monkeypatch.setattr(cr._STATE, "keep_versions", 99)  # stale state

@@ -28,7 +28,12 @@ def _minimal_source(tmp_path: Path) -> Path:
     src = tmp_path / "src"
     (src / "skills" / "fixture").mkdir(parents=True)
     (src / "skills" / "fixture" / "SKILL.md").write_text("---\nname: fixture\n---\n")
-    for relative in (".cursor/agents", ".cursor/hooks", ".cursor/rules", "extensions/machineroom"):
+    for relative in (
+        ".cursor/agents",
+        ".cursor/hooks",
+        ".cursor/rules",
+        "extensions/machineroom",
+    ):
         (src / relative).mkdir(parents=True)
     (src / ".cursor" / "hooks.json").write_text(
         '{"version":1,"hooks":{"sessionStart":[{"command":"python3 .cursor/hooks/session_start.py"}]}}\n'
@@ -74,12 +79,16 @@ def test_write_user_hooks_invalid_json_names_function(tmp_path: Path) -> None:
     assert caught.value.function == "write_user_hooks_config"
 
 
-def test_install_full_cli_json_includes_failures(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_install_full_cli_json_includes_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     target = home / ".cursor"
     target.mkdir()
-    monkeypatch.setattr(sys, "argv", ["cursor_install", "--target", str(target), "--user", "--json"])
+    monkeypatch.setattr(
+        sys, "argv", ["cursor_install", "--target", str(target), "--user", "--json"]
+    )
     code = cursor_install.main(["--target", str(target), "--user", "--json"])
     assert code != 0
     # main prints JSON on stdout; capture via rerun with redirected print is awkward —
@@ -90,7 +99,9 @@ def test_install_full_cli_json_includes_failures(tmp_path: Path, monkeypatch: py
     assert caught.value.function in {"install_full", "require_runtime"}
 
 
-def test_install_full_post_link_validation_names_component(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_install_full_post_link_validation_names_component(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     sync_payload(ROOT, home / ".machineroom", origin="sync")
@@ -107,17 +118,24 @@ def test_install_full_post_link_validation_names_component(tmp_path: Path, monke
         install_full(ROOT, target, user_scope=True)
     assert caught.value.function == "install_full"
     assert caught.value.component
-    assert "relative" in caught.value.detail.lower() or "absolute" in caught.value.detail.lower()
+    assert (
+        "relative" in caught.value.detail.lower()
+        or "absolute" in caught.value.detail.lower()
+    )
 
 
-def test_install_full_conflict_json_lists_failures(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_install_full_conflict_json_lists_failures(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     sync_payload(ROOT, home / ".machineroom", origin="sync")
     target = home / ".cursor"
     target.mkdir()
     (target / "hooks.json").write_text('{"version": 1, "hooks": {}}', encoding="utf-8")
-    code = cursor_install.main(["--source", str(ROOT), "--target", str(target), "--user", "--json"])
+    code = cursor_install.main(
+        ["--source", str(ROOT), "--target", str(target), "--user", "--json"]
+    )
     assert code == 1
     out = json.loads(capsys.readouterr().out)
     assert out["status"] == "conflict"

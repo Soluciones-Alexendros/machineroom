@@ -25,7 +25,9 @@ from harness.runtime import (  # noqa: E402
 
 
 def _package_version() -> str:
-    return str(json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"])
+    return str(
+        json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]
+    )
 
 
 def _release_like(tmp_path: Path) -> Path:
@@ -52,7 +54,13 @@ def test_home_sync_command_refuses_development_checkout(tmp_path: Path) -> None:
     env = os.environ.copy()
     env["HOME"] = str(home)
     proc = subprocess.run(
-        ["bash", str(ROOT / "scripts" / "runtime-sync.sh"), "sync", "--from", str(ROOT)],
+        [
+            "bash",
+            str(ROOT / "scripts" / "runtime-sync.sh"),
+            "sync",
+            "--from",
+            str(ROOT),
+        ],
         cwd=ROOT,
         env=env,
         capture_output=True,
@@ -66,7 +74,9 @@ def test_home_sync_command_refuses_development_checkout(tmp_path: Path) -> None:
     assert not (home / ".machineroom").exists()
 
 
-def test_home_sync_payload_refuses_checkout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_home_sync_payload_refuses_checkout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
@@ -78,17 +88,23 @@ def test_home_sync_payload_refuses_checkout(tmp_path: Path, monkeypatch: pytest.
     assert not (home / ".machineroom").exists()
 
 
-def test_home_rejects_checkout_marked_as_release(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_home_rejects_checkout_marked_as_release(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
     with pytest.raises(InstallFailure) as caught:
-        sync_payload(ROOT, home / ".machineroom", origin=f"release:{_package_version()}")
+        sync_payload(
+            ROOT, home / ".machineroom", origin=f"release:{_package_version()}"
+        )
     assert "development" in caught.value.detail.lower() or ".git" in caught.value.detail
     assert not (home / ".machineroom").exists()
 
 
-def test_home_release_version_must_match_package(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_home_release_version_must_match_package(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
@@ -100,12 +116,16 @@ def test_home_release_version_must_match_package(tmp_path: Path, monkeypatch: py
     assert not (home / ".machineroom").exists()
 
 
-def test_home_release_records_stable_source_and_rewrites_hooks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_home_release_records_stable_source_and_rewrites_hooks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
     version = _package_version()
-    manifest = install_verified_runtime(_release_like(tmp_path), home / ".machineroom", version)
+    manifest = install_verified_runtime(
+        _release_like(tmp_path), home / ".machineroom", version
+    )
     runtime = home / ".machineroom"
     assert manifest["origin"] == f"release:{version}"
     assert manifest["source"] == f"release:{version}"
@@ -113,11 +133,15 @@ def test_home_release_records_stable_source_and_rewrites_hooks(tmp_path: Path, m
     commands = _hook_commands(runtime)
     assert commands
     assert all(command.startswith("python3 hooks/") for command in commands)
-    stored = json.loads((runtime / ".runtime-manifest.json").read_text(encoding="utf-8"))
+    stored = json.loads(
+        (runtime / ".runtime-manifest.json").read_text(encoding="utf-8")
+    )
     assert stored["source"] == f"release:{version}"
 
 
-def test_version_mismatch_leaves_existing_home_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_version_mismatch_leaves_existing_home_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))

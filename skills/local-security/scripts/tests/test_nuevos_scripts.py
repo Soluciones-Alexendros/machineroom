@@ -51,7 +51,12 @@ def test_all_help_exit0() -> None:
 
 
 def test_all_invalid_args_exit2() -> None:
-    for s in ("scan_orchestrator.py", "vulns_check.py", "harden_plan.py", "apparmor_lifecycle.py"):
+    for s in (
+        "scan_orchestrator.py",
+        "vulns_check.py",
+        "harden_plan.py",
+        "apparmor_lifecycle.py",
+    ):
         r = _run(s, "--opcion-inexistente-xyz")
         assert r.returncode == EXIT_USAGE, s
     r = _run("forense_collector.py", "receta-inexistente-xyz")
@@ -67,9 +72,15 @@ def test_scan_check_exit0(tmp_path: Path) -> None:
 
 
 def test_cross_validate_golden() -> None:
-    res = {"rkhunter": {"warnings": 2}, "debsums": {"mismatches": 1}, "aide": {"changed_entries": True}}
+    res = {
+        "rkhunter": {"warnings": 2},
+        "debsums": {"mismatches": 1},
+        "aide": {"changed_entries": True},
+    }
     cv = scan_orchestrator.cross_validate(res)
-    assert len(cv["indeterminados"]) == EXPECTED_INDETERMINADOS and cv["validados"] == []
+    assert (
+        len(cv["indeterminados"]) == EXPECTED_INDETERMINADOS and cv["validados"] == []
+    )
     cv2 = scan_orchestrator.cross_validate({"rkhunter": {}, "debsums": {}, "aide": {}})
     assert cv2["descartados"] != []
 
@@ -104,7 +115,12 @@ def test_harden_plan_baseline_ilegible() -> None:
 def test_apparmor_status_y_soak(tmp_path: Path) -> None:
     st = str(tmp_path / "aa.json")
     assert apparmor_lifecycle.main(["status", "--state", st]) == 0
-    assert apparmor_lifecycle.main(["soak", "--profile", "test-prof", "--days", "3", "--state", st]) == 0
+    assert (
+        apparmor_lifecycle.main(
+            ["soak", "--profile", "test-prof", "--days", "3", "--state", st]
+        )
+        == 0
+    )
     data = json.loads(Path(st).read_text(encoding="utf-8"))
     assert data["profiles"]["test-prof"]["stage"] == "soak"
     # enforce bloqueado si aa-logprof no parsea
@@ -132,7 +148,9 @@ def test_forense_timeline_exit0(tmp_path: Path) -> None:
 
 def test_postura_json(tmp_path: Path) -> None:
     sh = os.path.join(SCRIPTS, "postura_seguridad.sh")
-    p = subprocess.run(["bash", sh, "--json"], capture_output=True, text=True, timeout=60, check=False)
+    p = subprocess.run(
+        ["bash", sh, "--json"], capture_output=True, text=True, timeout=60, check=False
+    )
     assert p.returncode == 0
     data = json.loads(p.stdout)
     assert "apparmor_kernel" in data and "lockdown" in data and "tpm2" in data
@@ -154,7 +172,9 @@ def test_vulns_which_returns_none() -> None:
 
 
 def test_vulns_run_cmd_timeout() -> None:
-    with patch("vulns_check.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "vulns_check.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)
+    ):
         rc, out = vulns_check.run_cmd("sleep 100", timeout=1)
         assert rc == 1
         assert out == ""
@@ -242,7 +262,10 @@ def test_vulns_main_with_network_json(tmp_path: Path) -> None:
     out = tmp_path / "vulns.json"
     with (
         patch("vulns_check.has_network", return_value=True),
-        patch("vulns_check.check_apt", return_value={"status": "ok", "upgradable": 5, "security": 2}),
+        patch(
+            "vulns_check.check_apt",
+            return_value={"status": "ok", "upgradable": 5, "security": 2},
+        ),
         patch("vulns_check.check_snap", return_value={"status": "ok", "pending": 1}),
         patch("vulns_check.check_flatpak", return_value={"status": "ok", "pending": 3}),
     ):
@@ -275,7 +298,10 @@ def test_scan_run_cmd_success() -> None:
 
 
 def test_scan_run_cmd_timeout() -> None:
-    with patch("scan_orchestrator.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "scan_orchestrator.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("cmd", 10),
+    ):
         rc, out = scan_orchestrator.run_cmd("sleep 100", timeout=1)
         assert rc == 1
         assert out == ""
@@ -402,7 +428,9 @@ def test_harden_parse_control_ids_empty_file(tmp_path: Path) -> None:
 
 def test_harden_parse_control_ids_with_ids(tmp_path: Path) -> None:
     f = tmp_path / "baseline.md"
-    f.write_text("SSH-01 some text\nFW-02 more\nSSH-01 duplicate\nKR-22 end", encoding="utf-8")
+    f.write_text(
+        "SSH-01 some text\nFW-02 more\nSSH-01 duplicate\nKR-22 end", encoding="utf-8"
+    )
     ids = harden_plan.parse_control_ids(str(f))
     assert "SSH-01" in ids
     assert "FW-02" in ids
@@ -418,7 +446,9 @@ def test_harden_run_cmd_success() -> None:
 
 
 def test_harden_run_cmd_timeout() -> None:
-    with patch("harden_plan.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "harden_plan.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)
+    ):
         out = harden_plan.run_cmd("sleep 100", timeout=1)
         assert out == ""
 
@@ -431,7 +461,9 @@ def test_harden_run_cmd_oserror() -> None:
 
 def test_harden_probe_current(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        harden_plan, "run_cmd", lambda cmd, timeout=10: "permitrootlogin no\npasswordauthentication yes\n"
+        harden_plan,
+        "run_cmd",
+        lambda cmd, timeout=10: "permitrootlogin no\npasswordauthentication yes\n",
     )
     state = harden_plan.probe_current()
     assert state["SSH-01"] == "no"
@@ -472,7 +504,10 @@ def test_forense_run_cmd_success() -> None:
 
 
 def test_forense_run_cmd_timeout() -> None:
-    with patch("forense_collector.subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 10)):
+    with patch(
+        "forense_collector.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("cmd", 10),
+    ):
         out = forense_collector.run_cmd("sleep 100", timeout=1)
         assert out == ""
 
@@ -486,7 +521,14 @@ def test_forense_run_cmd_oserror() -> None:
 def test_forense_utcnow_format() -> None:
     ts = forense_collector.utcnow()
     assert len(ts) == ISO_TS_LEN  # YYYY-MM-DDTHH:MM:SSZ
-    assert ts[4] == "-" and ts[7] == "-" and ts[10] == "T" and ts[13] == ":" and ts[16] == ":" and ts.endswith("Z")
+    assert (
+        ts[4] == "-"
+        and ts[7] == "-"
+        and ts[10] == "T"
+        and ts[13] == ":"
+        and ts[16] == ":"
+        and ts.endswith("Z")
+    )
 
 
 def test_forense_collect_auth(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -545,7 +587,9 @@ def test_forense_main_pid_requires_arg() -> None:
 
 
 def test_apparmor_which_found() -> None:
-    with patch("apparmor_lifecycle.shutil.which", return_value="/usr/bin/apparmor_parser"):
+    with patch(
+        "apparmor_lifecycle.shutil.which", return_value="/usr/bin/apparmor_parser"
+    ):
         assert apparmor_lifecycle.which("apparmor_parser") == "/usr/bin/apparmor_parser"
 
 
@@ -557,12 +601,21 @@ def test_apparmor_which_not_found() -> None:
 def test_apparmor_utcnow_format() -> None:
     ts = apparmor_lifecycle.utcnow()
     assert len(ts) == ISO_TS_LEN
-    assert ts[4] == "-" and ts[7] == "-" and ts[10] == "T" and ts[13] == ":" and ts[16] == ":" and ts.endswith("Z")
+    assert (
+        ts[4] == "-"
+        and ts[7] == "-"
+        and ts[10] == "T"
+        and ts[13] == ":"
+        and ts[16] == ":"
+        and ts.endswith("Z")
+    )
 
 
 def test_apparmor_load_state(tmp_path: Path) -> None:
     state_file = tmp_path / "aa.json"
-    state_file.write_text('{"profiles": {"test-prof": {"stage": "soak"}}}', encoding="utf-8")
+    state_file.write_text(
+        '{"profiles": {"test-prof": {"stage": "soak"}}}', encoding="utf-8"
+    )
     state = apparmor_lifecycle.load_state(str(state_file))
     assert state["profiles"]["test-prof"]["stage"] == "soak"
 
@@ -574,11 +627,15 @@ def test_apparmor_load_state_missing() -> None:
 
 def test_apparmor_save_state(tmp_path: Path) -> None:
     state_file = tmp_path / "aa.json"
-    apparmor_lifecycle.save_state(str(state_file), {"profiles": {"p": {"stage": "enforce"}}})
+    apparmor_lifecycle.save_state(
+        str(state_file), {"profiles": {"p": {"stage": "enforce"}}}
+    )
     data = json.loads(state_file.read_text())
     assert data["profiles"]["p"]["stage"] == "enforce"
 
 
-def test_apparmor_validate_logprof_parseable_no_tool(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_apparmor_validate_logprof_parseable_no_tool(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(apparmor_lifecycle, "which", lambda cmd: None)
     assert apparmor_lifecycle.validate_logprof_parseable("test-prof") is False

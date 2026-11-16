@@ -21,7 +21,9 @@ from execution.approval import (
 )
 from execution.registry import OpSpec, get_handler, get_operation, resolve_argv
 
-RESERVED_PARAM_KEYS = frozenset({"effect", "require_approval", "argv", "executable_id", "handler", "cwd_override"})
+RESERVED_PARAM_KEYS = frozenset(
+    {"effect", "require_approval", "argv", "executable_id", "handler", "cwd_override"}
+)
 
 
 @dataclass
@@ -52,7 +54,9 @@ APPROVAL_EFFECTS = frozenset({"mutate-host", "communicate-external", "access-sec
 
 # Outcomes that may never complete a pipeline phase (execution layer).
 # Distinct from contracts.result.NON_TERMINAL (schema awaiting_* only).
-PHASE_BLOCKING_OUTCOMES = frozenset({"simulated", "awaiting_agent", "awaiting_approval", "blocked"})
+PHASE_BLOCKING_OUTCOMES = frozenset(
+    {"simulated", "awaiting_agent", "awaiting_approval", "blocked"}
+)
 NON_TERMINAL = PHASE_BLOCKING_OUTCOMES  # compat alias
 
 
@@ -60,7 +64,11 @@ def _reject_shell_escape(argv: list[str]) -> str | None:
     if not argv:
         return None  # handler-only ops have empty argv
     base = os.path.basename(argv[0])
-    if base in SHELL_ESCAPES and len(argv) >= SHELL_FLAG_ARGC and argv[1] in {"-c", "-lc"}:
+    if (
+        base in SHELL_ESCAPES
+        and len(argv) >= SHELL_FLAG_ARGC
+        and argv[1] in {"-c", "-lc"}
+    ):
         return "shell -c escape rejected"
     return None
 
@@ -81,7 +89,9 @@ def _blocked(
     digest: str,
     code: int | None = None,
 ) -> OpResult:
-    return OpResult(operation_id, "blocked", code, 0, message, effect, plan_digest=digest)
+    return OpResult(
+        operation_id, "blocked", code, 0, message, effect, plan_digest=digest
+    )
 
 
 def _handler_identity(handler: object) -> str:
@@ -123,7 +133,9 @@ def _approval_gate(ctx: _ExecContext) -> OpResult | None:
         )
     )
     if not decision.allowed or decision.covers_digest != ctx.digest:
-        return _blocked(ctx.operation_id, decision.reason, spec.effect, digest=ctx.digest)
+        return _blocked(
+            ctx.operation_id, decision.reason, spec.effect, digest=ctx.digest
+        )
     return None
 
 
@@ -133,14 +145,20 @@ def _gate_checks(ctx: _ExecContext, argv: list[str]) -> OpResult | None:
     if blocked is not None:
         return blocked
     if ctx.spec.require_snapshot and not ctx.params.get("snapshot_id"):
-        return _blocked(ctx.operation_id, "snapshot_id required", ctx.spec.effect, digest=ctx.digest)
+        return _blocked(
+            ctx.operation_id, "snapshot_id required", ctx.spec.effect, digest=ctx.digest
+        )
     bad = _reject_shell_escape(argv)
     if bad:
-        return _blocked(ctx.operation_id, bad, ctx.spec.effect, digest=ctx.digest, code=2)
+        return _blocked(
+            ctx.operation_id, bad, ctx.spec.effect, digest=ctx.digest, code=2
+        )
     return None
 
 
-def _invoke_handler(ctx: _ExecContext, handler: Any, *, start: float, run_id: str) -> OpResult:
+def _invoke_handler(
+    ctx: _ExecContext, handler: Any, *, start: float, run_id: str
+) -> OpResult:
     op, effect, digest = ctx.operation_id, ctx.spec.effect, ctx.digest
     try:
         rc = handler(ctx.params)
@@ -184,9 +202,16 @@ def _invoke_handler(ctx: _ExecContext, handler: Any, *, start: float, run_id: st
         )
 
 
-def _execute_argv(ctx: _ExecContext, *, argv: list[str], cwd: str | None, run_id: str) -> OpResult:
+def _execute_argv(
+    ctx: _ExecContext, *, argv: list[str], cwd: str | None, run_id: str
+) -> OpResult:
     if not argv:
-        return _blocked(ctx.operation_id, "no handler and no argv_template", ctx.spec.effect, digest=ctx.digest)
+        return _blocked(
+            ctx.operation_id,
+            "no handler and no argv_template",
+            ctx.spec.effect,
+            digest=ctx.digest,
+        )
     return _run_subprocess(
         ctx.operation_id,
         argv,
@@ -211,7 +236,9 @@ def run_registered(
     # Reject reserved keys instead of silently stripping when they indicate policy tampering
     unknown_reserved = RESERVED_PARAM_KEYS & set(raw)
     if unknown_reserved:
-        return _blocked_early(operation_id, f"reserved parameters rejected: {sorted(unknown_reserved)}")
+        return _blocked_early(
+            operation_id, f"reserved parameters rejected: {sorted(unknown_reserved)}"
+        )
     params = dict(raw)
     if is_insufficient_token(str(params.get("approved", ""))):
         params.pop("approved", None)
@@ -364,24 +391,38 @@ def verify_and_store(  # noqa: PLR0913  # API pública: evidencia de una ejecuci
     verify_root = (verification_repo or root).resolve()
     spec = get_operation(result.operation_id)
     if spec.skill != skill:
-        raise ValueError(f"skill {skill!r} does not match operation skill {spec.skill!r}")
+        raise ValueError(
+            f"skill {skill!r} does not match operation skill {spec.skill!r}"
+        )
     from execution.evidence import artifacts_digest, store_result  # noqa: PLC0415
 
     verifications: list[dict[str, Any]] = []
     if result.outcome == "succeeded":
         try:
             verifications = verifier(result, verify_root)
-            kinds = {str(v.get("kind")) for v in verifications if isinstance(v, dict) and v.get("ok") is True}
+            kinds = {
+                str(v.get("kind"))
+                for v in verifications
+                if isinstance(v, dict) and v.get("ok") is True
+            }
             if not verifications or any(
-                not isinstance(v, dict) or v.get("ok") is not True or not str(v.get("kind", "")).strip()
+                not isinstance(v, dict)
+                or v.get("ok") is not True
+                or not str(v.get("kind", "")).strip()
                 for v in verifications
             ):
-                result = _failed_verification(result, "verification failed or returned an invalid result")
+                result = _failed_verification(
+                    result, "verification failed or returned an invalid result"
+                )
             elif set(spec.required_verifications) - kinds:
                 missing = sorted(set(spec.required_verifications) - kinds)
-                result = _failed_verification(result, f"missing required verifications: {missing}")
+                result = _failed_verification(
+                    result, f"missing required verifications: {missing}"
+                )
         except Exception as exc:
-            result = _failed_verification(result, f"verifier error: {type(exc).__name__}: {exc}")
+            result = _failed_verification(
+                result, f"verifier error: {type(exc).__name__}: {exc}"
+            )
     # Digest only declared artifacts so parallel sibling writers do not race complete_task.
     output_digest = artifacts_digest(root, artifacts)
 
@@ -401,7 +442,9 @@ def verify_and_store(  # noqa: PLR0913  # API pública: evidencia de una ejecuci
             verifications=verifications,
             require_complete_fields=result.outcome == "succeeded",
         )
-    return VerifiedExecution(run_id, result.operation_id, result.outcome, input_digest, output_digest, result)
+    return VerifiedExecution(
+        run_id, result.operation_id, result.outcome, input_digest, output_digest, result
+    )
 
 
 def run_verified(  # noqa: PLR0913  # API pública: contexto completo de ejecución y evidencia
@@ -427,7 +470,9 @@ def run_verified(  # noqa: PLR0913  # API pública: contexto completo de ejecuci
         raise ValueError("artifacts required before execution")
     spec = get_operation(operation_id)
     if spec.skill != skill:
-        raise ValueError(f"skill {skill!r} does not match operation skill {spec.skill!r}")
+        raise ValueError(
+            f"skill {skill!r} does not match operation skill {spec.skill!r}"
+        )
     root = Path(repo).resolve()
     if not root.is_dir():
         raise ValueError(f"repo is not a directory: {root}")

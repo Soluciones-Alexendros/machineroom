@@ -26,7 +26,9 @@ logger = logging.getLogger("mantenimiento.risk_gate")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -250,7 +252,9 @@ KNOWN_OPERATIONS = {
 }
 
 
-def authorize_operation(operation_id: str, params: dict[str, Any] | None = None) -> tuple[bool, str]:
+def authorize_operation(
+    operation_id: str, params: dict[str, Any] | None = None
+) -> tuple[bool, str]:
     """Deny-by-default for typed operations. Unknown ids are never allowed.
 
     ``approved`` / env tokens are never consent. Mutators must go through
@@ -266,7 +270,11 @@ def authorize_operation(operation_id: str, params: dict[str, Any] | None = None)
         return False, "use run_registered + ApprovalProvider for mutating ops"
     if spec["effect"] == "write-workspace" and operation_id == "create_snapshot":
         return False, "create_snapshot requires run_registered + ApprovalProvider"
-    if spec["min_risk"] != "R0" and not params.get("snapshot_id") and spec["effect"] != "read":
+    if (
+        spec["min_risk"] != "R0"
+        and not params.get("snapshot_id")
+        and spec["effect"] != "read"
+    ):
         return False, "snapshot_id required"
     return True, "ok"
 
@@ -310,11 +318,24 @@ def validate(cmd: str, snapshot_id: str = "", approved: bool = False) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validador determinista pre-ejecución (clasifica R0/R1/R2/R3).")
-    parser.add_argument("command", nargs="?", default=None, help="Comando a validar entre comillas")
-    parser.add_argument("snapshot_id", nargs="?", default="", help="ID de snapshot previo")
-    parser.add_argument("approved", nargs="?", default="false", help='"true" si hay aprobación humana explícita')
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser = argparse.ArgumentParser(
+        description="Validador determinista pre-ejecución (clasifica R0/R1/R2/R3)."
+    )
+    parser.add_argument(
+        "command", nargs="?", default=None, help="Comando a validar entre comillas"
+    )
+    parser.add_argument(
+        "snapshot_id", nargs="?", default="", help="ID de snapshot previo"
+    )
+    parser.add_argument(
+        "approved",
+        nargs="?",
+        default="false",
+        help='"true" si hay aprobación humana explícita',
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
     if args.command is not None:

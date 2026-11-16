@@ -35,7 +35,9 @@ def _node() -> str:
         check=False,
     )
     if probe.returncode != 0:
-        pytest.skip("node without --experimental-strip-types: path-guard decision is not_run here")
+        pytest.skip(
+            "node without --experimental-strip-types: path-guard decision is not_run here"
+        )
     return node
 
 
@@ -103,7 +105,9 @@ def test_path_guard_missing_export_is_not_silently_accepted() -> None:
     assert "export function decidePath" in text
 
 
-def _verdicts(tmp_path: Path, home: Path, paths: list[str], *, cwd: str, has_ui: bool = False) -> list[str]:
+def _verdicts(
+    tmp_path: Path, home: Path, paths: list[str], *, cwd: str, has_ui: bool = False
+) -> list[str]:
     node = _node()
     work = home / "Work"
     script = tmp_path / "cwd-matrix.mjs"

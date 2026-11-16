@@ -34,7 +34,9 @@ MIN_FIELDS = 2
 MAX_TAR_MEMBERS = 10_000
 MAX_TAR_BYTES = 512 * 1024 * 1024
 
-SNAPSHOT_DIR = os.environ.get("SNAPSHOT_DIR", os.path.expanduser("~/.local/share/mantenimiento-linux/snapshots"))
+SNAPSHOT_DIR = os.environ.get(
+    "SNAPSHOT_DIR", os.path.expanduser("~/.local/share/mantenimiento-linux/snapshots")
+)
 
 logger = logging.getLogger("mantenimiento.snapshot")
 
@@ -42,7 +44,9 @@ logger = logging.getLogger("mantenimiento.snapshot")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -87,18 +91,36 @@ def write_text(path: str, content: str) -> None:
 
 def capture_packages(pkg_mgr: str, snapshot_path: str) -> None:
     if pkg_mgr == "pacman":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("pacman -Q 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-explicit.txt", run("pacman -Qe 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-orphans.txt", run("pacman -Qtdq 2>/dev/null", timeout=30))
-        write_text(f"{snapshot_path}/packages-foreign.txt", run("pacman -Qmq 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("pacman -Q 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-explicit.txt",
+            run("pacman -Qe 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-orphans.txt",
+            run("pacman -Qtdq 2>/dev/null", timeout=30),
+        )
+        write_text(
+            f"{snapshot_path}/packages-foreign.txt",
+            run("pacman -Qmq 2>/dev/null", timeout=30),
+        )
     elif pkg_mgr == "apt":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("dpkg --get-selections 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("dpkg --get-selections 2>/dev/null", timeout=30),
+        )
         write_text(
             f"{snapshot_path}/packages-explicit.txt",
             run("apt list --manual-installed 2>/dev/null | tail -n +2", timeout=60),
         )
     elif pkg_mgr == "dnf":
-        write_text(f"{snapshot_path}/packages-installed.txt", run("rpm -qa 2>/dev/null", timeout=30))
+        write_text(
+            f"{snapshot_path}/packages-installed.txt",
+            run("rpm -qa 2>/dev/null", timeout=30),
+        )
         write_text(
             f"{snapshot_path}/packages-explicit.txt",
             run("dnf list installed 2>/dev/null | tail -n +2", timeout=60),
@@ -118,11 +140,17 @@ def capture_etc_checksums(snapshot_path: str) -> None:
 
 def capture_config_pending(pkg_mgr: str, snapshot_path: str) -> None:
     if pkg_mgr == "pacman":
-        out = run("find /etc -name '*.pacnew' -o -name '*.pacsave' 2>/dev/null", timeout=30)
+        out = run(
+            "find /etc -name '*.pacnew' -o -name '*.pacsave' 2>/dev/null", timeout=30
+        )
     elif pkg_mgr == "apt":
-        out = run("find /etc -name '*.dpkg-*' -o -name '*.ucf-*' 2>/dev/null", timeout=30)
+        out = run(
+            "find /etc -name '*.dpkg-*' -o -name '*.ucf-*' 2>/dev/null", timeout=30
+        )
     else:
-        out = run("find /etc -name '*.rpmnew' -o -name '*.rpmsave' 2>/dev/null", timeout=30)
+        out = run(
+            "find /etc -name '*.rpmnew' -o -name '*.rpmsave' 2>/dev/null", timeout=30
+        )
     write_text(f"{snapshot_path}/config-pending.txt", out)
 
 
@@ -141,7 +169,9 @@ def list_snapshots(base_dir: str) -> int:
         try:
             with open(meta_path, encoding="utf-8") as fh:
                 meta = json.load(fh)
-            print(f"{name}  {meta.get('timestamp', '?')}  {meta.get('package_manager', '?')}")
+            print(
+                f"{name}  {meta.get('timestamp', '?')}  {meta.get('package_manager', '?')}"
+            )
         except (OSError, ValueError):
             print(f"{name}  (metadata ilegible)")
         found += 1
@@ -196,24 +226,38 @@ def _member_error(member: tarfile.TarInfo, root: str) -> str | None:
             if member.islnk() or member.issym()
             else None
         ),
-        (f"path traversal in archive: {member.name}" if name.startswith("..") or ".." in name.split("/") else None),
+        (
+            f"path traversal in archive: {member.name}"
+            if name.startswith("..") or ".." in name.split("/")
+            else None
+        ),
         (
             f"absolute path in archive: {member.name}"
             if os.path.isabs(member.name) or member.name.startswith("/")
             else None
         ),
-        (f"escape path in archive: {member.name}" if not dest.startswith(root + os.sep) and dest != root else None),
+        (
+            f"escape path in archive: {member.name}"
+            if not dest.startswith(root + os.sep) and dest != root
+            else None
+        ),
         (
             f"special file rejected: {member.name}"
             if member.isdev() or member.ischr() or member.isblk() or member.isfifo()
             else None
         ),
-        (f"unsupported member type: {member.name}" if not (member.isfile() or member.isdir()) else None),
+        (
+            f"unsupported member type: {member.name}"
+            if not (member.isfile() or member.isdir())
+            else None
+        ),
     ]
     return next((check for check in checks if check is not None), None)
 
 
-def _collect_safe_members(members: list[tarfile.TarInfo], root: str) -> list[tarfile.TarInfo]:
+def _collect_safe_members(
+    members: list[tarfile.TarInfo], root: str
+) -> list[tarfile.TarInfo]:
     """Return the members that pass every check, enforcing the size quotas."""
 
     if len(members) > MAX_TAR_MEMBERS:
@@ -331,12 +375,16 @@ def _extract_staging(staging: str, tarball: str, snapshot_id: str) -> int:
     """Extract the snapshot tarball into the owned staging directory."""
 
     if not os.path.isfile(tarball):
-        log_warn("sin etc-backup.tar.gz: restauracion manual con los comandos de arriba")
+        log_warn(
+            "sin etc-backup.tar.gz: restauracion manual con los comandos de arriba"
+        )
         return 1
     rc = _inspect_and_extract_tar(tarball, staging)
     if rc != 0:
         return rc
-    log_info(f"Rollback {snapshot_id}: extracted to staging {staging} (owned=True; not host /)")
+    log_info(
+        f"Rollback {snapshot_id}: extracted to staging {staging} (owned=True; not host /)"
+    )
     return 0
 
 
@@ -356,7 +404,9 @@ def rollback_snapshot(
     if failed is not None:
         return failed
     changed, missing, total = diff_snapshot(base_dir, snapshot_id)
-    print(f"rollback {snapshot_id}: {total} ficheros vigilados, {len(changed)} cambiados, {len(missing)} eliminados")
+    print(
+        f"rollback {snapshot_id}: {total} ficheros vigilados, {len(changed)} cambiados, {len(missing)} eliminados"
+    )
     for path in (changed + missing)[:20]:
         print(f"  ~ {path}")
     tarball = os.path.join(snapshot_path, "etc-backup.tar.gz")
@@ -381,18 +431,32 @@ def rollback_snapshot(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Captura pre-cambio (snapshot reversible antes de R1+).")
+    parser = argparse.ArgumentParser(
+        description="Captura pre-cambio (snapshot reversible antes de R1+)."
+    )
     parser.add_argument("snapshot_id", nargs="?", default=None, help="ID del snapshot")
-    parser.add_argument("--snapshot-dir", default=None, help="Override directorio base de snapshots")
-    parser.add_argument("--list", action="store_true", help="Listar snapshots existentes")
-    parser.add_argument("--rollback", default="", help="ID del snapshot contra el que comparar/restaurar")
-    parser.add_argument("--execute", action="store_true", help="Ejecutar rollback (por defecto dry-run)")
+    parser.add_argument(
+        "--snapshot-dir", default=None, help="Override directorio base de snapshots"
+    )
+    parser.add_argument(
+        "--list", action="store_true", help="Listar snapshots existentes"
+    )
+    parser.add_argument(
+        "--rollback",
+        default="",
+        help="ID del snapshot contra el que comparar/restaurar",
+    )
+    parser.add_argument(
+        "--execute", action="store_true", help="Ejecutar rollback (por defecto dry-run)"
+    )
     parser.add_argument(
         "--restore-root",
         default="",
         help="Raíz temporal explícita para extract (obligatoria con --execute; no se admite /)",
     )
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
 
@@ -410,7 +474,8 @@ def main(argv: list[str] | None = None) -> int:
             restore_root=args.restore_root or None,
         )
     snapshot_id = (
-        args.snapshot_id or f"snap-{utcnow_iso().replace('-', '').replace(':', '').replace('T', '-').replace('Z', '')}"
+        args.snapshot_id
+        or f"snap-{utcnow_iso().replace('-', '').replace(':', '').replace('T', '-').replace('Z', '')}"
     )
     if "/" in snapshot_id or "\\" in snapshot_id or snapshot_id in ("", ".", ".."):
         logger.error("snapshot_id inválido: %r", snapshot_id)
@@ -419,7 +484,9 @@ def main(argv: list[str] | None = None) -> int:
     # CLI create is never consent. Env/flag/hash cannot authorize (H05/C05).
     # Backend is reachable only via create_snapshot_backend after run_registered.
     _ = os.environ.pop("MACHINEROOM_EXECUTION_APPROVED", None)
-    logger.error("create_snapshot CLI blocked; use run_registered('create_snapshot', …)")
+    logger.error(
+        "create_snapshot CLI blocked; use run_registered('create_snapshot', …)"
+    )
     print(
         "ERROR: snapshot create via CLI rejected; use run_registered('create_snapshot', …)",
         file=sys.stderr,
@@ -538,7 +605,9 @@ def _capture_inventory(snapshot_path: str, pkg_mgr: str) -> bool:
         )
 
         log_info("Capturando uso de espacio...")
-        write_text(f"{snapshot_path}/disk-usage.txt", run("df -h 2>/dev/null", timeout=15))
+        write_text(
+            f"{snapshot_path}/disk-usage.txt", run("df -h 2>/dev/null", timeout=15)
+        )
         write_text(
             f"{snapshot_path}/cache-sizes.txt",
             run(
@@ -556,7 +625,9 @@ def _capture_inventory(snapshot_path: str, pkg_mgr: str) -> bool:
     return True
 
 
-def _backend_result(name: str, rc: int, coverage_prefix: str) -> tuple[str, str, str, str, str]:
+def _backend_result(
+    name: str, rc: int, coverage_prefix: str
+) -> tuple[str, str, str, str, str]:
     status = "ok" if rc == 0 else "failed"
     scope = "partial" if rc == 0 else "none"
     coverage = f"{coverage_prefix}-partial" if rc == 0 else "inventory-only"
@@ -569,7 +640,9 @@ def _tar_etc_files(family: str) -> list[str]:
     return etc_files
 
 
-def _run_backend(snapshot_path: str, snapshot_id: str, pkg_mgr: str) -> tuple[str, str, str, str, str]:
+def _run_backend(
+    snapshot_path: str, snapshot_id: str, pkg_mgr: str
+) -> tuple[str, str, str, str, str]:
     if which("timeshift"):
         log_info("Creando snapshot timeshift...")
         rc, _ = run_capture(
@@ -584,7 +657,9 @@ def _run_backend(snapshot_path: str, snapshot_id: str, pkg_mgr: str) -> tuple[st
             timeout=300,
         )
         return _backend_result("snapper", rc, "snapper")
-    log_warn("No hay timeshift/snapper. Backup tar de configs públicas (sin claves privadas)...")
+    log_warn(
+        "No hay timeshift/snapper. Backup tar de configs públicas (sin claves privadas)..."
+    )
     etc_str = " ".join(_tar_etc_files(pkg_mgr))
     rc, _ = run_capture(
         f"tar -czf '{snapshot_path}/etc-backup.tar.gz' {etc_str} 2>/dev/null",
@@ -619,7 +694,9 @@ def _write_hashes(snapshot_path: str) -> str:
     return snapshot_hash
 
 
-def _snapshot_hashes(snapshot_path: str, metadata: dict[str, Any], recovery_scope: str) -> tuple[str, str] | None:
+def _snapshot_hashes(
+    snapshot_path: str, metadata: dict[str, Any], recovery_scope: str
+) -> tuple[str, str] | None:
     log_info("Calculando hash del snapshot...")
     try:
         snapshot_hash = _write_hashes(snapshot_path)
@@ -640,7 +717,9 @@ def _snapshot_hashes(snapshot_path: str, metadata: dict[str, Any], recovery_scop
 def _fail_backend(snapshot_path: str, metadata: dict[str, Any]) -> int:
     metadata["outcome"] = "failed"
     _dump_metadata(snapshot_path, metadata)
-    logger.error("backend/backup falló: inventario puede existir pero no hay recuperación válida")
+    logger.error(
+        "backend/backup falló: inventario puede existir pero no hay recuperación válida"
+    )
     print(
         "ERROR: captura de inventario no implica backup restaurable; backend falló",
         file=sys.stderr,
@@ -678,7 +757,9 @@ def _emit_json(snapshot_path: str, metadata: dict[str, Any]) -> int:
     return 0
 
 
-def _finalize(snapshot_path: str, snapshot_id: str, metadata: dict[str, Any], recovery_scope: str) -> int:
+def _finalize(
+    snapshot_path: str, snapshot_id: str, metadata: dict[str, Any], recovery_scope: str
+) -> int:
     hashes = _snapshot_hashes(snapshot_path, metadata, recovery_scope)
     if hashes is None:
         _dump_metadata(snapshot_path, metadata)
@@ -717,10 +798,12 @@ def create_snapshot_backend(snapshot_id: str, base_dir: str) -> int:
     if not _write_initial_metadata(snapshot_path, metadata):
         return 1
 
-    metadata["inventory_status"] = "ok" if _capture_inventory(snapshot_path, pkg_mgr) else "failed"
+    metadata["inventory_status"] = (
+        "ok" if _capture_inventory(snapshot_path, pkg_mgr) else "failed"
+    )
 
-    backend_name, backend_status, backup_status, recovery_scope, coverage = _run_backend(
-        snapshot_path, snapshot_id, pkg_mgr
+    backend_name, backend_status, backup_status, recovery_scope, coverage = (
+        _run_backend(snapshot_path, snapshot_id, pkg_mgr)
     )
 
     metadata.update(

@@ -120,13 +120,20 @@ def _emit_abstain(as_json: bool) -> None:
 def _emit_results(results: list, as_json: bool) -> None:
     if as_json:
         rows = [
-            {"score": sc, "name": sk["name"], "entry": sk["entry"], "score_kind": "lexical_not_probabilistic"}
+            {
+                "score": sc,
+                "name": sk["name"],
+                "entry": sk["entry"],
+                "score_kind": "lexical_not_probabilistic",
+            }
             for sc, sk in results
         ]
         print(json.dumps(rows, ensure_ascii=False, indent=2))
         return
     for sc, sk in results:
-        print(f"{sc:.2f} {sk['name']} -> {sk['entry']}  keywords={','.join(sk.get('keywords', [])[:4])}")
+        print(
+            f"{sc:.2f} {sk['name']} -> {sk['entry']}  keywords={','.join(sk.get('keywords', [])[:4])}"
+        )
 
 
 def main():

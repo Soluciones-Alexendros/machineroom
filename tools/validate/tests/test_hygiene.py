@@ -27,7 +27,9 @@ def _init_git(tmp_path: Path) -> None:
 
 
 def _add(tmp_path: Path, rel: str) -> None:
-    subprocess.run(["git", "add", "-f", "--", rel], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "-f", "--", rel], cwd=tmp_path, check=True, capture_output=True
+    )
 
 
 # --- Controles existentes (H02-H04, H09-H11, H18) ---
@@ -71,23 +73,32 @@ def test_normal_tracked_file_ok(tmp_path: Path) -> None:
 
 def test_audit_quick_timestamp_tracked_fails(tmp_path: Path) -> None:
     _init_git(tmp_path)
-    target = tmp_path / "skills" / "local-maintenance" / "audit-quick-20261027-134032.json"
-    target.parent.mkdir(parents=True)
-    payload = (
-        '{"metadata":{"hostname":"SHOULD_NOT_APPEAR","kernel":"x"},"health_score":{},"findings":[],"summary":{}}\n'
+    target = (
+        tmp_path / "skills" / "local-maintenance" / "audit-quick-20261027-134032.json"
     )
+    target.parent.mkdir(parents=True)
+    payload = '{"metadata":{"hostname":"SHOULD_NOT_APPEAR","kernel":"x"},"health_score":{},"findings":[],"summary":{}}\n'
     target.write_text(payload, encoding="utf-8")
     _add(tmp_path, str(target.relative_to(tmp_path)))
     r = _run(tmp_path)
     assert r.returncode == 1, r.stdout + r.stderr
-    assert "informe de host rastreado: skills/local-maintenance/audit-quick-20261027-134032.json" in r.stdout
+    assert (
+        "informe de host rastreado: skills/local-maintenance/audit-quick-20261027-134032.json"
+        in r.stdout
+    )
     assert "SHOULD_NOT_APPEAR" not in r.stdout
     assert "SHOULD_NOT_APPEAR" not in r.stderr
 
 
 def test_audit_quick_fixture_path_ok(tmp_path: Path) -> None:
     _init_git(tmp_path)
-    target = tmp_path / "skills" / "local-maintenance" / "fixtures" / "audit-quick-20261027-134032.json"
+    target = (
+        tmp_path
+        / "skills"
+        / "local-maintenance"
+        / "fixtures"
+        / "audit-quick-20261027-134032.json"
+    )
     target.parent.mkdir(parents=True)
     target.write_text(
         '{"metadata":{"hostname":"fixture","kernel":"x"},"health_score":{},"findings":[],"summary":{}}\n',
@@ -110,7 +121,10 @@ def test_host_audit_schema_without_timestamp_name_fails(tmp_path: Path) -> None:
     _add(tmp_path, str(target.relative_to(tmp_path)))
     r = _run(tmp_path)
     assert r.returncode == 1, r.stdout + r.stderr
-    assert "informe de host rastreado: skills/local-maintenance/host-report.json" in r.stdout
+    assert (
+        "informe de host rastreado: skills/local-maintenance/host-report.json"
+        in r.stdout
+    )
     assert "LEAK" not in r.stdout
     assert "LEAK" not in r.stderr
 
@@ -152,7 +166,9 @@ def test_git_absent_is_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
     assert mod.run_hygiene(tmp_path) != 0
 
 
-def test_git_ls_files_nonzero_is_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_git_ls_files_nonzero_is_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """H06: git ls-files rc != 0 no es limpio."""
     _init_git(tmp_path)
     mod = _load_hygiene("hygiene_h06")
@@ -162,14 +178,20 @@ def test_git_ls_files_nonzero_is_error(tmp_path: Path, monkeypatch: pytest.Monke
         calls["n"] += 1
         if calls["n"] == 1:
             # rev-parse ok
-            return subprocess.CompletedProcess(args=["git"], returncode=0, stdout="true\n", stderr="")
-        return subprocess.CompletedProcess(args=["git", "ls-files", "-z"], returncode=128, stdout=b"", stderr=b"fatal")
+            return subprocess.CompletedProcess(
+                args=["git"], returncode=0, stdout="true\n", stderr=""
+            )
+        return subprocess.CompletedProcess(
+            args=["git", "ls-files", "-z"], returncode=128, stdout=b"", stderr=b"fatal"
+        )
 
     monkeypatch.setattr(mod.subprocess, "run", fake_run)
     assert mod.run_hygiene(tmp_path) != 0
 
 
-def test_git_ls_files_timeout_is_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_git_ls_files_timeout_is_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """H07: timeout de enumeración no es limpio."""
     _init_git(tmp_path)
     mod = _load_hygiene("hygiene_h07")
@@ -178,7 +200,9 @@ def test_git_ls_files_timeout_is_error(tmp_path: Path, monkeypatch: pytest.Monke
     def fake_run(*_a: Any, **_k: Any) -> Any:
         calls["n"] += 1
         if calls["n"] == 1:
-            return subprocess.CompletedProcess(args=["git"], returncode=0, stdout="true\n", stderr="")
+            return subprocess.CompletedProcess(
+                args=["git"], returncode=0, stdout="true\n", stderr=""
+            )
         raise subprocess.TimeoutExpired(cmd="git", timeout=1)
 
     monkeypatch.setattr(mod.subprocess, "run", fake_run)
@@ -225,7 +249,9 @@ def test_oversize_json_is_error(tmp_path: Path) -> None:
     _add(tmp_path, str(target.relative_to(tmp_path)))
     r = _run(tmp_path)
     assert r.returncode != 0, r.stdout + r.stderr
-    assert "inspeccionable" in r.stdout or "presupuesto" in r.stdout or "ERROR" in r.stdout
+    assert (
+        "inspeccionable" in r.stdout or "presupuesto" in r.stdout or "ERROR" in r.stdout
+    )
 
 
 def test_exact_budget_json_schema_match(tmp_path: Path) -> None:

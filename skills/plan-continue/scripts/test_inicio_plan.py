@@ -26,10 +26,19 @@ def _write(root: Path, rel: str, content: str = "") -> Path:
 
 def _git_init(root: Path) -> None:
     subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "t@t.test"], cwd=root, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=root, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "t@t.test"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "t"], cwd=root, check=True, capture_output=True
+    )
     subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "init"], cwd=root, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "init"], cwd=root, check=True, capture_output=True
+    )
 
 
 class InicioPlanTests(unittest.TestCase):
@@ -86,7 +95,12 @@ class InicioPlanTests(unittest.TestCase):
             },
             "estructura": {"ok": True},
             "github": {"disponible": False, "issues_abiertos": [], "prs_abiertos": []},
-            "roadmap": {"titulos": ["<script>"], "unreleased": [], "fichero": None, "planes_locales": []},
+            "roadmap": {
+                "titulos": ["<script>"],
+                "unreleased": [],
+                "fichero": None,
+                "planes_locales": [],
+            },
             "fallos": [],
             "scan": {"resumen": {}},
         }

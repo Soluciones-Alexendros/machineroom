@@ -50,19 +50,27 @@ def _activate(root: Path, independent: bool = False) -> None:
         "tasks": tasks,
     }
     plan = root / "plan.md"
-    plan.write_text("# Fixture\n\n```yaml aw-plan\n" + yaml.safe_dump(document, sort_keys=False) + "```\n")
+    plan.write_text(
+        "# Fixture\n\n```yaml aw-plan\n"
+        + yaml.safe_dump(document, sort_keys=False)
+        + "```\n"
+    )
     activate_plan(root, plan)
 
 
 def _handler(params: dict) -> int:
-    (Path(params["repo"]) / params["path"]).write_text(params["content"], encoding="utf-8")
+    (Path(params["repo"]) / params["path"]).write_text(
+        params["content"], encoding="utf-8"
+    )
     return 0
 
 
 def _execute(root: Path, task_id: str):
     def verify(result, repo: Path) -> list[dict]:
         content = (repo / f"{task_id}.txt").read_text(encoding="utf-8")
-        return [{"kind": "implementation_deliverable", "ok": content == f"ok-{task_id}\n"}]
+        return [
+            {"kind": "implementation_deliverable", "ok": content == f"ok-{task_id}\n"}
+        ]
 
     return run_verified(
         "implement_api",
@@ -78,7 +86,9 @@ def _execute(root: Path, task_id: str):
     )
 
 
-def test_completion_unlocks_dependent_and_replays_without_double_advance(tmp_path: Path) -> None:
+def test_completion_unlocks_dependent_and_replays_without_double_advance(
+    tmp_path: Path,
+) -> None:
     register_handler("implement_api", _handler)
     _activate(tmp_path)
     assert [t["id"] for t in ready_tasks(tmp_path)] == ["first"]
@@ -86,11 +96,15 @@ def test_completion_unlocks_dependent_and_replays_without_double_advance(tmp_pat
     with pytest.raises(ValueError, match="dependencies"):
         start_task(tmp_path, "second")
     executed = _execute(tmp_path, "first")
-    completed = complete_task(tmp_path, "first", run_id=executed.run_id, target=str(tmp_path))
+    completed = complete_task(
+        tmp_path, "first", run_id=executed.run_id, target=str(tmp_path)
+    )
     revision = completed["state_revision"]
     assert completed["tasks"]["first"]["state"] == "succeeded"
     assert [t["id"] for t in ready_tasks(tmp_path)] == ["second"]
-    replay = complete_task(tmp_path, "first", run_id=executed.run_id, target=str(tmp_path))
+    replay = complete_task(
+        tmp_path, "first", run_id=executed.run_id, target=str(tmp_path)
+    )
     assert replay["_idempotent_replay"] is True
     assert replay["state_revision"] == revision
 
@@ -104,7 +118,9 @@ def test_failure_blocks_dependents_and_retry_is_explicit(tmp_path: Path) -> None
     retried = retry_task(tmp_path, "first")
     assert retried["tasks"]["first"]["state"] == "ready"
     started = start_task(tmp_path, "first")
-    assert started["tasks"]["first"]["attempts"] == 2  # noqa: PLR2004  # retry then restart
+    assert (
+        started["tasks"]["first"]["attempts"] == 2
+    )  # noqa: PLR2004  # retry then restart
 
 
 def test_evidence_from_another_task_cannot_complete(tmp_path: Path) -> None:
@@ -133,7 +149,9 @@ def test_concurrent_independent_completion_has_no_lost_update(tmp_path: Path) ->
     def complete(task_id: str, run_id: str) -> None:
         barrier.wait()
         try:
-            result = complete_task(tmp_path, task_id, run_id=run_id, target=str(tmp_path))
+            result = complete_task(
+                tmp_path, task_id, run_id=run_id, target=str(tmp_path)
+            )
             revisions.append(result["state_revision"])
         except Exception as exc:
             errors.append(str(exc))

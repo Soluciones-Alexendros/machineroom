@@ -101,7 +101,9 @@ def handoff_for_phase(project: dict[str, Any], phase: str) -> str | None:
         "SCHEMAS": h.get("continue", "plan-continue"),
         "IMPLEMENT": h.get("implement_back") or h.get("implement_front") or "role-back",
         "VALIDATE": h.get("validate", "plan-validators"),
-        "INTEGRATE": h.get("integrate_publish") or h.get("integrate_hooks") or "project-publish",
+        "INTEGRATE": h.get("integrate_publish")
+        or h.get("integrate_hooks")
+        or "project-publish",
         "STATUS": h.get("continue", "plan-continue"),
     }
     return mapping.get(phase)

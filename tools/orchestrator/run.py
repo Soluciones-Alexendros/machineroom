@@ -41,7 +41,9 @@ def _build_adapter(name: str) -> SubagentAdapter:
         inner: SubagentAdapter = PiSubagentAdapter(model=model)
     else:
         if os.environ.get("MR_CURSOR_FORCE", "0") == "1":
-            raise ValueError("MR_CURSOR_FORCE is forbidden; auto-approval cannot produce PASS")
+            raise ValueError(
+                "MR_CURSOR_FORCE is forbidden; auto-approval cannot produce PASS"
+            )
         cursor_model = os.environ.get("MR_CURSOR_MODEL")
         inner = CursorSubagentAdapter(model=cursor_model)
     return inner
@@ -79,20 +81,28 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Machineroom DAG orchestrator")
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument(
-        "--plan", type=Path, help="Plan document with aw-plan block (validated; activates when not dry-run)"
+        "--plan",
+        type=Path,
+        help="Plan document with aw-plan block (validated; activates when not dry-run)",
     )
     parser.add_argument("--adapter", choices=("pi", "cursor"), required=True)
     parser.add_argument("--max-parallel", type=int, default=4)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true", default=True)
-    parser.add_argument("--no-worktree", action="store_true", help="Call the harness adapter without WorktreeAdapter")
+    parser.add_argument(
+        "--no-worktree",
+        action="store_true",
+        help="Call the harness adapter without WorktreeAdapter",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     repo = args.repo.resolve()
     try:
         _resolve_plan(repo, args.plan, dry_run=args.dry_run)
         if args.dry_run and args.plan is not None:
-            document = load_plan(args.plan if args.plan.is_absolute() else (repo / args.plan))
+            document = load_plan(
+                args.plan if args.plan.is_absolute() else (repo / args.plan)
+            )
             from orchestrator.scheduler import plan_schedule  # noqa: PLC0415
 
             waves = plan_schedule(document)
@@ -102,11 +112,17 @@ def main(argv: list[str] | None = None) -> int:
                 "digest": document.digest,
                 "waves": waves,
             }
-            print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else "simulated")
+            print(
+                json.dumps(payload, ensure_ascii=False, indent=2)
+                if args.json
+                else "simulated"
+            )
             return 0
         inner = _build_adapter(args.adapter)
         adapter: SubagentAdapter = (
-            inner if args.dry_run or args.no_worktree else WorktreeAdapter(repo, inner, _default_verifier)
+            inner
+            if args.dry_run or args.no_worktree
+            else WorktreeAdapter(repo, inner, _default_verifier)
         )
         scheduler = Scheduler(
             repo,
@@ -116,11 +132,19 @@ def main(argv: list[str] | None = None) -> int:
         )
         if args.dry_run:
             summary = scheduler.dry_run()
-            print(json.dumps(summary.as_dict(), ensure_ascii=False, indent=2) if args.json else "simulated")
+            print(
+                json.dumps(summary.as_dict(), ensure_ascii=False, indent=2)
+                if args.json
+                else "simulated"
+            )
             return 0
         summary = scheduler.run()
         payload = summary.as_dict()
-        print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else payload.get("outcome"))
+        print(
+            json.dumps(payload, ensure_ascii=False, indent=2)
+            if args.json
+            else payload.get("outcome")
+        )
         if summary.outcome == "pass":
             return 0
         if summary.outcome in {"blocked", "not_run"}:

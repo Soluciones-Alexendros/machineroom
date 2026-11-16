@@ -40,7 +40,9 @@ logger = logging.getLogger("mantenimiento.audit_quick")
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.WARNING
     if not logging.getLogger().handlers:
-        logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
+        logging.basicConfig(
+            level=level, format="%(levelname)s: %(message)s", stream=sys.stderr
+        )
     else:
         logging.getLogger().setLevel(level)
 
@@ -58,7 +60,9 @@ def sshd_value(key: str) -> str:
     return out.strip()
 
 
-def run_quick_checks(collector: FindingCollector, pkg_mgr: str, runner: Callable[..., Any] | None = None) -> str:
+def run_quick_checks(
+    collector: FindingCollector, pkg_mgr: str, runner: Callable[..., Any] | None = None
+) -> str:
     """Ejecuta la fase rapida (8 checks higiene) y devuelve running_kernel."""
     r = runner if runner is not None else run_check
     print(f"{log_tag} Verificando actualizaciones de seguridad...")
@@ -81,17 +85,32 @@ def run_quick_checks(collector: FindingCollector, pkg_mgr: str, runner: Callable
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Health-check read-only (higiene/updates P0+P1).")
-    parser.add_argument("output_file", nargs="?", default=None, help="Fichero JSON de salida")
-    parser.add_argument("profile_file", nargs="?", default="system-profile.json", help="Perfil del sistema")
-    parser.add_argument("--verbose", action="store_true", help="Logging verboso a stderr")
+    parser = argparse.ArgumentParser(
+        description="Health-check read-only (higiene/updates P0+P1)."
+    )
+    parser.add_argument(
+        "output_file", nargs="?", default=None, help="Fichero JSON de salida"
+    )
+    parser.add_argument(
+        "profile_file",
+        nargs="?",
+        default="system-profile.json",
+        help="Perfil del sistema",
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Logging verboso a stderr"
+    )
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
-    output_file = args.output_file or f"audit-quick-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    output_file = (
+        args.output_file or f"audit-quick-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    )
     profile_file = args.profile_file
 
     try:
-        distro_family, pkg_mgr, distro_id, version_id, version_codename = load_profile_family(profile_file)
+        distro_family, pkg_mgr, distro_id, version_id, version_codename = (
+            load_profile_family(profile_file)
+        )
     except (OSError, ValueError) as exc:
         logger.error("no se pudo cargar perfil %r: %s", profile_file, exc)
         return 1
@@ -107,7 +126,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         output = collector.build_output(
-            "audit-quick", distro_id, distro_family, running_kernel, duration, version_id, version_codename
+            "audit-quick",
+            distro_id,
+            distro_family,
+            running_kernel,
+            duration,
+            version_id,
+            version_codename,
         )
     except (ValueError, TypeError, OSError) as exc:
         logger.error("no se pudo construir salida de auditoria: %s", exc)

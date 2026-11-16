@@ -50,7 +50,9 @@ def resolve_skill_root(
     return None
 
 
-def check_binaries(required: list[str], optional: list[str] | None = None) -> PreflightResult:
+def check_binaries(
+    required: list[str], optional: list[str] | None = None
+) -> PreflightResult:
     result = PreflightResult(ok=True)
     for b in required:
         if shutil.which(b) is None:
@@ -129,7 +131,11 @@ def preflight_contract(
         result.blocked_reasons.extend(bin_check.blocked_reasons)
     result.optional_missing.extend(bin_check.optional_missing)
 
-    net_allowed = allow_network if allow_network is not None else env_with_legacy("ALLOW_NETWORK") == "1"
+    net_allowed = (
+        allow_network
+        if allow_network is not None
+        else env_with_legacy("ALLOW_NETWORK") == "1"
+    )
     if reqs.get("network") and not net_allowed:
         result.ok = False
         result.blocked_reasons.append("network:required-but-not-authorized")

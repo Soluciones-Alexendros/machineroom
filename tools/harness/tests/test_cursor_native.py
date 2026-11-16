@@ -39,7 +39,11 @@ def test_static_install_after_full_install(tmp_path: Path) -> None:
     target.mkdir()
     result = install_full(ROOT, target)
     assert result["status"] == "ok"
-    expected = {path.name for path in (ROOT / "skills").iterdir() if path.is_dir() and (path / "SKILL.md").is_file()}
+    expected = {
+        path.name
+        for path in (ROOT / "skills").iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    }
     check = static_install_check(target, expected)
     assert check.outcome == "pass", check
     assert "mr-verifier.md" in check.detail

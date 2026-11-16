@@ -20,7 +20,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, cast
 
-ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
+ROOT = (
+    Path(sys.argv[sys.argv.index("--root") + 1])
+    if "--root" in sys.argv
+    else Path(__file__).resolve().parents[2]
+)
 
 
 def _load_enumerate_tracked() -> Callable[..., Any]:

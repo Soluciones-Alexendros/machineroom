@@ -25,7 +25,9 @@ def _run(
     *,
     extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    base = {k: v for k, v in os.environ.items() if k not in {ENV_KEY, "HYGIENE_DENYLIST"}}
+    base = {
+        k: v for k, v in os.environ.items() if k not in {ENV_KEY, "HYGIENE_DENYLIST"}
+    }
     if env is not None:
         base.update(env)
     if extra_env:
@@ -47,7 +49,9 @@ def _add_file(tmp_path: Path, rel: str, content: str) -> None:
     path = tmp_path / rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
-    subprocess.run(["git", "add", "-f", "--", rel], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "-f", "--", rel], cwd=tmp_path, check=True, capture_output=True
+    )
 
 
 def test_d01_missing_env(tmp_path: Path) -> None:
@@ -121,7 +125,9 @@ def test_d08_utf8_pattern(tmp_path: Path) -> None:
     assert r.returncode == 0, r.stdout + r.stderr
 
 
-def test_d09_tool_error_distinct(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_d09_tool_error_distinct(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _init(tmp_path)
     spec = importlib.util.spec_from_file_location("private_denylist_d09", CLI)
     assert spec and spec.loader

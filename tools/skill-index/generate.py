@@ -29,10 +29,14 @@ def build_index(root: pathlib.Path | None = None) -> dict:
     triggers_by_skill: dict[str, list[str]] = {}
     intent_map = root / "tools" / "skill-router" / "intent-map.yaml"
     if intent_map.exists():
-        intents = (yaml.safe_load(intent_map.read_text(encoding="utf-8")) or {}).get("intents", {})
+        intents = (yaml.safe_load(intent_map.read_text(encoding="utf-8")) or {}).get(
+            "intents", {}
+        )
         for intent in intents.values():
             for skill in intent.get("skills", []):
-                triggers_by_skill.setdefault(skill, []).extend(intent.get("patterns", []))
+                triggers_by_skill.setdefault(skill, []).extend(
+                    intent.get("patterns", [])
+                )
 
     skills = []
     if skills_root.is_dir():
@@ -166,10 +170,18 @@ def ensure_index(root: pathlib.Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Generate skill-index.json and catalog markers")
+    ap = argparse.ArgumentParser(
+        description="Generate skill-index.json and catalog markers"
+    )
     ap.add_argument("--root", default=".", help="Repository root")
-    ap.add_argument("--check", action="store_true", help="Write the index and fail if doc markers drift")
-    ap.add_argument("--sync-docs", action="store_true", help="Rewrite marker regions from skills/")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="Write the index and fail if doc markers drift",
+    )
+    ap.add_argument(
+        "--sync-docs", action="store_true", help="Rewrite marker regions from skills/"
+    )
     ap.add_argument(
         "--json",
         action="store_true",

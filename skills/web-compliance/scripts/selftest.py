@@ -71,12 +71,23 @@ def _configs_coherentes() -> None:
     reg, _th = score_mod.load_configs()
     ids = [c["id"] for c in reg["checks"]]
     assert len(ids) == len(set(ids)), "IDs duplicados en el registry"
-    assert len(ids) >= MIN_REGISTRY_CHECKS, f"Registry con {len(ids)} checks (<{MIN_REGISTRY_CHECKS})"
+    assert (
+        len(ids) >= MIN_REGISTRY_CHECKS
+    ), f"Registry con {len(ids)} checks (<{MIN_REGISTRY_CHECKS})"
     for c in reg["checks"]:
-        assert c["pilar"] in reg["pilares"], f"{c['id']} con pilar desconocido {c['pilar']}"
-        assert c["severidad"] in ("Crítico", "Alto", "Medio", "Bajo"), f"{c['id']} severidad inválida"
+        assert (
+            c["pilar"] in reg["pilares"]
+        ), f"{c['id']} con pilar desconocido {c['pilar']}"
+        assert c["severidad"] in (
+            "Crítico",
+            "Alto",
+            "Medio",
+            "Bajo",
+        ), f"{c['id']} severidad inválida"
     peso = sum(p["peso"] for p in reg["pilares"].values())
-    assert abs(peso - 1.0) < WEIGHT_TOLERANCE, f"Pesos de pilares suman {peso} (debe ser 1.0)"
+    assert (
+        abs(peso - 1.0) < WEIGHT_TOLERANCE
+    ), f"Pesos de pilares suman {peso} (debe ser 1.0)"
 
 
 @test("todos los script_key del registry tienen check implementado en audit_page")
@@ -118,7 +129,14 @@ def _audit_pass_fixture() -> None:
 def _audit_fail_fixture() -> None:
     res = audit_page.audit(file=os.path.join(FIXTURES, "page_fail.html"))
     c = _by_key(res)
-    esperado_fail = ["html_lang", "viewport", "skip_link", "jsonld", "headings", "title"]
+    esperado_fail = [
+        "html_lang",
+        "viewport",
+        "skip_link",
+        "jsonld",
+        "headings",
+        "title",
+    ]
     for k in esperado_fail:
         assert c[k]["status"] in ("FAIL", "WARN"), f"{k} debería fallar: {c[k]}"
     assert c["form_labels"]["status"] in ("FAIL", "WARN"), "labels deberían fallar"
@@ -144,7 +162,9 @@ def _audit_hreflang() -> None:
     )
     assert audit_page.check_hreflang(p)["status"] == "PASS"
     p2 = audit_page.PageParser()
-    p2.feed('<html><head><link rel="alternate" hreflang="ESPAÑOL!" href="x"></head><body></body></html>')
+    p2.feed(
+        '<html><head><link rel="alternate" hreflang="ESPAÑOL!" href="x"></head><body></body></html>'
+    )
     assert audit_page.check_hreflang(p2)["status"] == "FAIL"
 
 
@@ -180,7 +200,10 @@ def _score_one_critical_fail() -> None:
     reg, _ = score_mod.load_configs()
     checks = [{"id": c["id"], "resultado": "PASS"} for c in reg["checks"]]
     crit = next(c for c in reg["checks"] if c["severidad"] == "Crítico")
-    checks = [{"id": crit["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"} for c in reg["checks"]]
+    checks = [
+        {"id": crit["id"], "resultado": "FAIL" if c["id"] == crit["id"] else "PASS"}
+        for c in reg["checks"]
+    ]
     sc = score_mod.score(checks)
     assert sc["dictamen"] == "NEGATIVO"
     assert sc["fails_criticos"] == 1
@@ -207,7 +230,10 @@ def _score_from_audit() -> None:
 
 @test("score: un FAIL no es pisado por un PASS posterior del mismo check")
 def _score_fail_not_overwritten() -> None:
-    checks = [{"id": "ACC-04", "resultado": "FAIL"}, {"id": "ACC-04", "resultado": "PASS"}]
+    checks = [
+        {"id": "ACC-04", "resultado": "FAIL"},
+        {"id": "ACC-04", "resultado": "PASS"},
+    ]
     sc = score_mod.score(checks)
     acc04 = [h for h in sc["hallazgos"] if h["id"] == "ACC-04"]
     assert acc04, "ACC-04 debería seguir siendo hallazgo FAIL"
@@ -219,7 +245,9 @@ def _score_fail_not_overwritten() -> None:
 @test("report: genera Markdown con dictamen, matriz y verificación de cierre")
 def _report_markdown() -> None:
     reg, _ = score_mod.load_configs()
-    checks = [{"id": c["id"], "resultado": "PASS", "evidencia": "test"} for c in reg["checks"]]
+    checks = [
+        {"id": c["id"], "resultado": "PASS", "evidencia": "test"} for c in reg["checks"]
+    ]
     checks[0]["resultado"] = "FAIL"
     sc = score_mod.score(checks)
     sc["target"] = "https://fixture.test"
@@ -233,8 +261,14 @@ def _report_markdown() -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
-    ap = argparse.ArgumentParser(description="Smoke test integrado de auditoria-360-web (exit 0/1)")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+    ap = argparse.ArgumentParser(
+        description="Smoke test integrado de auditoria-360-web (exit 0/1)"
+    )
     ap.parse_args(argv)
     print("=" * 60)
     print("SELFTEST auditoria-360-web")

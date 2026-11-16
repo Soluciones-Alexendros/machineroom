@@ -43,7 +43,12 @@ def installer_version_check(root: Path, expected: str | None) -> Check:
         return Check("installer-version", "contract", "fail", "installer missing")
     assignment = _version_assignment(text)
     if assignment is None:
-        return Check("installer-version", "contract", "fail", "installer VERSION assignment missing")
+        return Check(
+            "installer-version",
+            "contract",
+            "fail",
+            "installer VERSION assignment missing",
+        )
     literal = _LITERAL_VERSION_RE.match(assignment)
     if literal is not None:
         value = literal.group(1)
@@ -70,7 +75,9 @@ def installer_version_check(root: Path, expected: str | None) -> Check:
     )
 
 
-def version_coherence_checks(root: Path, expected_version: str | None = None) -> list[Check]:
+def version_coherence_checks(
+    root: Path, expected_version: str | None = None
+) -> list[Check]:
     root = root.resolve()
     package = _json_version(root / "package.json")
     expected = expected_version or package
@@ -78,7 +85,11 @@ def version_coherence_checks(root: Path, expected_version: str | None = None) ->
         Check(
             "package-version",
             "contract",
-            "pass" if package and (expected_version is None or package == expected_version) else "fail",
+            (
+                "pass"
+                if package and (expected_version is None or package == expected_version)
+                else "fail"
+            ),
             f"package={package or 'missing'} expected={expected or 'unknown'}",
         )
     ]
@@ -95,39 +106,58 @@ def version_coherence_checks(root: Path, expected_version: str | None = None) ->
     return checks
 
 
-def skill_link_check(root: Path, harness: str, *, source_root: Path | None = None) -> Check:
+def skill_link_check(
+    root: Path, harness: str, *, source_root: Path | None = None
+) -> Check:
     root = root.resolve()
     source = (source_root or root).resolve() / "skills"
     destination = root / (".pi/skills" if harness == "pi" else ".cursor/skills")
     expected = (
-        sorted(path for path in source.iterdir() if path.is_dir() and (path / "SKILL.md").is_file())
+        sorted(
+            path
+            for path in source.iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        )
         if source.is_dir()
         else []
     )
     if not expected or not destination.is_dir():
-        return Check(f"{harness}-skill-links", "A", "fail", "catalog or destination missing")
+        return Check(
+            f"{harness}-skill-links", "A", "fail", "catalog or destination missing"
+        )
     relative_count = 0
     for skill in expected:
         link = destination / skill.name
         if not link.is_symlink():
-            return Check(f"{harness}-skill-links", "A", "fail", f"not a symlink: {link}")
+            return Check(
+                f"{harness}-skill-links", "A", "fail", f"not a symlink: {link}"
+            )
         if not Path(link.readlink()).is_absolute():
             relative_count += 1
         if not link.exists() or link.resolve() != skill.resolve():
-            return Check(f"{harness}-skill-links", "A", "fail", f"wrong or broken target: {link}")
+            return Check(
+                f"{harness}-skill-links", "A", "fail", f"wrong or broken target: {link}"
+            )
     detail = f"{len(expected)} links resolve to catalog"
     if relative_count:
         detail += f" ({relative_count} relative)"
     return Check(f"{harness}-skill-links", "A", "pass", detail)
 
 
-def cursor_full_check(root: Path) -> Check:  # noqa: C901, PLR0911  # v1/v2 + user/project link checks
+def cursor_full_check(
+    root: Path,
+) -> Check:  # noqa: C901, PLR0911  # v1/v2 + user/project link checks
     manifest = root.resolve() / ".cursor" / ".machineroom-full-manifest.json"
     try:
         data = json.loads(manifest.read_text(encoding="utf-8"))
         entries = _full_manifest_entries(data)
     except (OSError, json.JSONDecodeError, KeyError, TypeError):
-        return Check("cursor-full-components", "A", "fail", "full component manifest missing or invalid")
+        return Check(
+            "cursor-full-components",
+            "A",
+            "fail",
+            "full component manifest missing or invalid",
+        )
     user_scope = data.get("scope") == "user"
     source_root = Path(str(data.get("source_root", "")))
     for relative, kind in entries:
@@ -135,26 +165,61 @@ def cursor_full_check(root: Path) -> Check:  # noqa: C901, PLR0911  # v1/v2 + us
         if kind == "generated":
             # Legacy user-scope hooks.json written as a real file.
             if path.is_symlink() or not path.is_file():
-                return Check("cursor-full-components", "A", "fail", f"invalid generated component: {relative}")
+                return Check(
+                    "cursor-full-components",
+                    "A",
+                    "fail",
+                    f"invalid generated component: {relative}",
+                )
             continue
         if not path.is_symlink() or not path.exists():
-            return Check("cursor-full-components", "A", "fail", f"invalid full component: {relative}")
+            return Check(
+                "cursor-full-components",
+                "A",
+                "fail",
+                f"invalid full component: {relative}",
+            )
         link_text = Path(path.readlink())
         if user_scope:
             if link_text.is_absolute():
-                return Check("cursor-full-components", "A", "fail", f"user link must be relative: {relative}")
+                return Check(
+                    "cursor-full-components",
+                    "A",
+                    "fail",
+                    f"user link must be relative: {relative}",
+                )
             if source_root.parts and not _resolves_under(path, source_root):
-                return Check("cursor-full-components", "A", "fail", f"user link escapes runtime: {relative}")
+                return Check(
+                    "cursor-full-components",
+                    "A",
+                    "fail",
+                    f"user link escapes runtime: {relative}",
+                )
         elif not link_text.is_absolute():
-            return Check("cursor-full-components", "A", "fail", f"project link must be absolute: {relative}")
+            return Check(
+                "cursor-full-components",
+                "A",
+                "fail",
+                f"project link must be absolute: {relative}",
+            )
     required = {"agents/mr-verifier.md", "hooks.json", "hooks/shell_gate.py"}
     if not user_scope:
         # User rules live in Cursor Settings, so the project rule is project-scope only.
         required.add("rules/machineroom.mdc")
     if not required <= {relative for relative, _kind in entries}:
-        return Check("cursor-full-components", "A", "fail", "full component manifest is incomplete")
+        return Check(
+            "cursor-full-components",
+            "A",
+            "fail",
+            "full component manifest is incomplete",
+        )
     scope = "user" if user_scope else "project"
-    return Check("cursor-full-components", "A", "pass", f"{len(entries)} full components verified ({scope} scope)")
+    return Check(
+        "cursor-full-components",
+        "A",
+        "pass",
+        f"{len(entries)} full components verified ({scope} scope)",
+    )
 
 
 def _resolves_under(link: Path, root: Path) -> bool:
@@ -198,14 +263,21 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
             Check(
                 "package-version",
                 "contract",
-                "pass" if package and (expected_version is None or package == expected_version) else "fail",
+                (
+                    "pass"
+                    if package
+                    and (expected_version is None or package == expected_version)
+                    else "fail"
+                ),
                 f"package={package or 'missing'} expected={expected_version or package or 'unknown'} (runtime)",
             )
         ]
     else:
         checks = version_coherence_checks(source, expected_version)
     expected_skills = {
-        path.name for path in (source / "skills").iterdir() if path.is_dir() and (path / "SKILL.md").is_file()
+        path.name
+        for path in (source / "skills").iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
     }
     if harness in {"pi", "all"}:
         if not native:
@@ -229,16 +301,29 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Machineroom harness doctor")
     parser.add_argument("--harness", choices=("pi", "cursor", "all"), default="all")
     parser.add_argument("--target", type=Path, default=Path("."))
-    parser.add_argument("--source", type=Path, help="Package/catalog source when it differs from target")
-    parser.add_argument("--full", action="store_true", help="Require the complete Cursor component manifest")
+    parser.add_argument(
+        "--source", type=Path, help="Package/catalog source when it differs from target"
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Require the complete Cursor component manifest",
+    )
     parser.add_argument("--expected-version")
-    parser.add_argument("--native", action="store_true", help="Run native discovery checks when available")
+    parser.add_argument(
+        "--native",
+        action="store_true",
+        help="Run native discovery checks when available",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     root = args.target.resolve()
     source = (args.source or root).resolve()
     if not root.is_dir() or not source.is_dir():
-        print(f"ERROR: target/source is not a directory: {root} / {source}", file=sys.stderr)
+        print(
+            f"ERROR: target/source is not a directory: {root} / {source}",
+            file=sys.stderr,
+        )
         return 2
     checks = collect_checks(
         root,

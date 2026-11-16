@@ -29,15 +29,31 @@ SKILLS = ROOT / "skills"
 CHANGELOG = ROOT / "CHANGELOG.md"
 
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z][0-9A-Za-z.-]*))?$")
-VERSION_LINE_RE = re.compile(r'^(\s*version:\s*)["\']?(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)["\']?(\s*)$')
+VERSION_LINE_RE = re.compile(
+    r'^(\s*version:\s*)["\']?(\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)["\']?(\s*)$'
+)
 
 SKILLS_PATH_PARTS = 2
 KINDS = ("major", "minor", "patch")
 RANK = {"patch": 0, "minor": 1, "major": 2}
 
 ALIASES = {
-    "major": {"major", "actualizacion-mayor", "actualizacion", "breaking", "incompatible", "mayor"},
-    "minor": {"minor", "desarrollo-menor", "menor", "feature", "funcionalidad", "nueva-funcionalidad"},
+    "major": {
+        "major",
+        "actualizacion-mayor",
+        "actualizacion",
+        "breaking",
+        "incompatible",
+        "mayor",
+    },
+    "minor": {
+        "minor",
+        "desarrollo-menor",
+        "menor",
+        "feature",
+        "funcionalidad",
+        "nueva-funcionalidad",
+    },
     "patch": {"patch", "parche", "parcheado", "fix", "correccion", "hotfix", "rev"},
 }
 for _k in list(ALIASES):
@@ -51,7 +67,9 @@ def normalize_kind(raw: str) -> str:
     for kind in KINDS:
         if norm in ALIASES[kind]:
             return kind
-    raise ValueError(f"magnitud desconocida: '{raw}' (usar: major|minor|patch o alias ES)")
+    raise ValueError(
+        f"magnitud desconocida: '{raw}' (usar: major|minor|patch o alias ES)"
+    )
 
 
 def bump_version(current: str, kind: str) -> str:
@@ -96,7 +114,9 @@ def write_skill_version(sdir: Path, new: str) -> str:
 
 def list_skills(root: Path = ROOT) -> list[str]:
     d = root / "skills"
-    return sorted(p.name for p in d.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
+    return sorted(
+        p.name for p in d.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()
+    )
 
 
 def skills_from_paths(paths: list[str]) -> list[str]:
@@ -111,7 +131,9 @@ def skills_from_paths(paths: list[str]) -> list[str]:
 
 
 def git(args: list[str], root: Path = ROOT) -> str:
-    r = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
+    r = subprocess.run(
+        ["git", *args], cwd=root, capture_output=True, text=True, check=False
+    )
     if r.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()}")
     return r.stdout
@@ -164,12 +186,16 @@ def latest_repo_tag(root: Path = ROOT) -> str | None:
     return out.lstrip("v") if out else None
 
 
-def update_changelog(entries: list[tuple[str, str, str, str]], message: str | None) -> None:
+def update_changelog(
+    entries: list[tuple[str, str, str, str]], message: str | None
+) -> None:
     header = "# Changelog\n"
     text = CHANGELOG.read_text(encoding="utf-8") if CHANGELOG.is_file() else header
     if not text.endswith("\n"):
         text += "\n"
-    lines = [f"- `{skill}` {old} -> {new} ({kind})" for skill, old, new, kind in entries]
+    lines = [
+        f"- `{skill}` {old} -> {new} ({kind})" for skill, old, new, kind in entries
+    ]
     if message:
         lines.append(f"\n  {message}")
     block = "\n".join(lines)
@@ -183,18 +209,34 @@ def update_changelog(entries: list[tuple[str, str, str, str]], message: str | No
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Autoversionado semver por magnitud (major|minor|patch).")
+    p = argparse.ArgumentParser(
+        description="Autoversionado semver por magnitud (major|minor|patch)."
+    )
     p.add_argument("--root", default=str(ROOT), help="raiz del repo")
-    p.add_argument("--type", "-t", dest="kind", default=None, help="magnitud: major|minor|patch (+alias ES)")
+    p.add_argument(
+        "--type",
+        "-t",
+        dest="kind",
+        default=None,
+        help="magnitud: major|minor|patch (+alias ES)",
+    )
     p.add_argument("--skills", default=None, help="lista coma-separada de skills")
     p.add_argument("--all", action="store_true", help="todas las skills")
-    p.add_argument("--auto", action="store_true", help="detectar skills por git diff/status")
+    p.add_argument(
+        "--auto", action="store_true", help="detectar skills por git diff/status"
+    )
     p.add_argument("--base", default="origin/main", help="ref base para --auto/--check")
-    p.add_argument("--check", action="store_true", help="verifica bump ya aplicado vs base (CI)")
+    p.add_argument(
+        "--check", action="store_true", help="verifica bump ya aplicado vs base (CI)"
+    )
     p.add_argument("--dry-run", "-n", action="store_true", help="no escribe cambios")
     p.add_argument("--no-changelog", action="store_true", help="no toca CHANGELOG.md")
-    p.add_argument("--message", "-m", default=None, help="mensaje extra para el CHANGELOG")
-    p.add_argument("--tag", action="store_true", help="crea tag de repo vX.Y.Z (max bump)")
+    p.add_argument(
+        "--message", "-m", default=None, help="mensaje extra para el CHANGELOG"
+    )
+    p.add_argument(
+        "--tag", action="store_true", help="crea tag de repo vX.Y.Z (max bump)"
+    )
     return p
 
 
@@ -210,7 +252,11 @@ def resolve_targets(args: argparse.Namespace, root: Path) -> list[str]:
         return list_skills(root)
     if args.auto:
         base = resolve_base(args.base, root)
-        return [s for s in skills_from_paths(changed_paths(base, root)) if (root / "skills" / s).is_dir()]
+        return [
+            s
+            for s in skills_from_paths(changed_paths(base, root))
+            if (root / "skills" / s).is_dir()
+        ]
     raise ValueError("indicar objetivo: --skills, --all o --auto")
 
 
@@ -236,7 +282,9 @@ def cmd_check(targets: list[str], base: str, root: Path) -> int:
         print("CHECK: FALTA BUMP en:")
         for m in missing:
             print(f"  - {m}")
-        print("Aplicar: python3 tools/version/bump.py --auto --type <major|minor|patch>")
+        print(
+            "Aplicar: python3 tools/version/bump.py --auto --type <major|minor|patch>"
+        )
         return 2
     print("CHECK: todo versionado")
     return 0
@@ -247,7 +295,9 @@ def _fail(message: str) -> int:
     return 1
 
 
-def _apply_bumps(args: Any, targets: list[str], root: Path, kind: str) -> list[tuple[str, str, str, str]]:
+def _apply_bumps(
+    args: Any, targets: list[str], root: Path, kind: str
+) -> list[tuple[str, str, str, str]]:
     entries: list[tuple[str, str, str, str]] = []
     for skill in targets:
         sdir = root / "skills" / skill
@@ -272,7 +322,13 @@ def _report_repo(top: str, root: Path) -> str | None:
     return repo_next
 
 
-def _emit_tag(args: Any, entries: list[tuple[str, str, str, str]], repo_next: str | None, top: str, root: Path) -> None:
+def _emit_tag(
+    args: Any,
+    entries: list[tuple[str, str, str, str]],
+    repo_next: str | None,
+    top: str,
+    root: Path,
+) -> None:
     if not (args.tag and not args.dry_run and repo_next):
         return
     names = ", ".join(s for s, _, _, _ in entries)

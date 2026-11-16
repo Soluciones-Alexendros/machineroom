@@ -21,7 +21,11 @@ CURRENT_PLAN = ROOT / "tasks" / "plan-autoworkspace-integration.md"
 
 
 def _document(data: dict[str, Any]) -> str:
-    return "# Fixture\n\n```yaml aw-plan\n" + str(yaml.safe_dump(data, sort_keys=False)) + "```\n"
+    return (
+        "# Fixture\n\n```yaml aw-plan\n"
+        + str(yaml.safe_dump(data, sort_keys=False))
+        + "```\n"
+    )
 
 
 def _valid_data() -> dict[str, Any]:
@@ -69,7 +73,9 @@ def test_requires_exactly_one_block() -> None:
 
 
 def test_rejects_duplicate_yaml_keys() -> None:
-    text = _document(_valid_data()).replace("plan_id: fixture-v1", "plan_id: fixture-v1\nplan_id: other")
+    text = _document(_valid_data()).replace(
+        "plan_id: fixture-v1", "plan_id: fixture-v1\nplan_id: other"
+    )
     with pytest.raises(ValueError, match="duplicate"):
         parse_plan(text)
 
@@ -83,7 +89,9 @@ def test_rejects_duplicate_yaml_keys() -> None:
         (lambda d: d["tasks"][0].update(read_scope=["/etc"]), "path"),
     ],
 )
-def test_semantic_rejections(mutation: Callable[[dict[str, Any]], None], message: str) -> None:
+def test_semantic_rejections(
+    mutation: Callable[[dict[str, Any]], None], message: str
+) -> None:
     data = _valid_data()
     mutation(data)
     with pytest.raises(ValueError, match=message):

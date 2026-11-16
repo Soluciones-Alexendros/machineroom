@@ -40,7 +40,9 @@ def main() -> int:
             f"FAIL contract session_start: unreadable rule {RULE}: {exc}",
             file=sys.stderr,
         )
-        fallback = "machineroom contract unavailable; read .cursor/rules/machineroom.mdc"
+        fallback = (
+            "machineroom contract unavailable; read .cursor/rules/machineroom.mdc"
+        )
         json.dump({"additional_context": fallback}, sys.stdout)
         sys.stdout.write("\n")
         return 0

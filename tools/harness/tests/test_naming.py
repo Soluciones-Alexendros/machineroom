@@ -47,11 +47,17 @@ def test_autoworkspace_literals_only_on_legacy_lines() -> None:
     offenders: list[str] = []
     for index, line in enumerate(lines, start=1):
         stripped = line.lstrip()
-        if stripped.startswith("#") or stripped.startswith('"""') or stripped.startswith("'''"):
+        if (
+            stripped.startswith("#")
+            or stripped.startswith('"""')
+            or stripped.startswith("'''")
+        ):
             continue
         if "LEGACY_" in line:
             continue
         lower = line.lower()
         if "autoworkspace" in lower or "aw-" in lower or "aw_" in lower:
             offenders.append(f"{index}:{line.strip()}")
-    assert offenders == [], "non-LEGACY autoworkspace/aw literals:\n" + "\n".join(offenders)
+    assert offenders == [], "non-LEGACY autoworkspace/aw literals:\n" + "\n".join(
+        offenders
+    )

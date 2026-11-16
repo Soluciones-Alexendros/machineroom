@@ -79,7 +79,10 @@ def test_activate_plan_tracks_path_digest_and_pending_tasks(tmp_path: Path) -> N
     assert state["tasks"]["fixture-read"]["state"] == "pending"
     assert load_active_plan(tmp_path).plan_id == "fixture-plan-v1"
 
-    plan.write_text(plan.read_text(encoding="utf-8").replace("fixture-read-observed", "changed"), encoding="utf-8")
+    plan.write_text(
+        plan.read_text(encoding="utf-8").replace("fixture-read-observed", "changed"),
+        encoding="utf-8",
+    )
     with pytest.raises(ValueError, match="digest"):
         load_active_plan(tmp_path)
 
@@ -88,6 +91,8 @@ def test_existing_plan_file_is_not_inferred_as_active(tmp_path: Path) -> None:
     _legacy(tmp_path)
     migrate_status(tmp_path)
     (tmp_path / "tasks").mkdir()
-    (tmp_path / "tasks" / "plan.md").write_text(FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+    (tmp_path / "tasks" / "plan.md").write_text(
+        FIXTURE.read_text(encoding="utf-8"), encoding="utf-8"
+    )
     with pytest.raises(ValueError, match="no active plan"):
         load_active_plan(tmp_path)

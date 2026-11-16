@@ -80,7 +80,10 @@ def test_finding_collector_health_score_golden() -> None:
     assert hs["hygiene"] is None
     assert hs["resources"] is None
     assert hs["stability"] is None
-    covered = 50 * common.CATEGORY_WEIGHTS["security"] + 100 * common.CATEGORY_WEIGHTS["updates"]
+    covered = (
+        50 * common.CATEGORY_WEIGHTS["security"]
+        + 100 * common.CATEGORY_WEIGHTS["updates"]
+    )
     weight = common.CATEGORY_WEIGHTS["security"] + common.CATEGORY_WEIGHTS["updates"]
     assert hs["overall"] == covered // weight
     s = c.summary()

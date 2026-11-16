@@ -66,7 +66,9 @@ def _load_capture(tmp_path: Path) -> dict[str, Any]:
 
 
 def _context(tmp_path: Path) -> RunContext:
-    return RunContext(tmp_path, "isolation-red", "a" * 64, "0" * 40, "run-isolation-red", "pi")
+    return RunContext(
+        tmp_path, "isolation-red", "a" * 64, "0" * 40, "run-isolation-red", "pi"
+    )
 
 
 def _write_task() -> dict[str, Any]:
@@ -81,7 +83,9 @@ def _write_task() -> dict[str, Any]:
 
 def test_pi_writer_tools_exclude_arbitrary_shell(tmp_path: Path) -> None:
     """Writers must not receive bash/shell; baseline currently appends bash."""
-    adapter = PiSubagentAdapter(binary=str(_capture_binary(tmp_path, "pi-red", pi_jsonl=True)))
+    adapter = PiSubagentAdapter(
+        binary=str(_capture_binary(tmp_path, "pi-red", pi_jsonl=True))
+    )
     result = adapter.execute(_write_task(), _context(tmp_path))
     assert result.outcome == "succeeded", result.detail
     args = _load_capture(tmp_path)["args"]
@@ -92,11 +96,15 @@ def test_pi_writer_tools_exclude_arbitrary_shell(tmp_path: Path) -> None:
     assert {"write", "edit"} <= tools
 
 
-def test_pi_child_env_denies_unauthorized_parent_secrets(tmp_path: Path, monkeypatch: Any) -> None:
+def test_pi_child_env_denies_unauthorized_parent_secrets(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
     """Child env is deny-by-default; baseline inherits the parent environment."""
     monkeypatch.setenv(FIXTURE_SECRET, FIXTURE_SECRET_VALUE)
     assert os.environ.get(FIXTURE_SECRET) == FIXTURE_SECRET_VALUE
-    adapter = PiSubagentAdapter(binary=str(_capture_binary(tmp_path, "pi-red", pi_jsonl=True)))
+    adapter = PiSubagentAdapter(
+        binary=str(_capture_binary(tmp_path, "pi-red", pi_jsonl=True))
+    )
     result = adapter.execute(_write_task(), _context(tmp_path))
     assert result.outcome == "succeeded", result.detail
     child_env = _load_capture(tmp_path)["env"]
@@ -123,7 +131,9 @@ def test_cursor_writer_argv_never_includes_force_or_yolo(tmp_path: Path) -> None
     assert not any(arg == "--force" or arg.startswith("--force=") for arg in args)
 
 
-def test_cursor_child_env_denies_unauthorized_parent_secrets(tmp_path: Path, monkeypatch: Any) -> None:
+def test_cursor_child_env_denies_unauthorized_parent_secrets(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
     """Cursor child must not inherit unauthorized secrets from the parent."""
     monkeypatch.setenv(FIXTURE_SECRET, FIXTURE_SECRET_VALUE)
     adapter = CursorSubagentAdapter(

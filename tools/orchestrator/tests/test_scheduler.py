@@ -44,10 +44,17 @@ def _activate(root: Path, independent: bool = False) -> None:
         "schema_version": 1,
         "plan_id": "scheduler-fixture",
         "base_revision": "0" * 40,
-        "tasks": [_task("first", []), _task("second", [] if independent else ["first"])],
+        "tasks": [
+            _task("first", []),
+            _task("second", [] if independent else ["first"]),
+        ],
     }
     path = root / "plan.md"
-    path.write_text("# Fixture\n\n```yaml aw-plan\n" + yaml.safe_dump(data, sort_keys=False) + "```\n")
+    path.write_text(
+        "# Fixture\n\n```yaml aw-plan\n"
+        + yaml.safe_dump(data, sort_keys=False)
+        + "```\n"
+    )
     activate_plan(root, path)
 
 
@@ -87,11 +94,20 @@ class ControlledAdapter:
 
             def verify(result: OpResult, repo: Path) -> list[dict[str, Any]]:
                 content = (repo / f"{task_id}.txt").read_text(encoding="utf-8")
-                return [{"kind": "implementation_deliverable", "ok": content == f"ok-{task_id}\n"}]
+                return [
+                    {
+                        "kind": "implementation_deliverable",
+                        "ok": content == f"ok-{task_id}\n",
+                    }
+                ]
 
             executed = run_verified(
                 task["operation"],
-                {"repo": str(context.repo), "path": f"{task_id}.txt", "content": f"ok-{task_id}\n"},
+                {
+                    "repo": str(context.repo),
+                    "path": f"{task_id}.txt",
+                    "content": f"ok-{task_id}\n",
+                },
                 repo=context.repo,
                 phase=task["phase"],
                 skill="role-back",
@@ -108,7 +124,9 @@ class ControlledAdapter:
 
 
 def _handler(params: dict[str, Any]) -> int:
-    (Path(params["repo"]) / params["path"]).write_text(params["content"], encoding="utf-8")
+    (Path(params["repo"]) / params["path"]).write_text(
+        params["content"], encoding="utf-8"
+    )
     return 0
 
 
@@ -133,7 +151,9 @@ def test_scheduler_limits_parallelism_without_lost_update(tmp_path: Path) -> Non
     summary = Scheduler(tmp_path, adapter=adapter, max_parallel=2).run()
     assert summary.outcome == "pass"
     assert adapter.max_active == 2  # noqa: PLR2004  # max_parallel fixture
-    assert load_status(tmp_path)["state_revision"] == 5  # noqa: PLR2004  # start/succeed x2 + activate
+    assert (
+        load_status(tmp_path)["state_revision"] == 5
+    )  # noqa: PLR2004  # start/succeed x2 + activate
 
 
 def test_failure_stops_dependents_and_returns_failed(tmp_path: Path) -> None:

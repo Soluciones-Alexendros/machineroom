@@ -23,7 +23,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z][0-9A-Za-z.-]*))?$")
-CHANGELOG_H2 = re.compile(r"^## \[([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\] - (\d{4}-\d{2}-\d{2})(.*)$")
+CHANGELOG_H2 = re.compile(
+    r"^## \[([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\] - (\d{4}-\d{2}-\d{2})(.*)$"
+)
 STABLE_TAG_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 RELEASE_PATHS = {
     "CHANGELOG.md",
@@ -34,8 +36,12 @@ RELEASE_PATHS = {
 }
 
 
-def git(args: list[str], root: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
-    r = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
+def git(
+    args: list[str], root: Path, check: bool = True
+) -> subprocess.CompletedProcess[str]:
+    r = subprocess.run(
+        ["git", *args], cwd=root, capture_output=True, text=True, check=False
+    )
     if check and r.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()}")
     return r
@@ -100,7 +106,9 @@ def should_cut(pkg: str, tagged: str | None) -> bool:
 
 
 def repo_bump_required(changed: list[str], pkg: str, tagged: str | None) -> bool:
-    hits = [p for p in changed if p in RELEASE_PATHS or p.startswith(".github/workflows/")]
+    hits = [
+        p for p in changed if p in RELEASE_PATHS or p.startswith(".github/workflows/")
+    ]
     if not hits:
         return False
     if tagged is None:
@@ -163,7 +171,9 @@ def cmd_readiness(args: argparse.Namespace) -> int:
     changelog_path = root / "CHANGELOG.md"
     if not changelog_path.is_file():
         print(f"READINESS: fail reason=missing_changelog package={pkg}")
-        write_output(tagged="false", version=pkg, status="not_ready", reason="missing_changelog")
+        write_output(
+            tagged="false", version=pkg, status="not_ready", reason="missing_changelog"
+        )
         return 1
     try:
         changelog = changelog_path.read_text(encoding="utf-8")
@@ -179,8 +189,12 @@ def cmd_readiness(args: argparse.Namespace) -> int:
         write_output(tagged="false", version=pkg, status="not_ready", reason=reason)
         return 1
     if not should_cut(pkg, tagged):
-        print(f"READINESS: fail reason=already_tagged package={pkg} latest_tag={tagged}")
-        write_output(tagged="false", version=pkg, status="not_ready", reason="already_tagged")
+        print(
+            f"READINESS: fail reason=already_tagged package={pkg} latest_tag={tagged}"
+        )
+        write_output(
+            tagged="false", version=pkg, status="not_ready", reason="already_tagged"
+        )
         return 1
     print(f"READINESS: ok package={pkg} notes_bytes={len(notes)} latest_tag={tagged}")
     write_output(tagged="false", version=pkg, status="ready", reason="ok")
@@ -189,14 +203,18 @@ def cmd_readiness(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cut_notes(args: argparse.Namespace, root: Path, pkg: str, tagged: str | None) -> tuple[str | None, int | None]:
+def _cut_notes(
+    args: argparse.Namespace, root: Path, pkg: str, tagged: str | None
+) -> tuple[str | None, int | None]:
     changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
     try:
         return extract_notes(changelog, pkg), None
     except ValueError as e:
         if args.strict_readiness:
             print(f"CUT: fail ({e}); package={pkg}")
-            write_output(tagged="false", version=pkg, status="not_ready", reason="notes")
+            write_output(
+                tagged="false", version=pkg, status="not_ready", reason="notes"
+            )
             return None, 1
         # Ordinary push path: skip ≠ published
         print(f"CUT: skip ({e}); package={pkg} latest_tag={tagged}")
@@ -204,7 +222,9 @@ def _cut_notes(args: argparse.Namespace, root: Path, pkg: str, tagged: str | Non
         return None, 0
 
 
-def _tag_and_push(args: argparse.Namespace, root: Path, tag: str, pkg: str) -> int | None:
+def _tag_and_push(
+    args: argparse.Namespace, root: Path, tag: str, pkg: str
+) -> int | None:
     try:
         git(["tag", "-a", tag, "-m", tag], root)
     except RuntimeError as exc:
@@ -235,7 +255,9 @@ def _cmd_cut_release(args: argparse.Namespace, pkg: str) -> int:
         return skip_rc
     if not should_cut(pkg, tagged):
         print(f"CUT: skip package={pkg} latest_tag={tagged}")
-        write_output(tagged="false", version=pkg, status="skipped", reason="already_tagged")
+        write_output(
+            tagged="false", version=pkg, status="skipped", reason="already_tagged"
+        )
         return 0
     tag = f"v{pkg}"
     print(f"CUT: would tag {tag} (latest={tagged})")

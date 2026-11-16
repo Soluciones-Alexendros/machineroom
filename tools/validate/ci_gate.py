@@ -17,7 +17,9 @@ import sys
 from typing import Any
 
 
-def evaluate(needs: dict[str, Any], allowed_skips: set[str], hold: bool) -> tuple[int, str]:
+def evaluate(
+    needs: dict[str, Any], allowed_skips: set[str], hold: bool
+) -> tuple[int, str]:
     if hold:
         return 1, "ci-gate: hold activo"
     bad: list[str] = []
@@ -63,7 +65,9 @@ def main() -> int:
         # Anunciar skips esperados sin llamar PASS al control omitido.
         for name in sorted(allowed):
             info = needs.get(name)
-            if info is None or (isinstance(info, dict) and info.get("result") == "skipped"):
+            if info is None or (
+                isinstance(info, dict) and info.get("result") == "skipped"
+            ):
                 if name == "private-denylist":
                     print("PRIVATE_CHECK_NOT_APPLICABLE_TO_PR")
                 else:

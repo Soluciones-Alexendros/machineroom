@@ -55,7 +55,9 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
     else:
         for a in actions:
             if a.get("status") == "completed":
-                errors.append("status 'completed' is forbidden; use succeeded/simulated/…")
+                errors.append(
+                    "status 'completed' is forbidden; use succeeded/simulated/…"
+                )
     return errors
 
 

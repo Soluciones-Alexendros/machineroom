@@ -46,7 +46,9 @@ def _node() -> str:
         check=False,
     )
     if probe.returncode != 0:
-        pytest.skip("node without --experimental-strip-types: Pi shell gate parity is not_run here")
+        pytest.skip(
+            "node without --experimental-strip-types: Pi shell gate parity is not_run here"
+        )
     return node
 
 

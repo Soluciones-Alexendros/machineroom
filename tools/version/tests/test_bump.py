@@ -101,18 +101,32 @@ def test_main_dry_run_tmp_root(tmp_path: Path) -> None:
         '---\nname: demo-skill\nmetadata:\n  version: "0.1.0"\n---\n\n# Demo\n',
         encoding="utf-8",
     )
-    rc = bump.main(["--root", str(tmp_path), "--type", "parche", "--skills", "demo-skill", "--dry-run"])
+    rc = bump.main(
+        [
+            "--root",
+            str(tmp_path),
+            "--type",
+            "parche",
+            "--skills",
+            "demo-skill",
+            "--dry-run",
+        ]
+    )
     assert rc == 0
     assert bump.read_skill_version(skill) == "0.1.0"
 
 
 def test_main_unknown_skill_tmp_root(tmp_path: Path) -> None:
     (tmp_path / "skills").mkdir()
-    rc = bump.main(["--root", str(tmp_path), "--type", "minor", "--skills", "no-existe"])
+    rc = bump.main(
+        ["--root", str(tmp_path), "--type", "minor", "--skills", "no-existe"]
+    )
     assert rc == 1
 
 
 def test_bump_cli_help() -> None:
-    r = subprocess.run(["python3", str(BUMP), "--help"], capture_output=True, text=True, check=False)
+    r = subprocess.run(
+        ["python3", str(BUMP), "--help"], capture_output=True, text=True, check=False
+    )
     assert r.returncode == 0
     assert "--type" in r.stdout

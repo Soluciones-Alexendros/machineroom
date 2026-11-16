@@ -39,16 +39,24 @@ def _load_json(path: str) -> Any:
         raise RuntimeError(f"JSON inválido en {path}: {e}") from e
 
 
-def load_configs(config_dir: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
-    base = config_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "configs")
+def load_configs(
+    config_dir: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    base = config_dir or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "configs"
+    )
     checks = _load_json(os.path.join(base, "checks.json"))
     thresholds = _load_json(os.path.join(base, "thresholds.json"))
     return checks, thresholds
 
 
-def normalizar(resultados: list[dict[str, Any]], registry: dict[str, Any]) -> dict[str, Any]:
+def normalizar(
+    resultados: list[dict[str, Any]], registry: dict[str, Any]
+) -> dict[str, Any]:
     """Devuelve {check_id: resultado} fusionando entradas por id o script_key."""
-    by_key = {c["script_key"]: c["id"] for c in registry["checks"] if c.get("script_key")}
+    by_key = {
+        c["script_key"]: c["id"] for c in registry["checks"] if c.get("script_key")
+    }
     mapa: dict[str, Any] = {}
     for item in resultados:
         cid = item.get("id") or by_key.get(item.get("script_key"))
@@ -70,7 +78,9 @@ def normalizar(resultados: list[dict[str, Any]], registry: dict[str, Any]) -> di
     return mapa
 
 
-def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> dict[str, Any]:
+def score(
+    resultados: list[dict[str, Any]], config_dir: str | None = None
+) -> dict[str, Any]:
     registry, thresholds = load_configs(config_dir)
     mapa = normalizar(resultados, registry)
     reg_by_id = {c["id"]: c for c in registry["checks"]}
@@ -80,7 +90,9 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
     deuda_horas = 0
     for cid, c in reg_by_id.items():
         r = mapa.get(cid, {"resultado": "PENDING", "evidencia": "", "accion": ""})
-        p = pilares.setdefault(c["pilar"], {"pass": 0, "fail": 0, "pending": 0, "na": 0})
+        p = pilares.setdefault(
+            c["pilar"], {"pass": 0, "fail": 0, "pending": 0, "na": 0}
+        )
         estado = r["resultado"]
         if estado == "PASS":
             p["pass"] += 1
@@ -90,7 +102,9 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
             p["pending"] += 1
         else:  # FAIL o WARN
             p["fail"] += 1
-            horas = c.get("esfuerzo_h") or thresholds["severidad_horas_defecto"].get(c["severidad"], 4)
+            horas = c.get("esfuerzo_h") or thresholds["severidad_horas_defecto"].get(
+                c["severidad"], 4
+            )
             deuda_horas += horas
             hallazgos.append(
                 {
@@ -123,11 +137,11 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
             "semaforo": (
                 "SIN DATOS"
                 if pct is None
-                else "VERDE"
-                if pct >= thresholds["semaforo"]["verde"]
-                else "AMBAR"
-                if pct >= thresholds["semaforo"]["ambar"]
-                else "ROJO"
+                else (
+                    "VERDE"
+                    if pct >= thresholds["semaforo"]["verde"]
+                    else "AMBAR" if pct >= thresholds["semaforo"]["ambar"] else "ROJO"
+                )
             ),
         }
         global_pass += p["pass"]
@@ -137,10 +151,14 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
 
     # Dictamen
     reglas = thresholds["dictamen"]["positivo"]
-    fails_criticos = [h for h in hallazgos if h["severidad"] == "Crítico" and h["resultado"] == "FAIL"]
+    fails_criticos = [
+        h for h in hallazgos if h["severidad"] == "Crítico" and h["resultado"] == "FAIL"
+    ]
     if fails_criticos:
         dictamen = "NEGATIVO"
-        motivo = f"{len(fails_criticos)} FAIL crítico(s): " + ", ".join(h["id"] for h in fails_criticos)
+        motivo = f"{len(fails_criticos)} FAIL crítico(s): " + ", ".join(
+            h["id"] for h in fails_criticos
+        )
     elif pct_global is None:
         dictamen = "SIN DATOS"
         motivo = "No hay checks evaluables"
@@ -148,7 +166,8 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
         incumple_pilar = [
             pid
             for pid, umbral in reglas["min_pct_pilar"].items()
-            if por_pilar.get(pid, {}).get("pct") is not None and por_pilar[pid]["pct"] < umbral
+            if por_pilar.get(pid, {}).get("pct") is not None
+            and por_pilar[pid]["pct"] < umbral
         ]
         if pct_global >= reglas["min_pct_global"] and not incumple_pilar:
             dictamen = "POSITIVO"
@@ -156,7 +175,9 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
         elif pct_global >= thresholds["dictamen"]["parcial"]["min_pct_global"]:
             dictamen = "PARCIAL"
             motivo = f"Global {pct_global}% bajo umbral {reglas['min_pct_global']}%" + (
-                f"; pilares bajo umbral: {', '.join(incumple_pilar)}" if incumple_pilar else ""
+                f"; pilares bajo umbral: {', '.join(incumple_pilar)}"
+                if incumple_pilar
+                else ""
             )
         else:
             dictamen = "NEGATIVO"
@@ -180,7 +201,11 @@ def score(resultados: list[dict[str, Any]], config_dir: str | None = None) -> di
 
 
 def main(argv: list[str] | None = None) -> int:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     ap = argparse.ArgumentParser(description="Scoring de compliance Auditoría 360°")
     ap.add_argument("resultados", help="JSON con checks evaluados")
     ap.add_argument("--config", help="Directorio de configs (por defecto ../configs)")
@@ -194,10 +219,15 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": str(e)}, ensure_ascii=False))
         return 2
     if not isinstance(data, dict):
-        logger.error("formato inválido en %s: se esperaba objeto con 'checks'", args.resultados)
+        logger.error(
+            "formato inválido en %s: se esperaba objeto con 'checks'", args.resultados
+        )
         print(
             json.dumps(
-                {"error": f"Formato inválido en {args.resultados}: se esperaba objeto con 'checks'"}, ensure_ascii=False
+                {
+                    "error": f"Formato inválido en {args.resultados}: se esperaba objeto con 'checks'"
+                },
+                ensure_ascii=False,
             )
         )
         return 2
@@ -209,7 +239,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except (KeyError, TypeError, AttributeError) as e:
         logger.error("configs o resultados inválidos: %s: %s", type(e).__name__, e)
-        print(json.dumps({"error": f"Datos inválidos: {type(e).__name__}: {e}"}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"error": f"Datos inválidos: {type(e).__name__}: {e}"},
+                ensure_ascii=False,
+            )
+        )
         return 2
     out["target"] = data.get("target")
     txt = json.dumps(out, ensure_ascii=False, indent=2)
@@ -218,7 +253,9 @@ def main(argv: list[str] | None = None) -> int:
             with open(args.json, "w", encoding="utf-8") as fh:
                 fh.write(txt)
         except OSError as e:
-            logger.error("no se pudo escribir %s: %s: %s", args.json, type(e).__name__, e)
+            logger.error(
+                "no se pudo escribir %s: %s: %s", args.json, type(e).__name__, e
+            )
             print(txt)
             return 2
     print(txt)
