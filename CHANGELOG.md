@@ -6,6 +6,17 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [8.1.1] - 2026-11-16
+
+### Fixed
+
+- `pi_discovery_check` now accepts both `package` and `top-level` skill origins for native discovery (harness/pi)
+- PR title regex in reusable workflows allows hyphen in scope (e.g., `top-level`)
+
+### Changed
+
+- CI workflows: updated PR title validation pattern to `[-a-z0-9._/]+` for unambiguous hyphen support
+
 ## [8.1.0] - 2026-11-16
 
 ### Added
