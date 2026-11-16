@@ -186,8 +186,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [SCHEMAS]
-        required_verifications: [schema_deliverable]
+        completion_phases:
+          - SCHEMAS
+        required_verifications:
+          - schema_deliverable
         description: plan-continue:schema_write
       - id: integrate
         effect: write-workspace
@@ -195,8 +197,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [INTEGRATE]
-        required_verifications: [integrate_result]
+        completion_phases:
+          - INTEGRATE
+        required_verifications:
+          - integrate_result
         description: plan-continue:integrate
       - id: status
         effect: read
@@ -204,8 +208,10 @@ tools:
         idempotency: "yes"
         approval_required: false
         recovery_required: false
-        completion_phases: [STATUS]
-        required_verifications: [status_result]
+        completion_phases:
+          - STATUS
+        required_verifications:
+          - status_result
         description: plan-continue:status
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
@@ -227,8 +233,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [DEFINE]
-        required_verifications: [spec_deliverable]
+        completion_phases:
+          - DEFINE
+        required_verifications:
+          - spec_deliverable
         description: plan-specification:specify
       - id: plan
         effect: write-workspace
@@ -271,9 +279,40 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [VALIDATE]
-        required_verifications: [gate_result]
+        completion_phases:
+          - VALIDATE
+        required_verifications:
+          - gate_result
         description: plan-validators:red_green
+    automation_limits:
+      Agent judgment remains for non-script operations; blocked mutators
+      stay blocked without approval.
+  - tool_id: project-libraries
+    skill: project-libraries
+    entrypoint: tools/execution
+    description: Execution tool for skill project-libraries
+    execution_kind: script
+    distribution: workspace-required
+    shared_dependencies:
+      - tools/execution
+    system_requirements:
+      binaries: []
+      network: true
+    operations:
+      - id: sca_scan
+        effect: read
+        dry_run: "yes"
+        idempotency: "yes"
+        approval_required: false
+        recovery_required: false
+        description: project-libraries:sca_scan
+      - id: sbom_generate
+        effect: write-workspace
+        dry_run: "no"
+        idempotency: "no"
+        approval_required: false
+        recovery_required: false
+        description: project-libraries:sbom_generate
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
@@ -296,8 +335,10 @@ tools:
         approval_required: false
         recovery_required: false
         timeout_seconds: 1800
-        completion_phases: [VALIDATE]
-        required_verifications: [gate_result]
+        completion_phases:
+          - VALIDATE
+        required_verifications:
+          - gate_result
         description: project-publish:local_gates (may write via gate-husky.sh)
       - id: publish
         effect: communicate-external
@@ -335,8 +376,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [DEFINE]
-        required_verifications: [spec_deliverable]
+        completion_phases:
+          - DEFINE
+        required_verifications:
+          - spec_deliverable
         description: project-machineroom:plan_self_change
     automation_limits: No publish operations; hand off to project-publish for release.
   - tool_id: role-back
@@ -356,8 +399,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [IMPLEMENT]
-        required_verifications: [implementation_deliverable]
+        completion_phases:
+          - IMPLEMENT
+        required_verifications:
+          - implementation_deliverable
         description: role-back:implement_api
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
@@ -379,8 +424,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [IMPLEMENT]
-        required_verifications: [implementation_deliverable]
+        completion_phases:
+          - IMPLEMENT
+        required_verifications:
+          - implementation_deliverable
         description: role-clean-code:refactor
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
@@ -402,8 +449,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [IMPLEMENT]
-        required_verifications: [implementation_deliverable]
+        completion_phases:
+          - IMPLEMENT
+        required_verifications:
+          - implementation_deliverable
         description: role-design:deliver_visual
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
@@ -425,8 +474,10 @@ tools:
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        completion_phases: [IMPLEMENT]
-        required_verifications: [implementation_deliverable]
+        completion_phases:
+          - IMPLEMENT
+        required_verifications:
+          - implementation_deliverable
         description: role-front:implement_ui
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators

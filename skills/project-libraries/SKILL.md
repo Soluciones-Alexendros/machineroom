@@ -11,7 +11,7 @@ metadata:
   author: Soluciones-Alexendros
   version: 7.1.1
   domain: project
-  type: audit
+  type: atomic
   language: en
   keywords:
     - project-libraries
@@ -21,8 +21,9 @@ metadata:
     - sbom
     - supply-chain
     - remediation
+  execution: project-libraries
 compatibility: cursor, pi
-allowed-tools: Read, Grep, Glob
+allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Project Libraries

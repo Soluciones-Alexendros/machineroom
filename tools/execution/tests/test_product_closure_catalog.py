@@ -11,15 +11,14 @@ sys.path.insert(0, str(ROOT / "tools"))
 from execution.registry import load_tools  # noqa: E402
 
 EXPECTED_SKILLS = 16
-EXPECTED_REGISTRY_TOOLS = 11
-EXPECTED_OPERATIONS = 33
+EXPECTED_REGISTRY_TOOLS = 12
+EXPECTED_OPERATIONS = 35
 AUDIT_SKILLS = frozenset(
     {
         "web-compliance",
         "web-owasp",
         "web-performance",
         "project-architecture",
-        "project-libraries",
     }
 )
 

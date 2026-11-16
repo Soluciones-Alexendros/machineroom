@@ -1,0 +1,287 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-15T13:00:00Z",
+    "hostname": "omarchy",
+    "skill_version": "8.0.0"
+  },
+  "distro": {
+    "distro_id": "omarchy",
+    "distro_like": "arch",
+    "version_id": "4.5.0",
+    "version_codename": "",
+    "family": "arch",
+    "package_manager": "pacman",
+    "aur_helper": "yay"
+  },
+  "kernel": {
+    "release": "7.2.15-1-omarchy",
+    "version": "#1 SMP PREEMPT_DYNAMIC Mon, 02 Nov 2026 10:32:17 +0000",
+    "arch": "x86_64",
+    "cmdline": "cryptdevice=UUID=864c9024-b800-4141-b500-81d8d6239d96:omarchy_root root=/dev/mapper/omarchy_root zswap.enabled=0 rootflags=subvol=@ rw rootfstype=btrfs rtc_cmos.use_acpi_alarm=1 resume=/dev/mapper/omarchy_root resume_offset=1957650 systemd.tty.term.console=dumb initramfs_async=0 quiet splash loglevel=0 systemd.show_status=false rd.udev.log_level=0 vt.global_cursor_default=0"
+  },
+  "hardware": {
+    "cpu_model": "unknown",
+    "cpu_cores": 16,
+    "cpu_threads": 16,
+    "mem_total_bytes": 32704094208,
+    "mem_available_bytes": 20248924160,
+    "swap_total_bytes": 0,
+    "disks": [
+      {
+        "name": "zram0",
+        "size": "30.5G",
+        "type": "disk",
+        "mountpoint": "[SWAP]",
+        "fstype": "swap",
+        "model": null
+      },
+      {
+        "name": "nvme0n1",
+        "size": "953.9G",
+        "type": "disk",
+        "mountpoint": null,
+        "fstype": null,
+        "model": "KINGSTON OM8PGP41024Q-A0",
+        "children": [
+          {
+            "name": "nvme0n1p1",
+            "size": "1G",
+            "type": "part",
+            "mountpoint": null,
+            "fstype": "vfat",
+            "model": null
+          },
+          {
+            "name": "nvme0n1p2",
+            "size": "488.9G",
+            "type": "part",
+            "mountpoint": null,
+            "fstype": "ext4",
+            "model": null
+          },
+          {
+            "name": "nvme0n1p3",
+            "size": "2G",
+            "type": "part",
+            "mountpoint": "/boot",
+            "fstype": "vfat",
+            "model": null
+          },
+          {
+            "name": "nvme0n1p4",
+            "size": "461.9G",
+            "type": "part",
+            "mountpoint": null,
+            "fstype": "crypto_LUKS",
+            "model": null,
+            "children": [
+              {
+                "name": "omarchy_root",
+                "size": "461.9G",
+                "type": "crypt",
+                "mountpoint": "/home",
+                "fstype": "btrfs",
+                "model": null
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "smart_available": true
+  },
+  "disk": {
+    "mounts": [
+      {
+        "source": "efivarfs",
+        "fstype": "efivarfs",
+        "size": "128K",
+        "used": "50K",
+        "avail": "74K",
+        "use_percent": "41%",
+        "mountpoint": "/sys/firmware/efi/efivars"
+      },
+      {
+        "source": "/dev/mapper/omarchy_root",
+        "fstype": "btrfs",
+        "size": "462G",
+        "used": "134G",
+        "avail": "328G",
+        "use_percent": "29%",
+        "mountpoint": "/"
+      },
+      {
+        "source": "/dev/mapper/omarchy_root",
+        "fstype": "btrfs",
+        "size": "462G",
+        "used": "134G",
+        "avail": "328G",
+        "use_percent": "29%",
+        "mountpoint": "/var/cache/pacman/pkg"
+      },
+      {
+        "source": "/dev/mapper/omarchy_root",
+        "fstype": "btrfs",
+        "size": "462G",
+        "used": "134G",
+        "avail": "328G",
+        "use_percent": "29%",
+        "mountpoint": "/var/log"
+      },
+      {
+        "source": "/dev/mapper/omarchy_root",
+        "fstype": "btrfs",
+        "size": "462G",
+        "used": "134G",
+        "avail": "328G",
+        "use_percent": "29%",
+        "mountpoint": "/home"
+      },
+      {
+        "source": "/dev/nvme0n1p3",
+        "fstype": "vfat",
+        "size": "2.0G",
+        "used": "554M",
+        "avail": "1.5G",
+        "use_percent": "28%",
+        "mountpoint": "/boot"
+      }
+    ]
+  },
+  "systemd": {
+    "failed_services": ["●", "●", "●", "●"],
+    "enabled_services": [
+      "auditd.service",
+      "bluetooth.service",
+      "getty@.service",
+      "limine-snapper-sync.service",
+      "linux-modules-cleanup.service",
+      "NetworkManager-dispatcher.service",
+      "NetworkManager.service",
+      "power-profiles-daemon.service",
+      "proton.VPN.service",
+      "sddm.service",
+      "supergfxd.service",
+      "systemd-oomd.service",
+      "systemd-resolved.service",
+      "systemd-timesyncd.service",
+      "ufw.service"
+    ],
+    "running_services": [
+      "auditd.service",
+      "bluetooth.service",
+      "bolt.service",
+      "dbus-broker.service",
+      "fwupd.service",
+      "limine-snapper-sync.service",
+      "NetworkManager.service",
+      "nvidia-powerd.service",
+      "polkit.service",
+      "power-profiles-daemon.service",
+      "proton.VPN.service",
+      "sddm.service",
+      "supergfxd.service",
+      "systemd-journald.service",
+      "systemd-logind.service",
+      "systemd-oomd.service",
+      "systemd-resolved.service",
+      "systemd-timesyncd.service",
+      "systemd-udevd.service",
+      "systemd-userdbd.service",
+      "udisks2.service",
+      "upower.service",
+      "user@1000.service",
+      "wpa_supplicant.service"
+    ],
+    "boot_time": "Startup finished in 6.187s (firmware) + 4.602s (loader) + 12.211s (kernel) + 2.150s (userspace) = 25.152s",
+    "top_blame": [
+      "42.119s aide-check.service",
+      "4.585s trivy-scan.service",
+      "681ms omarchy-update.service",
+      "653ms fwupd.service",
+      "545ms proton.VPN.service",
+      "399ms dev-mapper-omarchy_root.device",
+      "284ms NetworkManager.service",
+      "264ms ldconfig.service",
+      "247ms systemd-tmpfiles-setup-dev-early.service",
+      "246ms upower.service",
+      "241ms systemd-remount-fs.service",
+      "228ms plymouth-quit-wait.service",
+      "228ms plymouth-quit.service",
+      "226ms systemd-userdbd.service",
+      "198ms dev-zram0.swap",
+      "183ms ufw.service",
+      "153ms udisks2.service",
+      "129ms systemd-udev-trigger.service",
+      "111ms user@1000.service",
+      "103ms boot.mount"
+    ]
+  },
+  "network": {
+    "listening_ports": ["53", "42816"],
+    "interfaces": [
+      {
+        "name": "lo",
+        "addr": ["127.0.0.1", "::1"]
+      },
+      {
+        "name": "eno1",
+        "addr": []
+      },
+      {
+        "name": "wlp98s0",
+        "addr": ["10.33.231.27", "fe80::1055:64b0:6ed:9d09"]
+      }
+    ],
+    "firewall_active": true,
+    "firewall_type": "ufw"
+  },
+  "packages": {
+    "total_packages": 1300,
+    "orphans": 0,
+    "foreign_packages": 12,
+    "config_files_pending": 0,
+    "cache_size_mb": 4095
+  },
+  "journal": {
+    "disk_usage": "333.9M",
+    "errors_24h": 85,
+    "coredumps": 0
+  },
+  "firmware": {
+    "fwupd_available": true,
+    "updates_available": 0,
+    "devices": 0
+  },
+  "modern_stack": {
+    "identity": {
+      "systemd_homed_active": false,
+      "homectl_users": []
+    },
+    "snapshots": {
+      "btrfs_assistant": false,
+      "snapper_configs": [],
+      "timeshift": false,
+      "timeshift_auto_timer": false
+    },
+    "power": {
+      "auto_cpufreq": false,
+      "tuned": false,
+      "tuned_ppd": false,
+      "power_profiles_daemon": true,
+      "power_profile": "balanced"
+    },
+    "memory_pressure": {
+      "systemd_oomd": true,
+      "zram_generator_conf": false,
+      "zram_devices": "/dev/zram0 30.5G"
+    },
+    "helpers": {
+      "nvchecker": false,
+      "needrestart": false,
+      "needrestart_pending": "",
+      "pacdiff": true,
+      "ucf": false
+    }
+  }
+}

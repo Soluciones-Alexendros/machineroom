@@ -11,7 +11,7 @@ metadata:
   author: Soluciones-Alexendros
   version: 8.0.1
   domain: project
-  type: atomic
+  type: orchestrator
   language: en
   keywords:
     - project-publish
