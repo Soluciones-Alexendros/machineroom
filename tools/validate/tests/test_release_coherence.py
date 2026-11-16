@@ -31,9 +31,15 @@ def fixture_root(
     py_ver = ov.get("pyproject", package_version)
     lk_ver = ov.get("lock", package_version)
     uv_ver = ov.get("uv", package_version)
-    (tmp_path / "package.json").write_text(json.dumps({"name": "t", "version": package_version}), encoding="utf-8")
-    (tmp_path / "README.md").write_text(f"# t\n\nVersión **{readme_version}**. Skills.\n", encoding="utf-8")
-    (tmp_path / "pyproject.toml").write_text(f'[project]\nname = "t"\nversion = "{py_ver}"\n', encoding="utf-8")
+    (tmp_path / "package.json").write_text(
+        json.dumps({"name": "t", "version": package_version}), encoding="utf-8"
+    )
+    (tmp_path / "README.md").write_text(
+        f"# t\n\nVersión **{readme_version}**. Skills.\n", encoding="utf-8"
+    )
+    (tmp_path / "pyproject.toml").write_text(
+        f'[project]\nname = "t"\nversion = "{py_ver}"\n', encoding="utf-8"
+    )
     lock_doc = {
         "name": "t",
         "version": lk_ver,
@@ -41,7 +47,9 @@ def fixture_root(
         "packages": {"": {"name": "t", "version": lk_ver}},
     }
     (tmp_path / "package-lock.json").write_text(json.dumps(lock_doc), encoding="utf-8")
-    uv_text = f'version = 1\n\n[[package]]\nname = "machineroom"\nversion = "{uv_ver}"\n'
+    uv_text = (
+        f'version = 1\n\n[[package]]\nname = "machineroom"\nversion = "{uv_ver}"\n'
+    )
     (tmp_path / "uv.lock").write_text(uv_text, encoding="utf-8")
     (tmp_path / "CHANGELOG.md").write_text(
         f"# Changelog\n\n## [Unreleased]\n\n- pending\n\n## [{package_version}] - 2026-10-26\n\n- x\n",
@@ -130,7 +138,9 @@ def test_stable_6_1_0_still_parses(tmp_path: Path) -> None:
     assert run_coherence(coh, root) == []
 
 
-def test_cut_allows_stable_7_0_0_dry_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cut_allows_stable_7_0_0_dry_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """v7.0.0 se anuncia en dry-run y no se crea el tag."""
     cut = load(CUT, "cut_tag_stable")
     (tmp_path / "package.json").write_text(
@@ -142,7 +152,9 @@ def test_cut_allows_stable_7_0_0_dry_run(tmp_path: Path, monkeypatch: pytest.Mon
         encoding="utf-8",
     )
     monkeypatch.setattr(cut, "latest_tag", lambda root: None)
-    monkeypatch.setattr(cut, "git", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("git")))
+    monkeypatch.setattr(
+        cut, "git", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("git"))
+    )
     monkeypatch.setattr(cut, "write_output", lambda **kwargs: None)
     args = argparse.Namespace(
         root=tmp_path,
@@ -157,7 +169,9 @@ def test_cut_allows_stable_7_0_0_dry_run(tmp_path: Path, monkeypatch: pytest.Mon
     assert cut.cmd_readiness(args) == 0
 
 
-def test_cut_refuses_prerelease_stable_tag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cut_refuses_prerelease_stable_tag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     cut = load(CUT, "cut_tag_pre")
     (tmp_path / "package.json").write_text(
         json.dumps({"name": "t", "version": "7.0.0-alpha.0"}),
@@ -273,11 +287,15 @@ def test_should_cut() -> None:
     assert not cut.should_cut("1.9.0", "2.0.0")
 
 
-def test_cmd_cut_apply_skips_when_notes_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cmd_cut_apply_skips_when_notes_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Main release job must not fail red when CHANGELOG lacks [package.version]."""
 
     cut = load(CUT, "cut_tag")
-    (tmp_path / "package.json").write_text(json.dumps({"name": "t", "version": "5.1.0"}), encoding="utf-8")
+    (tmp_path / "package.json").write_text(
+        json.dumps({"name": "t", "version": "5.1.0"}), encoding="utf-8"
+    )
     (tmp_path / "CHANGELOG.md").write_text(
         "# Changelog\n\n## [Unreleased]\n\n- pending\n\n## [5.0.0] - 2026-10-17\n\n- old\n",
         encoding="utf-8",

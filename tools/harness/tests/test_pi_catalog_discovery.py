@@ -24,12 +24,18 @@ RENAMED = "project-machineroom"
 
 
 def _catalog_names() -> set[str]:
-    return {p.name for p in (ROOT / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file()}
+    return {
+        p.name
+        for p in (ROOT / "skills").iterdir()
+        if p.is_dir() and (p / "SKILL.md").is_file()
+    }
 
 
 def test_pi_announces_the_whole_catalog_after_rename() -> None:
     if shutil.which("pi") is None:
-        pytest.skip("Pi binary not on PATH: catalog discovery is not_run in this environment")
+        pytest.skip(
+            "Pi binary not on PATH: catalog discovery is not_run in this environment"
+        )
 
     # Get announced skills from Pi RPC
     announced = {

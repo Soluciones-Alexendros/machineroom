@@ -13,7 +13,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from harness.cursor_install import ConflictError, install_full, uninstall_full  # noqa: E402
+from harness.cursor_install import (
+    ConflictError,
+    install_full,
+    uninstall_full,
+)  # noqa: E402
 from harness.runtime import sync_payload  # noqa: E402
 
 
@@ -50,7 +54,9 @@ def test_full_install_idempotence_and_manifest(tmp_path: Path) -> None:
     second = install_full(ROOT, target)
     assert second["changed"] == 0
     assert second["skipped"] == expected
-    manifest = json.loads((target / ".cursor" / ".machineroom-full-manifest.json").read_text())
+    manifest = json.loads(
+        (target / ".cursor" / ".machineroom-full-manifest.json").read_text()
+    )
     assert len(manifest["resources"]) == expected
 
 
@@ -68,8 +74,12 @@ def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> No
     hooks = target / "hooks.json"
     # User hooks run from ~/.cursor, so commands must not carry the .cursor/ prefix.
     data = json.loads(hooks.read_text())
-    commands = [entry["command"] for entries in data["hooks"].values() for entry in entries]
-    assert commands and not any(".cursor/hooks/" in command for command in commands), commands
+    commands = [
+        entry["command"] for entries in data["hooks"].values() for entry in entries
+    ]
+    assert commands and not any(
+        ".cursor/hooks/" in command for command in commands
+    ), commands
     assert hooks.is_symlink()
     assert not Path(os.readlink(hooks)).is_absolute()
     assert not (target / "rules").exists()
@@ -86,7 +96,9 @@ def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> No
     assert not hooks.exists()
 
 
-def test_user_scope_prunes_project_only_rule_from_previous_manifest(tmp_path: Path) -> None:
+def test_user_scope_prunes_project_only_rule_from_previous_manifest(
+    tmp_path: Path,
+) -> None:
     home = _user_home(tmp_path)
     target = home / ".cursor"
     # Seed a project-shaped install under the user path, then switch to user scope.
@@ -107,7 +119,9 @@ def test_user_scope_preserves_foreign_hooks_file(tmp_path: Path) -> None:
     (target / "hooks.json").write_text('{"version": 1, "hooks": {}}', encoding="utf-8")
     with pytest.raises(ConflictError, match="real file/dir conflict"):
         install_full(ROOT, target, user_scope=True)
-    assert (target / "hooks.json").read_text(encoding="utf-8") == '{"version": 1, "hooks": {}}'
+    assert (target / "hooks.json").read_text(
+        encoding="utf-8"
+    ) == '{"version": 1, "hooks": {}}'
 
 
 def test_user_scope_retains_foreign_symlink_hooks(tmp_path: Path) -> None:
@@ -138,7 +152,9 @@ def test_real_conflict_aborts_before_any_write(tmp_path: Path) -> None:
     assert not (target / ".cursor" / "rules").exists()
 
 
-def test_symlink_failure_rolls_back_prior_resources(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_symlink_failure_rolls_back_prior_resources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     target = tmp_path / "project"
     original = os.symlink
     calls = 0

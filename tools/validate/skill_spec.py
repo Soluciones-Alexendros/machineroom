@@ -23,7 +23,11 @@ except ImportError:
     print("ERROR: PyYAML no instalado. uv sync --frozen")
     sys.exit(1)
 
-ROOT = Path(sys.argv[sys.argv.index("--root") + 1]) if "--root" in sys.argv else Path(__file__).resolve().parents[2]
+ROOT = (
+    Path(sys.argv[sys.argv.index("--root") + 1])
+    if "--root" in sys.argv
+    else Path(__file__).resolve().parents[2]
+)
 SKILLS = ROOT / "skills"
 
 NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -101,13 +105,15 @@ def parse_allowed_tools(raw: object) -> set[str] | None:
 def estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
+
 # --- New validation functions (WP6) ---
 
 # Description template regex (warn level)
 DESC_TEMPLATE_RE = re.compile(
     r"^[^.]+\.\s*Use when\s+.+?\.\s*(Not for|Do not use)\s+.+?→\s*`?(?:plan|local|project|web|role)-[a-z0-9-]+`?\.?$",
-    re.IGNORECASE | re.DOTALL
+    re.IGNORECASE | re.DOTALL,
 )
+
 
 def check_description_template(skill: str, desc: str) -> None:
     """Validate description follows template: [Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)."""
@@ -116,7 +122,11 @@ def check_description_template(skill: str, desc: str) -> None:
         has_not_for = "Not for" in desc or "Do not use" in desc
         has_arrow = bool(ARROW_RE.search(desc))
         if not (has_use_when and has_not_for and has_arrow):
-            err(skill, f"WARN: description no sigue plantilla '[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)'")
+            err(
+                skill,
+                f"WARN: description no sigue plantilla '[Capability]. Use when [contexts]. Not for [limit] (→ neighbor-skill)'",
+            )
+
 
 def check_keywords_array(skill: str, meta: dict[str, Any]) -> None:
     """Validate metadata.keywords is an array with skill name and 3-5 terms."""
@@ -131,14 +141,24 @@ def check_keywords_array(skill: str, meta: dict[str, Any]) -> None:
         err(skill, f"WARN: metadata.keywords debe ser lista: {type(keywords).__name__}")
         return
     if len(keywords) < 2:
-        err(skill, f"WARN: metadata.keywords debe tener al menos 2 elementos (skill + domain): {keywords!r}")
+        err(
+            skill,
+            f"WARN: metadata.keywords debe tener al menos 2 elementos (skill + domain): {keywords!r}",
+        )
     if skill not in keywords:
-        err(skill, f"WARN: metadata.keywords debe incluir el nombre del skill: {skill!r}")
+        err(
+            skill,
+            f"WARN: metadata.keywords debe incluir el nombre del skill: {skill!r}",
+        )
 
-def check_cross_refs_in_frontmatter(skill: str, meta: dict[str, Any], names: set[str]) -> None:
+
+def check_cross_refs_in_frontmatter(
+    skill: str, meta: dict[str, Any], names: set[str]
+) -> None:
     execution = meta.get("execution")
     if execution and execution not in names:
         err(skill, f"metadata.execution apunta a skill inexistente: {execution}")
+
 
 def check_size_limits(skill: str, text: str) -> None:
     body = text.split("\n---", 1)[-1]
@@ -274,7 +294,9 @@ def check_skill_md_locations(root: Path) -> None:
         try:
             path.resolve().relative_to(skills)
         except ValueError:
-            ERRORS.append(f"[catalog] SKILL.md fuera de skills/: {path.relative_to(root)}")
+            ERRORS.append(
+                f"[catalog] SKILL.md fuera de skills/: {path.relative_to(root)}"
+            )
 
 
 def check_description(skill: str, desc: str, names: set[str]) -> None:
@@ -330,7 +352,11 @@ def _check_tracked_files(skill: str, root: Path, sdir: Path) -> None:
         name = Path(tracked).name
         if name in {"LICENSE", "LICENSE.txt"}:
             err(skill, f"fichero {name} por skill (licencia global)")
-        if name == "__pycache__" or tracked.endswith(".pyc") or "/__pycache__/" in tracked:
+        if (
+            name == "__pycache__"
+            or tracked.endswith(".pyc")
+            or "/__pycache__/" in tracked
+        ):
             err(skill, f"residuo rastreado: {tracked}")
         if ".pytest_cache" in tracked:
             err(skill, f"residuo rastreado: {tracked}")
@@ -364,7 +390,10 @@ def check_upstash_modes(sdir: Path) -> None:
             continue
         for sub in refs.iterdir():
             if sub.is_dir():
-                err(sdir.name, f"modes/{mode.name}/references/ contiene subdirectorio: {sub.name}/")
+                err(
+                    sdir.name,
+                    f"modes/{mode.name}/references/ contiene subdirectorio: {sub.name}/",
+                )
 
 
 def _check_frontmatter_name(skill: str, fm: dict[str, Any], names: set[str]) -> None:
@@ -452,7 +481,10 @@ def _check_allowed_tools(skill: str, fm: dict[str, Any], meta: dict[str, Any]) -
 
 def _check_no_skill_execution_yaml(skill: str, sdir: Path) -> None:
     if (sdir / "execution.yaml").is_file():
-        err(skill, "execution.yaml bajo skills/ está prohibido; usar tools/execution/registry.yaml")
+        err(
+            skill,
+            "execution.yaml bajo skills/ está prohibido; usar tools/execution/registry.yaml",
+        )
 
 
 def _check_body_size(skill: str, text: str) -> str:
