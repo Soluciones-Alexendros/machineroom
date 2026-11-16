@@ -1,16 +1,28 @@
 ---
 name: web-performance
-description: "Web performance audit: Core Web Vitals (LCP, INP, CLS), Lighthouse 12, TTFB/FCP, rendering (SSR/SSG/ISR/islands), caching HTTP/CDN, load optimization and technical frontend diagnosis. Use when performing performance audit, Lighthouse/CWV, load optimization, stability visual, caching or technical frontend diagnosis. Not for compliance audits (→ web-compliance) nor backend load testing."
+description:
+  "Web performance audit: Core Web Vitals (LCP, INP, CLS), Lighthouse 12,
+  TTFB/FCP, rendering (SSR/SSG/ISR/islands), caching HTTP/CDN, load optimization and
+  technical frontend diagnosis. Use when performing performance audit, Lighthouse/CWV,
+  load optimization, stability visual, caching or technical frontend diagnosis. Not
+  for compliance audits (→ web-compliance) nor backend load testing."
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: web
   type: audit
   language: en
-  keywords: web-performance
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob"
+  keywords:
+    - web-performance
+    - web
+    - performance
+    - cwv
+    - lighthouse
+    - caching
+    - rendering
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob
 ---
 
 # Web Performance

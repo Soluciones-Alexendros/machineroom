@@ -1,17 +1,28 @@
 ---
 name: local-security
-description: "Defensive Linux host security: posture, light forensic record management, CVEs, sysctl/SSH hardening, AppArmor/SELinux, auditd and fail2ban. Use when the operator requests system security audit, host hardening or auth log review. Not for application code vulnerabilities (→ web-owasp) nor disk cleanup (→ local-maintenance). Uses Bash/Write for host hardening only via run_registered."
+description:
+  "Defensive Linux host security: posture, forensic record management,
+  CVEs, sysctl/SSH hardening, AppArmor/SELinux, auditd and fail2ban. Use when the
+  operator requests system security audit, host hardening or auth log review. Not
+  for application code vulnerabilities (→ web-owasp) nor disk cleanup (→ local-maintenance)."
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.1"
+  author: Soluciones-Alexendros
+  version: 7.1.2
   domain: local
   type: atomic
   language: en
-  keywords: local-security
+  keywords:
+    - local-security
+    - local
+    - security
+    - hardening
+    - apparmor
+    - forensics
+    - cve
   execution: local-security
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash, Write"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash, Write
 disable-model-invocation: true
 ---
 

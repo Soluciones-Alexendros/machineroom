@@ -1,17 +1,29 @@
 ---
 name: role-design
-description: "Specialist role for UI/UX and visual systems: intentional visual direction, typography, palette, motion, clean indented CSS, design tokens (DTCG/Style Dictionary), Tailwind v4 and reusable components. Use when designing or redesigning interfaces, building a design system, or polishing interaction. Not for a11y/SEO audits (→ web-compliance) nor frontend application logic (→ role-front). Uses Bash/Write to mutate tokens, CSS and visual surfaces."
+description:
+  "Specialist role for UI/UX and visual systems: intentional visual direction,
+  typography, palette, motion, clean indented CSS, design tokens (DTCG/Style Dictionary),
+  Tailwind v4 and reusable components. Use when designing or redesigning interfaces,
+  building a design system, or polishing interaction. Not for a11y/SEO audits (→ web-compliance)
+  nor frontend application logic (→ role-front)."
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: role
   type: atomic
   language: en
-  keywords: role-design
+  keywords:
+    - role-design
+    - role
+    - design
+    - tokens
+    - tailwind
+    - components
+    - visual
   execution: role-design
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob, Bash, Write"
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 
 # Role Design

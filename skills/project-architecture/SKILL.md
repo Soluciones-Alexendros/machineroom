@@ -1,16 +1,26 @@
 ---
 name: project-architecture
-description: "Code architecture verification and analysis. Use when analyzing code structure, dependencies, architectural drift, or refactoring opportunities. Use when the operator requests architectural analysis, dependency mapping, or code health assessment. Not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries); minor implementation without architecture analysis uses role-* skills."
+description:
+  Code architecture verification and analysis. Use when analyzing code
+  structure, dependencies, architectural drift, or refactoring opportunities. Not
+  for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries);
+  minor implementation without architecture analysis uses role-* skills.
 license: MIT
 metadata:
-  author: "Soluciones-Alexendros (adapted)"
-  version: "7.1.0"
+  author: Soluciones-Alexendros
+  version: 7.1.1
   domain: project
   type: audit
   language: en
-  keywords: project-architecture
-compatibility: "cursor, pi"
-allowed-tools: "Read, Grep, Glob"
+  keywords:
+    - project-architecture
+    - project
+    - architecture
+    - dependency-mapping
+    - drift
+    - metrics
+compatibility: cursor, pi
+allowed-tools: Read, Grep, Glob
 ---
 
 # Project Architecture
