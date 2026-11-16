@@ -43,6 +43,8 @@ performing dependency audit, SCA, CVE scanning, supply chain security or SBOM ge
 
 ## Not for:
 
+not for code security review (→ web-owasp) nor web compliance audits (→ web-compliance). Dependency updates → release (→ project-publish).
+
 - Code OWASP review (→ web-owasp)
 - OS hardening (→ local-security)
 - Disk cleanup (→ local-maintenance)

@@ -42,6 +42,7 @@ with indented, readable class structure.
 - Unify Tailwind v4 with typography, color and spacing; sync Figma ↔ code
 
 **When NOT to use:** a11y/SEO audit (→ web-compliance); frontend application
+not for a11y/SEO audits (→ web-compliance) nor frontend application logic (→ role-front). Implementation handoff (→ role-front).
 state and contracts (→ role-front).
 
 ## Section A — Visual Direction

@@ -43,6 +43,7 @@ contracts with the backend.
 - Defining or consuming API contracts from the client side
 
 **When NOT to use:** visual identity or design systems (→ role-design);
+not for visual direction or design tokens (→ role-design), a11y/SEO audits (→ web-compliance), or performance audits (→ web-performance). Visual polish handoff (→ role-design).
 compliance/perf audits (→ web-compliance, → web-performance); backend routes
 and data stores (→ role-back).
 

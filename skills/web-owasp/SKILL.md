@@ -40,6 +40,8 @@ in this code.
 
 ## Not for:
 
+not for dependency CVEs (→ project-libraries) nor web compliance (→ web-compliance). Compliance overlap (→ web-compliance).
+
 - OS hardening (→ local-security)
 - Release closure (→ project-publish)
 - Dependency audit/SCA (→ project-libraries)

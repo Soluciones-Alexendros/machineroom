@@ -42,6 +42,7 @@ is a tangled mess.
 - Work must be parallelized or ordered by dependency
 
 **When NOT to use:** Single-line fixes, typo corrections, or changes where
+not for single-line fixes or typo corrections (→ plan-validators for implementation).
 requirements are unambiguous and already well-defined as tasks.
 
 ## Process

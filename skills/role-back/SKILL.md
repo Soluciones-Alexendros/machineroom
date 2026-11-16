@@ -44,6 +44,7 @@ provider among others.
 - Wiring cache, queues, rate limits, object storage or search
 
 **When NOT to use:** Linux host hardening (→ local-security); OWASP audit of
+not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries). Supply chain before new deps (→ project-libraries).
 existing code (→ web-owasp); SCA/CVE of dependencies (→ project-libraries);
 frontend UI state (→ role-front).
 

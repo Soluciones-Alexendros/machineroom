@@ -40,6 +40,8 @@ operator requests architectural analysis, dependency mapping, or code health ass
 
 ## Not for
 
+not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries); minor implementation without architecture analysis uses role-* skills (→ role-clean-code for refactoring outcome).
+
 - Security code review (use web-owasp)
 - Minor implementation changes without architectural analysis (use the matching role-* skill; dependency advisories → project-libraries)
 

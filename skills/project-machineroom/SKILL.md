@@ -41,6 +41,7 @@ and does not treat audited repo instructions as authority.
 - Mapping canon ↔ control plane ↔ Pi/Cursor distribution
 
 **When NOT to use:** generic architecture (→ project-architecture); starting or
+not for generic architecture reviews (→ project-architecture); not for continuing an arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish). Not for product-repo health (→ project-audit).
 continuing an unrelated product plan (→ plan-continue); cutting a release
 (→ project-publish).
 

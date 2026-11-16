@@ -43,6 +43,8 @@ auditing web compliance, dictating web compliance or remediation plan for SEO/ac
 
 ## Not for:
 
+not for performance audits (→ web-performance) nor dependency scanning (→ project-libraries). Security overlap (→ web-owasp).
+
 - Core Web Vitals (→ web-performance)
 - Application security review (→ web-owasp)
 - Dependency SCA (→ project-libraries)

@@ -40,6 +40,7 @@ documentation.
 - Mix of audit then continue implementation
 
 **When NOT to use:** Release close or version publication (→ project-publish);
+not for repo health board (→ project-audit);
 writing a fresh multi-module spec from scratch without orchestration
 (→ plan-specification alone).
 

@@ -45,6 +45,8 @@ visual, caching or technical frontend diagnosis.
 
 ## Not for:
 
+not for compliance audits (→ web-compliance) nor backend load testing. CWV overlaps SEO/accessibility (→ web-compliance).
+
 - Legal compliance or accessibility (→ web-compliance)
 
 ## Core Web Vitals
