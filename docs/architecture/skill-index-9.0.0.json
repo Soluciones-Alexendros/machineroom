@@ -364,7 +364,13 @@
         "'seo'",
         "'remediation']"
       ],
-      "triggers": ["accesibilidad", "compliance", "gdpr", "seo", "wcag"],
+      "triggers": [
+        "accesibilidad",
+        "compliance",
+        "gdpr",
+        "seo",
+        "wcag"
+      ],
       "entry": "skills/web-compliance/SKILL.md",
       "compatibility": "cursor, pi"
     },
@@ -408,7 +414,12 @@
         "'caching'",
         "'rendering']"
       ],
-      "triggers": ["core web vitals", "lighthouse", "performance", "ttfb"],
+      "triggers": [
+        "core web vitals",
+        "lighthouse",
+        "performance",
+        "ttfb"
+      ],
       "entry": "skills/web-performance/SKILL.md",
       "compatibility": "cursor, pi"
     }
