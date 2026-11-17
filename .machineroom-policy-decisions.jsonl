@@ -1,0 +1,3 @@
+{"command": "echo MR_POLICY_ALLOW > .machineroom-policy-allow.txt", "hook_event_name": "beforeShellExecution", "permission": "allow"}
+{"command": "echo MR_POLICY_DENY > .machineroom-policy-deny.txt", "hook_event_name": "beforeShellExecution", "permission": "deny"}
+{"command": "echo MR_POLICY_ASK > .machineroom-policy-ask.txt", "hook_event_name": "beforeShellExecution", "permission": "ask"}

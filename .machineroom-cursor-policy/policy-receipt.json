@@ -1,0 +1,10 @@
+{
+  "decisions": {
+    "allow": "allow",
+    "deny": "deny",
+    "ask": "ask"
+  },
+  "allow_effect": "MR_POLICY_ALLOW",
+  "agent_exit": 0,
+  "force_flags": false
+}

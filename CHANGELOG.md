@@ -6,6 +6,16 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.0.1] - 2026-11-17
+
+### Fixed
+
+- El job `Post-release public smoke` del workflow `release` fallaba con exit 3
+  (`not_run: Pi binary not found`) porque el runner no lleva el binario de Pi.
+  Ahora cada harness se clasifica: `0` → pass, `3` → `not_run` reportado en el
+  job summary (nunca promocionado a pass), cualquier otro → job en rojo. La
+  verificación del artefacto (checksum + atestación) sigue estricta y previa.
+
 ## [9.0.0] - 2026-11-17
 
 BREAKING (catálogo): 17 skills → 14. Tres renames con reenfoque, tres bajas por
