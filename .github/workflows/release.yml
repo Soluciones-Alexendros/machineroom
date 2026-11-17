@@ -180,5 +180,18 @@ jobs:
         run: |
           set -euo pipefail
           TMP=$(mktemp -d)
-          bash scripts/bootstrap.sh --version "${VERSION}" --harness pi --target "$TMP/pi" --json
-          bash scripts/bootstrap.sh --version "${VERSION}" --harness cursor --target "$TMP/cursor" --json
+          # Exit 3 means not_run (missing harness binary on this runner). It is
+          # reported, never promoted to pass, and never fails the release gate;
+          # the artifact verification above stays strict.
+          status=0
+          for harness in pi cursor; do
+            rc=0
+            bash scripts/bootstrap.sh --version "${VERSION}" --harness "$harness" --target "$TMP/$harness" --json || rc=$?
+            case "$rc" in
+              0) echo "${harness}: pass" ;;
+              3) echo "${harness}: not_run (harness dependency unavailable on this runner)" ;;
+              *) echo "::error::bootstrap ${harness} failed with exit ${rc}"; status=1 ;;
+            esac
+            echo "- ${harness}: exit ${rc}" >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit "$status"
