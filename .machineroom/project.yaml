@@ -1,5 +1,5 @@
 schema_version: 1
-name: autoworkspace
+name: machineroom
 profile: P1
 forge: github.com
 stack:
