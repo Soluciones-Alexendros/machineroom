@@ -137,6 +137,21 @@ Documentar este contrato en `docs/TAXONOMY.md` (o `GLOSARIO.md`) para que no vue
 - **Renombrar primero, borrar al final** dentro de la rama, para minimizar el radio de cada commit y que la revisión sea legible (F8).
 - Una rama de trabajo `plan/9.0.0-catalog-restructure`; commits atómicos por fase.
 
+## Estado de ejecución
+
+| Fase | Tareas                                                                           | Estado |
+| ---- | -------------------------------------------------------------------------------- | ------ |
+| 0    | T0 baseline + rama                                                               | hecho  |
+| 1    | T1 ADR-0019, T2 `role-linux`, T3 `project-status`, T4 `plan-testing`             | hecho  |
+| 2    | T5 bajas, T6 cross-refs/registry/intent-map/handoffs/plantillas                  | hecho  |
+| 3    | T7 docs, T8 índice+snapshot, T9 tests + mypy/ruff                                | hecho  |
+| 4    | T10 invariantes en `skill_spec.py`, T11 handoffs en `project_load.py` + `doctor` | hecho  |
+| 5    | T12 CHANGELOG + versiones, T13 gate canónico                                     | hecho  |
+
+Evidencia del cierre: `make validate` verde (14 skills, registry 10 tools/40 ops,
+índice 9.0.0), `458` tests de `tools/` en verde, `make smoke` OK, `npm run
+typecheck` y `npm run lint` OK, `doctor --harness all` pass.
+
 ## Lista de tareas (índice ordenado)
 
 ### Fase 0 — Preparación

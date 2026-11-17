@@ -23,19 +23,21 @@ User Prompt
 ```
 
 En un plan de implementación, la cadena es planificación → `role-*` →
-`plan-validators` → `project-publish`. El router de fase solo ofrece un fallback:
+`plan-testing` → `project-status`. El router de fase solo ofrece un fallback:
 antes de cada tarea o acción independiente se vuelve a evaluar la superficie y se
 invocan todos los roles aplicables, aunque la acción anterior usara otro rol. El
-trabajo mixto backend/frontend/diseño requiere contratos y handoffs explícitos.
+trabajo mixto backend/frontend/Linux requiere contratos y handoffs explícitos; el
+diseño visual se delega a la skill externa Impeccable.
 
 ## Ejemplo
 
 Prompt: "audita y publica este repo"
 
 - route.py:
-  9.5 plan-continue -> skills/plan-continue/SKILL.md
-  8.8 project-publish -> skills/project-publish/SKILL.md
-- El agente (Cursor o Pi) ejecuta plan-continue (análisis / roadmap), luego handoff a project-publish
+  9.5 project-status -> skills/project-status/SKILL.md
+  4.2 role-linux -> skills/role-linux/SKILL.md
+- El agente (Cursor o Pi) ejecuta project-status en su etapa de observación y,
+  tras higienizar, cierra y publica en su propia etapa de cierre
 
 ## Añadir triggers
 
@@ -50,7 +52,7 @@ python tools/skill-index/generate.py --sync-docs
 ```bash
 python tools/skill-router/route.py --interactive
 prompt> por donde empiezo con este repo
-8.90 plan-continue -> skills/plan-continue/SKILL.md
+8.90 project-status -> skills/project-status/SKILL.md
 ```
 
 ## Vendor-neutral

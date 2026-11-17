@@ -17,7 +17,7 @@ Before ANY action, you MUST evaluate if a skill in `skills/` applies.
 
 Preprogrammed flow with per-project variables in `.machineroom/project.yaml`:
 
-DEFINE (plan-specification) → SCHEMAS/TESTS → IMPLEMENT (role-*) → VALIDATE (plan-validators) → INTEGRATE (project-publish) → STATUS
+DEFINE (plan-specification) → SCHEMAS/TESTS (project-status) → IMPLEMENT (role-*) → VALIDATE (plan-testing) → INTEGRATE/STATUS (project-status)
 
 Route a phase with:
 
@@ -25,12 +25,12 @@ Route a phase with:
 python tools/workspace-router/run.py --phase DEFINE --repo . --json
 ```
 
-Legacy `--bump` on the workspace router is rejected (`plan-continue`).
+Legacy `--bump` on the workspace router is rejected (`project-status`).
 
-- Ambiguous "¿por dónde empiezo?" or "pon al día este proyecto" → plan-continue (loads/creates `.machineroom/`)
-- Mix audit+release ("audítalo y publícalo") → plan-continue first, then project-publish
+- Ambiguous "¿por dónde empiezo?" or "pon al día este proyecto" → project-status (loads/creates `.machineroom/`)
+- Mix status+release ("audítalo y publícalo") → project-status observe stage, then its own close stage
 - WEB AUDITS → web-* · LOCAL (local OS) → local-*
-- At plan start and before EVERY task or independent implementation action, re-evaluate the scope and invoke all matching roles: backend/API/jobs → role-back; frontend/client routes → role-front; visual direction/tokens → role-design; clean-code/refactoring → role-clean-code. Previous role invocations do not cover later actions. Mixed work requires explicit contracts and handoffs. The phase router's single skill is only a fallback, never a substitute for per-task role selection.
+- At plan start and before EVERY task or independent implementation action, re-evaluate the scope and invoke all matching roles: backend/API/jobs → role-back; frontend/client routes → role-front; Linux app, packaging, dependencies, compatibility → role-linux; clean-code/refactoring → role-clean-code. Visual direction and design systems are external: use the Impeccable skill (`impeccable-design-polish`). Previous role invocations do not cover later actions. Mixed work requires explicit contracts and handoffs. The phase router's single skill is only a fallback, never a substitute for per-task role selection.
 
 ## Harness discovery
 
@@ -82,12 +82,12 @@ SKILL.md body should stay focused (repo gate: ≤500 lines / token budget in `to
 - Revisar o adjuntar un plan no autoriza implementación ni publicación: hace falta orden explícita del operador. Commit, push, PR, merge, tag, release y mutaciones de host requieren autorización específica; si el plan las excluye, prevalecen esos límites sobre el cierre BUILD habitual.
 - Un incremento lleva un único plan canónico (p. ej. `tasks/plan-*.md`) como fuente de verdad; no crear trackers paralelos (`SPEC.md`, `tasks/todo.md`) ni sobrescribir planes históricos. Los todos internos solo reflejan ese documento.
 - No crear skills de lenguajes de programación ni nuevas familias de skills; para dudas o fallos de lenguaje usar Context7 / documentación oficial vigente.
-- No invocar `role-front` ni `role-design` sin una superficie UI/visual real que lo requiera.
+- No invocar `role-front` sin una superficie UI real que lo requiera; el diseño visual es externo (Impeccable).
 - En puertas y aceptación: no convertir dependencia ausente, skip u omisión en PASS; usar `blocked` / `not_applicable` / `not_run` con motivo. Un `not_applicable` obligatorio debe justificarse con regla verificable.
 
 ## Learned Workspace Facts
 
-- El catálogo canónico son 17 skills en 5 dominios: `plan`, `local`, `project`, `web`, `role` (prefijo del nombre = dominio).
+- El catálogo canónico son 14 skills en 5 dominios: `plan`, `local`, `project`, `web`, `role` (prefijo del nombre = dominio).
 - Producto: **machineroom** — pipeline agéntico, no vitrina de skills.
 - Fuente canónica de skills en el checkout: `skills/<nombre>/SKILL.md`; no asumir que `.agents/skills/` existe o apunta al destino correcto sin resolver el enlace.
 - Actualización de dependencias: Renovate (no Dependabot).
