@@ -217,11 +217,11 @@ def _phase_meta(phase: str, op: str = "local_gates") -> dict[str, Any]:
     }[phase]
     skill = {
         "DEFINE": "plan-specification",
-        "SCHEMAS": "plan-continue",
+        "SCHEMAS": "project-status",
         "IMPLEMENT": "role-back",
-        "VALIDATE": "project-publish",
-        "INTEGRATE": "plan-continue",
-        "STATUS": "plan-continue",
+        "VALIDATE": "project-status",
+        "INTEGRATE": "project-status",
+        "STATUS": "project-status",
     }[phase]
     return {
         "phase": phase,
@@ -261,7 +261,7 @@ def test_a20_run_id_traversal_rejected(tmp_path: Path) -> None:
                 plan_digest=_DIG,
             ),
             phase="VALIDATE",
-            skill="project-publish",
+            skill="project-status",
             target="/t",
         )
 
@@ -290,7 +290,7 @@ def test_a22_failed_action_not_succeeded(tmp_path: Path) -> None:
                 plan_digest=_DIG,
             ),
             phase="VALIDATE",
-            skill="project-publish",
+            skill="project-status",
             target="/t",
         )
 
@@ -305,7 +305,7 @@ def test_a23_artifact_content_mismatch(tmp_path: Path) -> None:
             _ok_result(),
             artifacts=[{"path": "out.bin", "sha256": "0" * 64}],
             phase="VALIDATE",
-            skill="project-publish",
+            skill="project-status",
             target="/t",
             verifications=[{"kind": "gate_result", "ok": True}],
         )
@@ -313,14 +313,14 @@ def test_a23_artifact_content_mismatch(tmp_path: Path) -> None:
 
 def test_a24_stale_content_blocks_complete(tmp_path: Path) -> None:
     (tmp_path / ".machineroom").mkdir()
-    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish")
+    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-status")
     # Stale means the declared artifact bytes changed, not an unrelated sibling file.
     (tmp_path / "artifact.txt").write_text("mutated")
     with pytest.raises(ValueError, match=r"stale|mismatch"):
         advance_status(
             tmp_path,
             phase="VALIDATE",
-            skill="project-publish",
+            skill="project-status",
             evidence_ok=True,
             run_id=rid,
         )
@@ -330,7 +330,7 @@ def test_a24b_sibling_write_does_not_invalidate_artifact_evidence(
     tmp_path: Path,
 ) -> None:
     (tmp_path / ".machineroom").mkdir()
-    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-publish")
+    rid = _store_ok(tmp_path, op="local_gates", phase="VALIDATE", skill="project-status")
     (tmp_path / "sibling.txt").write_text("parallel writer")
     data = load_evidence(tmp_path, rid, revalidate_content=True, expected_phase="VALIDATE")
     assert data["outcome"] == "succeeded"
@@ -488,7 +488,7 @@ def test_a32_idempotent_complete(tmp_path: Path) -> None:
 def test_a40_network_hard_blocks() -> None:
     r = preflight_contract(
         {
-            "skill": "project-libraries",
+            "skill": "role-linux",
             "distribution": "workspace-required",
             "system_requirements": {"binaries": [], "network": True},
         },

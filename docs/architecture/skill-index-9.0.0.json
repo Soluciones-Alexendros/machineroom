@@ -1,0 +1,416 @@
+{
+  "version": "9.0.0",
+  "skills": [
+    {
+      "name": "local-maintenance",
+      "description": "Systematic Linux system maintenance with hygiene, updates, optimization and health KPIs. Use when auditing a Linux system, routine review, cleaning packages/caches/logs, orphan pacman/AUR, boot or resource optimization, OS health-check, or periodic maintenance of Arch/EndeavourOS/CachyOS/Debian/RHEL. Not for defensive security hardening or forensics (→ local-security).",
+      "domain": "local",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['local-maintenance'",
+        "'local'",
+        "'maintenance'",
+        "'linux'",
+        "'health'",
+        "'cleanup'",
+        "'optimization']"
+      ],
+      "triggers": [
+        "audit-full",
+        "auditar sistema",
+        "auditoría completa",
+        "cribar filesystem",
+        "fingerprint",
+        "health check sistema",
+        "health score",
+        "huérfanos",
+        "journal vacuum",
+        "limpia",
+        "limpiar",
+        "limpieza",
+        "mantenimiento",
+        "optimiza",
+        "paccache",
+        "salud del sistema",
+        "sistema arch"
+      ],
+      "entry": "skills/local-maintenance/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "local-security",
+      "description": "Defensive Linux host security: posture, forensic record management, CVEs, sysctl/SSH hardening, AppArmor/SELinux, auditd and fail2ban. Use when the operator requests system security audit, host hardening or auth log review. Not for application code vulnerabilities (→ web-owasp) nor disk cleanup (→ local-maintenance).",
+      "domain": "local",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['local-security'",
+        "'local'",
+        "'security'",
+        "'hardening'",
+        "'apparmor'",
+        "'forensics'",
+        "'cve']"
+      ],
+      "triggers": [
+        "apparmor",
+        "auditd",
+        "firewall",
+        "forense",
+        "hardening",
+        "seguridad host"
+      ],
+      "entry": "skills/local-security/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "plan-specification",
+      "description": "Write a structured specification before writing any code, then decompose it into small verifiable tasks with explicit acceptance criteria. Use when starting a project or feature, when requirements are ambiguous, or when the change touches multiple modules. Not for single-line fixes or typo corrections (→ plan-testing for implementation).",
+      "domain": "plan",
+      "type": "orchestrator",
+      "language": "en",
+      "keywords": [
+        "['plan-specification'",
+        "'plan'",
+        "'spec'",
+        "'tasks'",
+        "'acceptance-criteria'",
+        "'capability-map']"
+      ],
+      "triggers": [
+        "desglosa tareas",
+        "especificación",
+        "spec",
+        "task breakdown"
+      ],
+      "entry": "skills/plan-specification/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "plan-testing",
+      "description": "Read the project as it stands, then produce and execute a complete integrated-test plan: every route, function, job, component and end-to-end flow covered by real, non-trivial tests with explicit expected behaviour. Use when planning or implementing test coverage, when a feature or bug fix needs proof, or when the suite must be brought to a professional standard. Not for writing the product spec (→ plan-specification), closing and releasing an increment (→ project-status) or production host debugging (→ local-maintenance).",
+      "domain": "plan",
+      "type": "orchestrator",
+      "language": "en",
+      "keywords": [
+        "['plan-testing'",
+        "'plan'",
+        "'test-plan'",
+        "'integration-tests'",
+        "'coverage'",
+        "'red-green'",
+        "'quality-gates']"
+      ],
+      "triggers": [
+        "cobertura de tests",
+        "estrategia de tests",
+        "plan de tests",
+        "qa",
+        "reproduce el bug",
+        "rojo verde",
+        "tdd",
+        "test coverage",
+        "test first",
+        "tests integrados"
+      ],
+      "entry": "skills/plan-testing/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "project-architecture",
+      "description": "Code architecture verification and analysis. Use when analyzing code structure, dependencies, architectural drift, or refactoring opportunities. Not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ role-linux); minor implementation without architecture analysis uses role-* skills.",
+      "domain": "project",
+      "type": "audit",
+      "language": "en",
+      "keywords": [
+        "['project-architecture'",
+        "'project'",
+        "'architecture'",
+        "'dependency-mapping'",
+        "'drift'",
+        "'metrics']"
+      ],
+      "triggers": [
+        "C4",
+        "acoplamiento",
+        "deepening",
+        "mapa de módulos",
+        "revisa la arquitectura"
+      ],
+      "entry": "skills/project-architecture/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "project-machineroom",
+      "description": "Audit and improve the machineroom system itself: canon map, control plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom, checking harness A/B/C drift, or planning an approved change to the pipeline. Not for generic architecture reviews (→ project-architecture); not for product status, hygiene or release closure (→ project-status).",
+      "domain": "project",
+      "type": "orchestrator",
+      "language": "en",
+      "keywords": [
+        "['project-machineroom'",
+        "'project'",
+        "'self-audit'",
+        "'canon'",
+        "'harness'",
+        "'control-plane'",
+        "'doctor']"
+      ],
+      "triggers": [
+        "audita machineroom",
+        "autoauditoría machineroom",
+        "deriva de harnesses",
+        "doctor nativo",
+        "harness A/B/C",
+        "mejora del propio sistema",
+        "project-machineroom",
+        "self-audit machineroom"
+      ],
+      "entry": "skills/project-machineroom/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "project-status",
+      "description": "Product status orchestrator: read development state (branch, plans, uncommitted work, CI), report health and pending work, hygienise branches and uncommitted changes, then close the increment with local gates, versioning, packaging and publication. Use when asking about repo status, where work stands, cleaning up branches before continuing, or closing and releasing an increment. Not for spec authorship (→ plan-specification), test plans (→ plan-testing) or machineroom self-audit (→ project-machineroom).",
+      "domain": "project",
+      "type": "orchestrator",
+      "language": "en",
+      "keywords": [
+        "['project-status'",
+        "'project'",
+        "'status-board'",
+        "'hygiene'",
+        "'release'",
+        "'branch-cleanup']"
+      ],
+      "triggers": [
+        "C4",
+        "acoplamiento",
+        "audita repo",
+        "cambios sin commitear",
+        "changelog",
+        "ciclo de vida",
+        "cierra el incremento",
+        "cierra repo",
+        "deepening",
+        "empaqueta",
+        "estado del proyecto",
+        "estado del repo",
+        "evolution plan",
+        "health board",
+        "higieniza",
+        "hooks locales",
+        "husky",
+        "inicio de plan",
+        "lanza release",
+        "limpia ramas",
+        "lint-staged",
+        "mapa de módulos",
+        "pon al día proyecto",
+        "por donde empiezo",
+        "pre-commit",
+        "prepara release",
+        "publica version",
+        "qué hago con este repo",
+        "ramas fusionadas",
+        "repo standard",
+        "repo starting",
+        "revisa la arquitectura",
+        "semver"
+      ],
+      "entry": "skills/project-status/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "role-back",
+      "description": "Specialist role for backend application work: data at rest and in motion, routes, deployments, robustness and application security. Includes patterns for cache/KV, queues, rate limiting, object storage and search. Use when implementing APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ role-linux).",
+      "domain": "role",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['role-back'",
+        "'role'",
+        "'backend'",
+        "'api'",
+        "'persistence'",
+        "'jobs'",
+        "'patterns']"
+      ],
+      "triggers": [
+        "backend",
+        "background job",
+        "blob storage",
+        "cola",
+        "cron",
+        "endpoint",
+        "implementa api",
+        "persistencia",
+        "qstash",
+        "ratelimit",
+        "redis",
+        "ruta api",
+        "upstash",
+        "vector",
+        "worker"
+      ],
+      "entry": "skills/role-back/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "role-clean-code",
+      "description": "Implements Clean Code principles to write expressive, maintainable software and refactor existing code safely in any language. Use when the operator asks for clean code, refactoring, meaningful names, smaller functions, fewer code smells, or cleanup of duplicated logic. Not for architecture-only assessments (→ project-architecture), test-suite audits (→ plan-testing), or security reviews (→ web-owasp).",
+      "domain": "role",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['role-clean-code'",
+        "'role'",
+        "'clean-code'",
+        "'refactor'",
+        "'naming'",
+        "'smells'",
+        "'protocols']"
+      ],
+      "triggers": [
+        "clean code",
+        "code smell",
+        "código duplicado",
+        "código limpio",
+        "duplicated code",
+        "funciones pequeñas",
+        "meaningful names",
+        "nombres significativos",
+        "refactor",
+        "refactoring",
+        "small functions"
+      ],
+      "entry": "skills/role-clean-code/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "role-front",
+      "description": "Specialist role for frontend application work: UI stability, browser compatibility, state coherence across routes, and clear communication contracts between client and server. Use when implementing or fixing frontend features, client state, routing surfaces or interaction flows. Not for visual direction or design tokens (external Impeccable skill), a11y/SEO audits (→ web-compliance), or performance audits (→ web-performance).",
+      "domain": "role",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['role-front'",
+        "'role'",
+        "'frontend'",
+        "'state'",
+        "'routing'",
+        "'forms'",
+        "'contracts']"
+      ],
+      "triggers": [
+        "componente",
+        "contrato api cliente",
+        "estado cliente",
+        "formulario",
+        "frontend",
+        "implementa ui",
+        "interfaz",
+        "navegación",
+        "routing ui",
+        "ruta cliente"
+      ],
+      "entry": "skills/role-front/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "role-linux",
+      "description": "Linux application engineering role: app architecture, ABI/glibc compatibility, dependency and supply-chain audits, Debian/Ubuntu and Arch/Omarchy packaging, build, deployment and installation. Use when building, packaging, shipping or auditing a Linux application or its dependencies. Not for host maintenance (→ local-maintenance), host hardening (→ local-security), release closure (→ project-status) or generic architecture review (→ project-architecture).",
+      "domain": "role",
+      "type": "atomic",
+      "language": "en",
+      "keywords": [
+        "['role-linux'",
+        "'role'",
+        "'packaging'",
+        "'debian'",
+        "'arch'",
+        "'dependencies'",
+        "'compatibility']"
+      ],
+      "triggers": [
+        "aur",
+        "compatibilidad",
+        "cve",
+        "dependencias",
+        "despliegue",
+        "empaquetado",
+        "instalación",
+        "paquete deb",
+        "pkgbuild",
+        "sbom",
+        "sca",
+        "typosquatting"
+      ],
+      "entry": "skills/role-linux/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "web-compliance",
+      "description": "Web compliance audit: accessibility (WCAG 2.2 AA / EN 301 549), legal (GDPR, Consent Mode v2, privacy policy, cookies), SEO on-page/off-page/SEM/analytics. PASS/FAIL/N/A matrix, weighted scoring, web compliance verdict POSITIVE/NEGATIVE/PARTIAL and remediation plan RICE. Use when auditing web compliance, dictating web compliance or remediation plan for SEO/accessibility/legal. Not for performance audits (→ web-performance) nor dependency scanning (→ role-linux).",
+      "domain": "web",
+      "type": "audit",
+      "language": "en",
+      "keywords": [
+        "['web-compliance'",
+        "'web'",
+        "'compliance'",
+        "'wcag'",
+        "'gdpr'",
+        "'seo'",
+        "'remediation']"
+      ],
+      "triggers": ["accesibilidad", "compliance", "gdpr", "seo", "wcag"],
+      "entry": "skills/web-compliance/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "web-owasp",
+      "description": "Code security review (OWASP): injection, XSS, authn/authz, cryptography, SSRF, secrets and misconfiguration. Use when performing security review, OWASP or searching for vulnerabilities in this code. Not for dependency CVEs (→ role-linux) nor web compliance (→ web-compliance).",
+      "domain": "web",
+      "type": "audit",
+      "language": "en",
+      "keywords": [
+        "['web-owasp'",
+        "'web'",
+        "'owasp'",
+        "'injection'",
+        "'xss'",
+        "'authz'",
+        "'crypto']"
+      ],
+      "triggers": [
+        "inyección",
+        "owasp",
+        "sqli",
+        "vulnerabilidad código",
+        "xss"
+      ],
+      "entry": "skills/web-owasp/SKILL.md",
+      "compatibility": "cursor, pi"
+    },
+    {
+      "name": "web-performance",
+      "description": "Web performance audit: Core Web Vitals (LCP, INP, CLS), Lighthouse 12, TTFB/FCP, rendering (SSR/SSG/ISR/islands), caching HTTP/CDN, load optimization and technical frontend diagnosis. Use when performing performance audit, Lighthouse/CWV, load optimization, stability visual, caching or technical frontend diagnosis. Not for compliance audits (→ web-compliance) nor backend load testing.",
+      "domain": "web",
+      "type": "audit",
+      "language": "en",
+      "keywords": [
+        "['web-performance'",
+        "'web'",
+        "'performance'",
+        "'cwv'",
+        "'lighthouse'",
+        "'caching'",
+        "'rendering']"
+      ],
+      "triggers": ["core web vitals", "lighthouse", "performance", "ttfb"],
+      "entry": "skills/web-performance/SKILL.md",
+      "compatibility": "cursor, pi"
+    }
+  ]
+}

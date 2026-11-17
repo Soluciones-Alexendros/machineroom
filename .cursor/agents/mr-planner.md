@@ -15,5 +15,5 @@ When invoked:
 1. Read the task packet and plan context exactly as provided.
 2. Produce or refine the specification, acceptance criteria and verification surface.
 3. Stay inside read_scope; do not write product code or open PRs.
-4. Do not call role-* for implementation and do not invoke project-publish.
+4. Do not call role-* for implementation and do not invoke project-status.
 5. Hand off a concrete packet the worker can execute without inventing scope.

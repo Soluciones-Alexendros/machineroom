@@ -160,3 +160,51 @@ def test_legacy_system_domain_is_rejected(tmp_path: Path) -> None:
     seed_catalog(tmp_path, ["system-demo"])
     errors = run_root(tmp_path)
     assert any("unknown domain" in e for e in errors)
+
+
+def test_body_arrow_to_missing_skill(tmp_path: Path) -> None:
+    write_skill(
+        tmp_path,
+        "plan-demo",
+        "## Overview\n\nHandoff to → `web-ghost`.\n\n## When to Use\n\nY.\n",
+    )
+    seed_catalog(tmp_path, ["plan-demo"])
+    errors = run_root(tmp_path)
+    assert any("cuerpo apunta a skill inexistente: web-ghost" in e for e in errors)
+
+
+def test_body_arrow_inside_fence_is_ignored(tmp_path: Path) -> None:
+    write_skill(
+        tmp_path,
+        "plan-demo",
+        "## Overview\n\n```\n→ web-ghost\n```\n\n## When to Use\n\nY.\n",
+    )
+    seed_catalog(tmp_path, ["plan-demo"])
+    errors = run_root(tmp_path)
+    assert not any("cuerpo apunta" in e for e in errors)
+
+
+def test_skill_count_claim_must_match_catalog(tmp_path: Path) -> None:
+    write_skill(tmp_path, "plan-demo", "## Overview\n\nX.\n\n## When to Use\n\nY.\n")
+    seed_catalog(tmp_path, ["plan-demo"])
+    readme = tmp_path / "README.md"
+    readme.write_text("14 skills in 5 domains.\n" + readme.read_text(encoding="utf-8"), encoding="utf-8")
+    mod = load()
+    mod.ERRORS.clear()
+    mod.check_skill_count_claims(tmp_path, 1)
+    assert any("declara 14 skills" in e for e in mod.ERRORS)
+
+
+def test_role_outside_schema_enum_is_rejected(tmp_path: Path) -> None:
+    write_skill(tmp_path, "plan-demo", "## Overview\n\nX.\n\n## When to Use\n\nY.\n")
+    seed_catalog(tmp_path, ["plan-demo"])
+    schema = tmp_path / "tools" / "contracts" / "schemas"
+    schema.mkdir(parents=True)
+    (schema / "plan.schema.json").write_text(
+        '{"$defs": {"roles": {"enum": ["role-back", "role-linux"]}}}', encoding="utf-8"
+    )
+    (tmp_path / "AGENTS.md").write_text("Roles: role-back, role-front.\n", encoding="utf-8")
+    mod = load()
+    mod.ERRORS.clear()
+    mod.check_role_list_coherence(tmp_path, {"role-back", "role-linux"})
+    assert any("role-front" in e and "fuera del enum" in e for e in mod.ERRORS)

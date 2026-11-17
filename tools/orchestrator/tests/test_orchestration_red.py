@@ -224,7 +224,7 @@ def test_readonly_task_stores_real_evidence(tmp_path: Path) -> None:
             repo,
             task["run_id"],
             expected_phase="VALIDATE",
-            expected_skill="project-publish",
+            expected_skill="project-status",
             expected_target=str(repo),
             for_complete=True,
         )

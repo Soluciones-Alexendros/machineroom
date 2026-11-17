@@ -26,9 +26,9 @@ python tools/workspace-router/run.py --phase DEFINE --repo . --json
 ## Skill routing
 
 - Reevalúa `role-*` antes de cada tarea según el ciclo de vida descrito en `AGENTS.md`; no arrastres el rol de la tarea anterior.
-- `role-front` y `role-design` solo con superficie UI/visual real.
-- No dispares `local-maintenance`, `local-security`, `local-email` ni `project-publish` sin petición explícita del operador; si hace falta, `/nombre`.
-- Para trabajo de producto, las skills `plan-*` preceden a cualquier implementación; `project-publish` nunca se invoca como paso implícito de una tarea.
+- `role-front` solo con superficie UI real; el diseño visual es externo (Impeccable).
+- No dispares `local-maintenance`, `local-security` ni `project-status` sin petición explícita del operador; si hace falta, `/nombre`.
+- Para trabajo de producto, las skills `plan-*` preceden a cualquier implementación; `project-status` nunca se invoca como paso implícito de una tarea.
 
 ## Evidencia y puertas
 

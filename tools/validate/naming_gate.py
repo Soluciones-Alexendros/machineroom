@@ -60,7 +60,7 @@ EXCLUDED_DIR_NAMES = frozenset(
         "rendered",
     }
 )
-EXCLUDED_FILES = frozenset({"CHANGELOG.md", "skill-index-7.0.0.json"})
+EXCLUDED_FILES = frozenset({"CHANGELOG.md", "skill-index-7.0.0.json", "skill-index-9.0.0.json"})
 # Local install artifacts (gitignored): symlink manifests carry absolute paths.
 EXCLUDED_PREFIXES = (".cursor/skills/", ".pi/skills/")
 SUFFIXES = frozenset(
@@ -122,7 +122,7 @@ ALLOWED_FILES = {
     # invalidate every committed plan, so the parser keeps accepting it.
     "tools/contracts/plan.py",
     "tools/contracts/tests/test_plan.py",
-    "tools/skill-router/tests/test_catalog_17.py",
+    "tools/skill-router/tests/test_catalog_14.py",
     "templates/harness/plan.md",
     "tools/orchestrator/run.py",
     "tools/orchestrator/tests/test_full_flow.py",

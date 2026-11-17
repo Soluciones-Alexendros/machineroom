@@ -64,7 +64,7 @@ def test_v02_omit_each_binding(tmp_path: Path) -> None:
     base: dict[str, Any] = dict(
         artifacts=[str(art)],
         phase="VALIDATE",
-        skill="project-publish",
+        skill="project-status",
         target="/t",
         verifications=[{"kind": "gate_result", "ok": True}],
     )
@@ -96,7 +96,7 @@ def test_v03_bad_types_and_legacy(tmp_path: Path) -> None:
         "input_digest": DIG,
         "output_digest": DIG,
         "phase": "VALIDATE",
-        "skill": "project-publish",
+        "skill": "project-status",
         "target": "/t",
         "verifications": [{"kind": "gate_result", "ok": True}],
         "artifacts": [{"path": "a.txt", "sha256": DIG}],
@@ -124,7 +124,7 @@ def test_v04_valid_accepted(tmp_path: Path) -> None:
         _ok(),
         artifacts=[str(art)],
         phase="VALIDATE",
-        skill="project-publish",
+        skill="project-status",
         target="/t",
         input_digest=digest,
         output_digest=digest,
@@ -135,7 +135,7 @@ def test_v04_valid_accepted(tmp_path: Path) -> None:
         tmp_path,
         rid,
         expected_phase="VALIDATE",
-        expected_skill="project-publish",
+        expected_skill="project-status",
         expected_target="/t",
     )
     assert data["run_id"] == rid
@@ -170,7 +170,7 @@ def test_v06_prefix_and_wrong_phase_rejected(tmp_path: Path) -> None:
         _ok("local_gates_extra"),
         artifacts=[str(art)],
         phase="VALIDATE",
-        skill="project-publish",
+        skill="project-status",
         target="/t",
         verifications=[{"kind": "gate_result", "ok": True}],
     )
@@ -187,7 +187,7 @@ def test_v07_missing_verification_rejected(tmp_path: Path) -> None:
         _ok(),
         artifacts=[str(art)],
         phase="VALIDATE",
-        skill="project-publish",
+        skill="project-status",
         target="/t",
         verifications=[],  # store allows; complete rejects
     )
@@ -235,7 +235,7 @@ def test_v10_artifact_symlink_rejected(tmp_path: Path) -> None:
             _ok(),
             artifacts=[str(link)],
             phase="VALIDATE",
-            skill="project-publish",
+            skill="project-status",
             target="/t",
             verifications=[{"kind": "gate_result", "ok": True}],
         )

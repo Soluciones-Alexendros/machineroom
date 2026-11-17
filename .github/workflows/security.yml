@@ -30,4 +30,4 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ github.sha }}
       - name: Lint workflows
-        uses: ./skills/project-publish/actions/actionlint
+        uses: ./skills/project-status/actions/actionlint

@@ -20,11 +20,11 @@ def load():
     ("prompt", "expected"),
     [
         ("audita la salud del sistema", "local-maintenance"),
-        ("configura husky y pre-commit", "project-publish"),
-        ("define la cobertura de tests con TDD", "plan-validators"),
+        ("configura husky y pre-commit", "project-status"),
+        ("define la cobertura de tests con TDD", "plan-testing"),
         ("implementa una API backend con background jobs", "role-back"),
         ("implementa una ruta cliente con un formulario frontend", "role-front"),
-        ("define tokens y dirección visual", "role-design"),
+        ("empaqueta la app en un paquete deb", "role-linux"),
     ],
 )
 def test_prompt_routes_to_expected_skill(prompt, expected):

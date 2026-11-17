@@ -350,14 +350,14 @@ test -L "$FULL/.cursor/hooks/shell_gate.py"
 FULL_JSON2=$(bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --yes --json)
 echo "$FULL_JSON2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==int(sys.argv[1])+7, d' "$SKILL_COUNT"
 bash "$ROOT/scripts/install.sh" --harness cursor --components full --target "$FULL" --uninstall --yes --json >/dev/null
-test ! -e "$FULL/.cursor/skills/plan-continue"
+test ! -e "$FULL/.cursor/skills/project-status"
 # User-scope full install: relative links from ~/.machineroom, no project rule.
 FULL_USER_HOME="$TMP/home-full"
 prepare_runtime "$FULL_USER_HOME"
 FULL_USER=$(HOME="$FULL_USER_HOME" bash "$ROOT/scripts/install.sh" --harness cursor --components full --user --yes --json)
 echo "$FULL_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["scope"]=="user", d; assert d["installed"]==int(sys.argv[1])+6, d; assert d["omitted"]==["rules/machineroom.mdc"], d; assert d["notes"], d' "$SKILL_COUNT"
 USER_CURSOR="$FULL_USER_HOME/.cursor"
-test -L "$USER_CURSOR/skills/plan-continue"
+test -L "$USER_CURSOR/skills/project-status"
 test -L "$USER_CURSOR/agents/mr-verifier.md"
 test -L "$USER_CURSOR/hooks.json"
 test -L "$USER_CURSOR/hooks/shell_gate.py"

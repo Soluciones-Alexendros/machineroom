@@ -19,7 +19,7 @@ import yaml
 
 START = "<!-- SKILL-INDEX:START -->"
 END = "<!-- SKILL-INDEX:END -->"
-INDEX_VERSION = "7.0.0"
+INDEX_VERSION = "9.0.0"
 DOC_PATHS = ("README.md", "docs/TAXONOMY.md")
 
 

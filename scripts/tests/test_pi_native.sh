@@ -63,7 +63,7 @@ from harness.pi import rpc_commands
 commands = rpc_commands(Path(sys.argv[1]))
 names = {c.get("name") for c in commands}
 assert "skill:foreign-skill" in names, names
-assert "skill:plan-continue" not in names, names
+assert "skill:project-status" not in names, names
 print("Pi uninstall preserved foreign skill and removed package skills")
 PY
 

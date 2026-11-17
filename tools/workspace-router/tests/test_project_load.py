@@ -15,6 +15,7 @@ from project_load import (  # noqa: E402
     filter_skills,
     handoff_for_phase,
     load_project,
+    stale_handoffs,
     validate_project,
 )
 
@@ -55,17 +56,17 @@ class TestProjectLoad(unittest.TestCase):
         self.assertEqual(handoff_for_phase(p, "DEFINE"), "plan-specification")
 
     def test_default_handoffs(self):
-        self.assertEqual(handoff_for_phase({}, "VALIDATE"), "plan-validators")
-        self.assertEqual(handoff_for_phase({}, "INTEGRATE"), "project-publish")
+        self.assertEqual(handoff_for_phase({}, "VALIDATE"), "plan-testing")
+        self.assertEqual(handoff_for_phase({}, "INTEGRATE"), "project-status")
 
     def test_integrate_handoffs(self):
         self.assertEqual(
-            handoff_for_phase({"handoffs": {"integrate_publish": "project-publish"}}, "INTEGRATE"),
-            "project-publish",
+            handoff_for_phase({"handoffs": {"integrate_publish": "project-status"}}, "INTEGRATE"),
+            "project-status",
         )
         self.assertEqual(
-            handoff_for_phase({"handoffs": {"integrate_hooks": "project-publish"}}, "INTEGRATE"),
-            "project-publish",
+            handoff_for_phase({"handoffs": {"integrate_hooks": "project-status"}}, "INTEGRATE"),
+            "project-status",
         )
 
     def test_load_from_disk(self):
@@ -82,3 +83,17 @@ class TestProjectLoad(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StaleHandoffsTest(unittest.TestCase):
+    def test_renamed_skill_reports_replacement(self) -> None:
+        findings = stale_handoffs({"handoffs": {"continue": "plan-continue"}}, ["project-status"])
+        self.assertEqual(findings, [{"key": "continue", "skill": "plan-continue", "replacement": "project-status"}])
+
+    def test_retired_skill_reports_empty_replacement(self) -> None:
+        findings = stale_handoffs({"handoffs": {"implement_design": "role-design"}}, ["project-status"])
+        self.assertEqual([f["replacement"] for f in findings], [""])
+
+    def test_resolved_handoffs_are_clean(self) -> None:
+        project = {"handoffs": {"continue": "project-status", "validate": "plan-testing"}}
+        self.assertEqual(stale_handoffs(project, ["project-status", "plan-testing"]), [])

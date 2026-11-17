@@ -25,11 +25,11 @@ test -f "$DEST/local-maintenance/vendor/execution/ops.py"
 # P11 T3: skill that cites canon docs must vendor those files
 DEST2="$TMP/pkg-plan"
 mkdir -p "$DEST2"
-bash "$ROOT/scripts/package-standalone-skill.sh" --skill plan-continue --dest "$DEST2"
-test -f "$DEST2/plan-continue/SKILL.md"
-# plan-continue references point at docs/architecture/decisions/ADR-0016…
-if ! find "$DEST2/plan-continue/vendor/canon" -type f -name 'ADR-0016*.md' | grep -q .; then
-  echo "FAIL: expected vendored ADR-0016 under vendor/canon"; find "$DEST2/plan-continue/vendor/canon" -type f | head
+bash "$ROOT/scripts/package-standalone-skill.sh" --skill project-status --dest "$DEST2"
+test -f "$DEST2/project-status/SKILL.md"
+# project-status references point at docs/architecture/decisions/ADR-0016…
+if ! find "$DEST2/project-status/vendor/canon" -type f -name 'ADR-0016*.md' | grep -q .; then
+  echo "FAIL: expected vendored ADR-0016 under vendor/canon"; find "$DEST2/project-status/vendor/canon" -type f | head
   exit 1
 fi
 echo "canon vendor OK"
@@ -47,7 +47,13 @@ vendor = Path("local-maintenance/vendor").resolve()
 sys.path.insert(0, str(vendor))
 # Ensure repo tools not accidentally present
 checkout = os.environ.get("CHECKOUT_NAME", "machineroom")
-sys.path = [p for p in sys.path if f"{checkout}/tools" not in p.replace("\\", "/")]
+# Drop the checkout's own tools/ package, but keep site-packages (the venv may
+# live under <checkout>/tools/.venv and still provides third-party modules).
+needle = f"{checkout}/tools"
+sys.path = [
+    p for p in sys.path
+    if not p.replace("\\", "/").rstrip("/").endswith(needle)
+]
 from execution.ops import run_registered
 from execution.approval import DenyProvider
 import execution.ops as ops
