@@ -66,3 +66,12 @@ docs/architecture/diagrams/rendered/
 skills/**/audit-quick-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].json
 # Manifiesto operativo del taller (copia local fuera del árbol publicable)
 /repos-taller.tsv
+
+# Artefactos locales del gate de política (hooks de Cursor). Nunca versionados:
+# los escribe el hook en cada sesión y solo describen el estado de esta máquina.
+.machineroom-cursor-session-marker
+.machineroom-cursor-policy/
+.machineroom-policy-allow.txt
+.machineroom-policy-deny.txt
+.machineroom-policy-ask.txt
+.machineroom-policy-decisions.jsonl
