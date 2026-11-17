@@ -5,11 +5,11 @@ description:
   routes, deployments, robustness and application security. Includes patterns for
   cache/KV, queues, rate limiting, object storage and search. Use when implementing
   APIs, persistence, jobs or server-side integrations. Not for host hardening (→ local-security),
-  OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries)."
+  OWASP code audit (→ web-owasp), or dependency SCA (→ role-linux)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: role
   type: atomic
   language: en
@@ -44,8 +44,8 @@ provider among others.
 - Wiring cache, queues, rate limits, object storage or search
 
 **When NOT to use:** Linux host hardening (→ local-security); OWASP audit of
-not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ project-libraries). Supply chain before new deps (→ project-libraries).
-existing code (→ web-owasp); SCA/CVE of dependencies (→ project-libraries);
+not for host hardening (→ local-security), OWASP code audit (→ web-owasp), or dependency SCA (→ role-linux). Supply chain before new deps (→ role-linux).
+existing code (→ web-owasp); SCA/CVE of dependencies (→ role-linux);
 frontend UI state (→ role-front).
 
 ## Standards
@@ -104,14 +104,14 @@ patterns and the current Upstash docs — do not invent a parallel stack.
 ## Method
 
 1. Read existing server patterns, env contract and deploy target
-2. Implement with → plan-validators for behavior changes
+2. Implement with → plan-testing for behavior changes
 3. Verify with the project's API/integration tests and a real deploy preview when available
-4. Supply-chain changes → project-libraries first
+4. Supply-chain changes → role-linux first
 
 ## Related
 
 - Frontend contracts → role-front
 - Host security → local-security
 - Code security audit → web-owasp
-- Dependency audit → project-libraries
-- Publish / CI close → project-publish
+- Dependency audit → role-linux
+- Publish / CI close → project-status

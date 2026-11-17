@@ -27,7 +27,7 @@ Surfaces are scope-aware under `--user`: the catalog is `$HOME/.machineroom`, an
 
 Levels beyond A:
 
-- **B (native discovery/load):** Customize → Skills lists all 16; `/plan-continue` routes. Human IDE only → **`not_run` in CI**.
+- **B (native discovery/load):** Customize → Skills lists all 14; `/project-status` routes. Human IDE only → **`not_run` in CI**.
 - **C (shell gate in IDE):** an agent-proposed host-mutating shell (e.g. `apt-get upgrade`) is `deny` or `ask`. The `beforeShellExecution` matcher is whole-word, so it covers host mutation and outbound network only; ordinary commands (`python`, `git`, `npm`, `pytest`) stay open even when their text contains substrings such as `chapter`, `adapter` or `curly`. Human IDE only → **`not_run` in CI**.
 
 ## Pi model scope

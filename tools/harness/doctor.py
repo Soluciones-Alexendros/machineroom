@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
@@ -98,6 +100,47 @@ def version_coherence_checks(root: Path, expected_version: str | None = None) ->
     )
     checks.append(installer_version_check(root, expected))
     return checks
+
+
+_HANDOFF_KEYS = (
+    "define",
+    "continue",
+    "implement_front",
+    "implement_back",
+    "implement_linux",
+    "validate",
+    "integrate_release",
+    "integrate_publish",
+    "integrate_hooks",
+    "libraries",
+)
+
+
+def handoff_check(root: Path) -> Check:
+    """A project.yaml naming a skill that no longer exists routes nowhere."""
+    root = root.resolve()
+    project = root / ".machineroom" / "project.yaml"
+    if not project.is_file():
+        return Check("handoffs", "contract", "not_applicable", "no .machineroom/project.yaml")
+    catalog = {p.name for p in (root / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file()}
+    try:
+        data = yaml.safe_load(project.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # pragma: no cover - unreadable config
+        return Check("handoffs", "contract", "fail", f"cannot read project.yaml: {exc}")
+    handoffs = data.get("handoffs") or {}
+    if not isinstance(handoffs, dict):
+        return Check("handoffs", "contract", "fail", "handoffs is not a mapping")
+    unknown = [
+        f"{key}={value}"
+        for key, value in sorted(handoffs.items())
+        if isinstance(value, str) and value and value not in catalog
+    ]
+    if unknown:
+        return Check("handoffs", "contract", "fail", "stale: " + ", ".join(unknown))
+    declared = sorted(handoffs)
+    unused = [key for key in declared if key not in _HANDOFF_KEYS]
+    note = f"{len(declared)} handoffs resolve" + (f"; unknown keys: {', '.join(unused)}" if unused else "")
+    return Check("handoffs", "contract", "pass", note)
 
 
 def skill_link_check(root: Path, harness: str, *, source_root: Path | None = None) -> Check:
@@ -251,6 +294,7 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
         ]
     else:
         checks = version_coherence_checks(source, expected_version)
+        checks.append(handoff_check(source))
     expected_skills = {
         path.name for path in (source / "skills").iterdir() if path.is_dir() and (path / "SKILL.md").is_file()
     }

@@ -6,6 +6,63 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-11-17
+
+BREAKING (catálogo): 17 skills → 14. Tres renames con reenfoque, tres bajas por
+absorción. Ver [ADR-0019](docs/architecture/decisions/ADR-0019-catalogo-v9-14-skills.md).
+
+### Added
+
+- `role-linux` (role, atomic): rol de ingeniería del artefacto Linux — arquitectura
+  de app, compatibilidad/ABI, dependencias y supply chain, empaquetado Debian/Ubuntu
+  y Arch/Omarchy, build, despliegue e instalación. Nuevas referencias
+  `app-compatibility.md`, `debian-packaging.md`, `arch-packaging.md`,
+  `deployment-and-install.md`.
+- `project-status` (project, orchestrator): orquestador _observar → higienizar →
+  cerrar_; absorbe el tablero de `project-audit` y el release de `project-publish`.
+  Nueva referencia `releasing` y `readiness-checklist.md`; conserva
+  `gate-husky.sh`, `review-vs-plan.py` y las composite actions pineadas
+  (`setup-node`, `actionlint`, `secret-scan`).
+- `plan-testing` (plan, orchestrator): lee el proyecto y produce un plan completo
+  de tests integrados antes de ejecutar red-green-refactor.
+- ADR-0019 con la racionalidad del catálogo v9.
+- Registry: `role-linux` gana `compat_check`, `package`, `install`; `project-status`
+  gana `status_board`, `repo_scan`, `hygiene` (aprobación), `local_gates` y `publish`
+  (aprobación).
+- Snapshot congelado `docs/architecture/skill-index-9.0.0.json`.
+
+### Changed
+
+- `project-libraries` → `role-linux` (dominio `project`→`role`).
+- `plan-continue` → `project-status` (dominio `plan`→`project`); scripts de estado
+  consolidados en una sola copia (antes duplicados con `project-audit`).
+- `plan-validators` → `plan-testing` (`atomic`→`orchestrator`).
+- Privilegios por operación: `project-status` no lleva `disable-model-invocation`;
+  la mutación se gana en el registry con `approval_required`. El flag queda solo en
+  `local-*`.
+- `INDEX_VERSION` del generador de índice corregido a `9.0.0` (estaba en `7.0.0`).
+- Pipeline y handoffs: SCHEMAS/INTEGRATE/STATUS → `project-status`, VALIDATE →
+  `plan-testing`, `libraries` → `role-linux`, `integrate_publish` →
+  `integrate_release`. Plantillas y `.machineroom/project.yaml` actualizados.
+- Enum de roles en `plan.schema.json` y en la prosa: `role-design` fuera,
+  `role-linux` dentro.
+- Dominio semántico documentado en ARCHITECTURE.md y TAXONOMY.md.
+
+### Removed
+
+- `role-design` (role): la dirección visual se delega a la skill externa Impeccable
+  (`impeccable-design-polish`).
+- `project-audit` (project): tablero → `project-status`; dependencias → `role-linux`.
+- `project-publish` (project): el release pasa a `project-status`.
+- Snapshot `docs/architecture/skill-index-8.0.0.json` (sustituido por el 9.0.0).
+- Exclusiones de `mypy.ini`/`ruff.toml` que existían solo por el `inicio_plan.py`
+  duplicado entre `plan-continue` y `project-audit`.
+
+### Fixed
+
+- Conteo de skills desactualizado en README.md, docs/TAXONOMY.md y
+  ARCHITECTURE.md (decía 16/17 con 17 reales).
+
 ## [8.1.1] - 2026-11-16
 
 ### Fixed

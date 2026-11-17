@@ -8,6 +8,7 @@ Exit 0 si todas las skills cumplen; 1 en caso contrario (lista errores).
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import re
 import subprocess
@@ -303,6 +304,87 @@ def check_description(skill: str, desc: str, names: set[str]) -> None:
             err(skill, f"description apunta a skill inexistente: {target}")
 
 
+FENCED_BLOCK_RE = re.compile(r"^\s*(```|~~~).*?^\s*\1", re.M | re.S)
+SKILL_COUNT_RE = re.compile(r"\b(\d+)\s+(?:skills|Skills)\b")
+ROLE_TOKEN_RE = re.compile(r"\brole-[a-z0-9-]+\b")
+ROLE_ENUM_PATH = Path("tools") / "contracts" / "schemas" / "plan.schema.json"
+ROLE_DOCS = ("AGENTS.md", "README.md", "skills/plan-specification/SKILL.md")
+
+
+def _strip_fences(text: str) -> str:
+    return FENCED_BLOCK_RE.sub("", text)
+
+
+def check_body_arrows(skill: str, body: str, names: set[str]) -> None:
+    """Cross-references in prose must point at a catalog skill, not only in description."""
+    for target in ARROW_RE.findall(_strip_fences(body)):
+        if target not in names:
+            err(skill, f"cuerpo apunta a skill inexistente: {target}")
+
+
+def check_skill_count_claims(root: Path, count: int) -> None:
+    """Intro prose that states 'N skills' must match the generator's real count."""
+    from_index = _load_generator()
+    for rel in from_index.DOC_PATHS:
+        path = root / rel
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        head = text.split(from_index.START, 1)[0]
+        for match in SKILL_COUNT_RE.finditer(head):
+            claimed = int(match.group(1))
+            if claimed != count:
+                ERRORS.append(f"[catalog] {rel} declara {claimed} skills y el catálogo tiene {count}")
+
+
+def _role_enum(root: Path) -> set[str]:
+    path = root / ROLE_ENUM_PATH
+    if not path.is_file():
+        return set()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        ERRORS.append(f"[roles] no se puede leer {ROLE_ENUM_PATH}: {exc}")
+        return set()
+    defs = data.get("$defs") or {}
+    found: set[str] = set()
+
+    def walk(node: object) -> None:
+        if isinstance(node, dict):
+            if isinstance(node.get("enum"), list) and node.get("enum"):
+                values = [v for v in node["enum"] if isinstance(v, str) and v.startswith("role-")]
+                if values:
+                    found.update(values)
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(defs)
+    walk(data)
+    return found
+
+
+def check_role_list_coherence(root: Path, names: set[str]) -> None:
+    """The role list is one closed set; prose must not invent or keep retired roles."""
+    enum = _role_enum(root)
+    if not enum:
+        ERRORS.append("[roles] plan.schema.json sin enum de roles")
+        return
+    for rel in ROLE_DOCS:
+        path = root / rel
+        if not path.is_file():
+            continue
+        text = _strip_fences(path.read_text(encoding="utf-8"))
+        for token in sorted(set(ROLE_TOKEN_RE.findall(text))):
+            if token not in enum:
+                ERRORS.append(f"[roles] {rel} cita '{token}' fuera del enum de plan.schema.json")
+    for role in sorted(enum):
+        if role not in names:
+            ERRORS.append(f"[roles] plan.schema.json declara '{role}' sin skill en el catálogo")
+
+
 def check_headings(skill: str, body: str, needs_tools: bool) -> None:
     headings = H2_RE.findall(body)
     for required in REQUIRED_H2:
@@ -515,6 +597,7 @@ def check_skill(root: Path, sdir: Path, names: set[str]) -> None:
     check_size_limits(skill, text)
 
     body = _check_body_size(skill, text)
+    check_body_arrows(skill, body, names)
     check_headings(skill, body, has_exec_scripts(sdir))
     check_residues(root, sdir)
     check_smoke(sdir)
@@ -529,6 +612,8 @@ def main() -> int:
     sdirs = skill_dirs(root)
     names = {p.name for p in sdirs}
     check_catalog(root, names)
+    check_skill_count_claims(root, len(names))
+    check_role_list_coherence(root, names)
     check_skill_md_locations(root)
     for s in sdirs:
         check_skill(root, s, names)

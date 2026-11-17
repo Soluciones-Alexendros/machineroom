@@ -5,12 +5,12 @@ description:
   compatibility, state coherence across routes, and clear communication contracts
   between client and server. Use when implementing or fixing frontend features, client
   state, routing surfaces or interaction flows. Not for visual direction or design
-  tokens (→ role-design), a11y/SEO audits (→ web-compliance), or performance audits
-  (→ web-performance)."
+  tokens (external Impeccable skill), a11y/SEO audits (→ web-compliance), or
+  performance audits (→ web-performance)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: role
   type: atomic
   language: en
@@ -42,10 +42,9 @@ contracts with the backend.
 - Ensuring the same data/state stays consistent across pages that share it
 - Defining or consuming API contracts from the client side
 
-**When NOT to use:** visual identity or design systems (→ role-design);
-not for visual direction or design tokens (→ role-design), a11y/SEO audits (→ web-compliance), or performance audits (→ web-performance). Visual polish handoff (→ role-design).
-compliance/perf audits (→ web-compliance, → web-performance); backend routes
-and data stores (→ role-back).
+**When NOT to use:** visual identity or design systems (external Impeccable
+skill `impeccable-design-polish`); a11y/SEO audits (→ web-compliance); performance
+audits (→ web-performance); backend routes and data stores (→ role-back).
 
 ## Standards
 
@@ -86,13 +85,13 @@ and data stores (→ role-back).
 ## Method
 
 1. Read the existing frontend patterns in the repo before inventing new ones
-2. Implement with → plan-validators (failing test or repro first when behavior changes)
+2. Implement with → plan-testing (failing test or repro first when behavior changes)
 3. Verify end-to-end: exercise the changed flow as a user would; check sibling routes
-4. Hand visual polish to → role-design; hand API/schema work to → role-back
+4. Hand visual polish to the external Impeccable skill; hand API/schema work to → role-back
 
 ## Related
 
-- Visual direction / tokens → role-design
+- Visual direction / tokens → external Impeccable skill (`impeccable-design-polish`)
 - Backend data and routes → role-back
 - CWV / Lighthouse → web-performance
 - WCAG / SEO / legal → web-compliance

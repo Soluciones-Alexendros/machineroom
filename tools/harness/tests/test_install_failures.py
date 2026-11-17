@@ -1,4 +1,4 @@
-"""Install/update failures name component, function and detail (plan-validators)."""
+"""Install/update failures name component, function and detail (plan-testing)."""
 
 from __future__ import annotations
 

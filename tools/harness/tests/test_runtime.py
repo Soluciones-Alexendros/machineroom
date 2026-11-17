@@ -21,7 +21,7 @@ from harness.cursor_install import (
 from harness.doctor import cursor_full_check, skill_link_check  # noqa: E402
 from harness.runtime import make_relative_symlink, sync_payload  # noqa: E402
 
-USER_SCOPE_COMPONENTS = 23  # 17 skills + 3 agents + hooks.json + 2 hook scripts
+USER_SCOPE_COMPONENTS = 20  # 14 skills + 3 agents + hooks.json + 2 hook scripts
 
 
 def _runtime(home: Path) -> Path:
@@ -45,7 +45,7 @@ def test_sync_payload_copies_harness_payload(tmp_path: Path) -> None:
     manifest = sync_payload(ROOT, home / ".machineroom", origin="sync")
     runtime = home / ".machineroom"
     assert runtime.is_dir() and not runtime.is_symlink()
-    assert (runtime / "skills" / "plan-continue" / "SKILL.md").is_file()
+    assert (runtime / "skills" / "project-status" / "SKILL.md").is_file()
     assert (runtime / ".cursor" / "agents" / "mr-verifier.md").is_file()
     assert (runtime / "extensions" / "machineroom" / "index.ts").is_file()
     assert (runtime / "tools" / "execution" / "deny_list.py").is_file()
@@ -100,10 +100,10 @@ def test_user_scope_relative_links_from_runtime(tmp_path: Path) -> None:
     data = json.loads(hooks.read_text(encoding="utf-8"))
     commands = [entry["command"] for entries in data["hooks"].values() for entry in entries]
     assert commands and not any(".cursor/hooks/" in command for command in commands), commands
-    skill = target / "skills" / "plan-continue"
+    skill = target / "skills" / "project-status"
     assert skill.is_symlink()
     assert not Path(os.readlink(skill)).is_absolute()
-    assert skill.resolve() == (runtime / "skills" / "plan-continue").resolve()
+    assert skill.resolve() == (runtime / "skills" / "project-status").resolve()
     assert "Work/machineroom" not in os.readlink(skill)
     second = install_full(ROOT, target, user_scope=True)
     assert second["changed"] == 0
@@ -143,21 +143,21 @@ def test_user_scope_migrates_prior_checkout_manifest(tmp_path: Path) -> None:
     # Simulate prior absolute install from the development checkout.
     target.mkdir(parents=True)
     (target / "skills").mkdir()
-    old = target / "skills" / "plan-continue"
-    old.symlink_to(ROOT / "skills" / "plan-continue")
+    old = target / "skills" / "project-status"
+    old.symlink_to(ROOT / "skills" / "project-status")
     manifest = {
         "schema_version": 2,
         "source_root": str(ROOT),
         "components": "full",
         "scope": "user",
-        "resources": [{"path": "skills/plan-continue", "kind": "symlink"}],
+        "resources": [{"path": "skills/project-status", "kind": "symlink"}],
         "omitted": ["rules/machineroom.mdc"],
         "version": "7.1.2",
     }
     (target / ".machineroom-full-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     result = install_full(ROOT, target, user_scope=True)
     assert result["status"] == "ok"
-    assert old.resolve() == (runtime / "skills" / "plan-continue").resolve()
+    assert old.resolve() == (runtime / "skills" / "project-status").resolve()
     assert not Path(os.readlink(old)).is_absolute()
 
 

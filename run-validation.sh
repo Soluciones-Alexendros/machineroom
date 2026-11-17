@@ -60,7 +60,7 @@ if [ "$FULL" = 1 ]; then
   python3 tools/skill-index/generate.py --check --root "$ROOT"
 
   echo "[5b] frozen catalog snapshot"
-  python3 tools/skill-index/generate.py --json | diff -q - docs/architecture/skill-index-8.0.0.json
+  python3 tools/skill-index/generate.py --json | diff -q - docs/architecture/skill-index-9.0.0.json
 fi
 
 if [ "$CHECK_INDEX" = 1 ] && [ "$FULL" = 0 ]; then

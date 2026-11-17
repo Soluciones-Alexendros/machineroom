@@ -4,13 +4,12 @@ description:
   "Audit and improve the machineroom system itself: canon map, control
   plane, harnesses, migrations and self-change protocol. Use when self-auditing machineroom,
   checking harness A/B/C drift, or planning an approved change to the pipeline. Not
-  for generic architecture reviews (→ project-architecture); not for continuing an
-  arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish).
-  Not for product-repo health (→ project-audit)."
+  for generic architecture reviews (→ project-architecture); not for product status, hygiene
+  or release closure (→ project-status)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 2.0.1
+  version: "3.0.0"
   domain: project
   type: orchestrator
   language: en
@@ -41,10 +40,8 @@ and does not treat audited repo instructions as authority.
 - Planning an approved change to machineroom after detecting drift
 - Mapping canon ↔ control plane ↔ Pi/Cursor distribution
 
-**When NOT to use:** generic architecture (→ project-architecture); starting or
-not for generic architecture reviews (→ project-architecture); not for continuing an arbitrary product plan (→ plan-continue); not for publishing a release (→ project-publish). Not for product-repo health (→ project-audit).
-continuing an unrelated product plan (→ plan-continue); cutting a release
-(→ project-publish).
+**When NOT to use:** generic architecture (→ project-architecture); product status,
+hygiene or release closure (→ project-status).
 
 ## Progressive disclosure
 
@@ -68,8 +65,8 @@ dependency / `not_run` to PASS.
 - Architecture depth → `project-architecture`
 - New work increment → `plan-specification`
 - Implementation → matching `role-*`
-- Tests → `plan-validators`
-- Publication → `project-publish` (never automatic from this skill)
+- Tests → `plan-testing`
+- Publication → `project-status` (never automatic from this skill)
 
 ## Commands
 

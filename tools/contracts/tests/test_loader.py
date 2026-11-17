@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 BLOCKED_EXIT_CODE = 3
-EXPECTED_REGISTRY_TOOLS = 13
+EXPECTED_REGISTRY_TOOLS = 10
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -23,7 +23,7 @@ from execution.registry import load_tools  # noqa: E402
 
 
 def test_pilots_load() -> None:
-    for name in ("local-maintenance", "plan-continue", "project-publish"):
+    for name in ("local-maintenance", "project-status", "project-status"):
         doc = load_execution_contract(ROOT / "skills" / name)
         assert doc["skill"] == name
         assert doc["schema_version"] == 1

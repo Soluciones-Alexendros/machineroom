@@ -132,7 +132,7 @@ Tests are executable examples and a safety net for refactoring, not an afterthou
 - Assert meaningful outcomes rather than implementation details whenever possible.
 - Do not weaken, delete or rewrite a failing assertion merely to make cleanup pass.
 - For test authoring, red-green-refactor, bug reproduction and whole-suite
-  strategy, use → plan-validators.
+  strategy, use → plan-testing.
 
 ## Classes and cohesive modules
 

@@ -6,11 +6,11 @@ description:
   PASS/FAIL/N/A matrix, weighted scoring, web compliance verdict POSITIVE/NEGATIVE/PARTIAL
   and remediation plan RICE. Use when auditing web compliance, dictating web compliance
   or remediation plan for SEO/accessibility/legal. Not for performance audits (→ web-performance)
-  nor dependency scanning (→ project-libraries)."
+  nor dependency scanning (→ role-linux)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: web
   type: audit
   language: en
@@ -43,11 +43,11 @@ auditing web compliance, dictating web compliance or remediation plan for SEO/ac
 
 ## Not for:
 
-not for performance audits (→ web-performance) nor dependency scanning (→ project-libraries). Security overlap (→ web-owasp).
+not for performance audits (→ web-performance) nor dependency scanning (→ role-linux). Security overlap (→ web-owasp).
 
 - Core Web Vitals (→ web-performance)
 - Application security review (→ web-owasp)
-- Dependency SCA (→ project-libraries)
+- Dependency SCA (→ role-linux)
 - Certifying full GDPR or accessibility compliance from an automated scan alone
 
 ## Main Checks

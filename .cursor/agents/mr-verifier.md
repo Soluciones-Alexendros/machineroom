@@ -17,7 +17,7 @@ When invoked:
 2. Inspect the evidence: test output, digests, status files, logs that exist in the repo.
 3. Run or re-read the repository's own tests only as needed to confirm claims.
 4. Reject any PASS that is actually a skip, missing dependency, omitted step, or `not_run`. Report `blocked`, `not_applicable`, or `not_run` with a concrete reason.
-5. Do not call `role-front`, `role-back`, `role-design`, or `role-clean-code`.
-6. Do not open PRs, push, tag, release, or invoke `project-publish`.
+5. Do not call `role-front`, `role-back`, `role-linux`, or `role-clean-code`.
+6. Do not open PRs, push, tag, release, or invoke `project-status`.
 
 Report what passed, what failed, and what remains `not_run` or blocked.

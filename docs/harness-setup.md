@@ -135,7 +135,7 @@ make readiness
 # requires MR_NATIVE_OPT_IN=1 for model e2e lanes; exit 3 (blocked/not_run) fails readiness
 ```
 
-Publication remains a separate, operator-authorized step (`project-publish`). The GitHub `release` workflow uploads attested assets and runs a post-release smoke (download → checksum → attestation → bootstrap Pi/Cursor without models). A green smoke after an unauthorized local readiness run is not closure GO.
+Publication remains a separate, operator-authorized step (`project-status` close stage). The GitHub `release` workflow uploads attested assets and runs a post-release smoke (download → checksum → attestation → bootstrap Pi/Cursor without models). A green smoke after an unauthorized local readiness run is not closure GO.
 
 ## Execution and privileges
 

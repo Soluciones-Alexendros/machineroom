@@ -25,7 +25,12 @@
 | `templates/product/`            | Product P0/P1 skeleton (copy into a new repo)                          |
 | `templates/harness/`            | Scaffolding for `.machineroom/`                                        |
 
-Seventeen skills in five domains: `plan`, `local`, `project`, `web`, `role`.
+Fourteen skills in five domains: `plan`, `local`, `project`, `web`, `role`.
+
+Domain semantics (normative for new skills): `plan` is methodology (spec, test
+plan); `project` is the repo/product (architecture, status, self-audit); `role`
+is an implementation surface (back, front, clean-code, linux); `local` is the
+host; `web` is web-surface audit.
 
 ## Pipeline
 

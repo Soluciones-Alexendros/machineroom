@@ -21,18 +21,19 @@ const SUBAGENT_TOOL = "mr_subagent";
  * Skills the isolated subagent may load by default.
  *
  * The set is a least-privilege subset of the catalog: implementation, planning
- * and self-audit only. Host mutation (`local-*`), publishing (`project-publish`)
- * and web audits are excluded because they need explicit operator consent in the
- * coordinator session. Override with `MACHINEROOM_SUBAGENT_SKILLS=comma,list`.
+ * and self-audit only. Host mutation (`local-*`), status/hygiene/release
+ * (`project-status`) and web audits are excluded because they need explicit
+ * operator consent in the coordinator session. Override with
+ * `MACHINEROOM_SUBAGENT_SKILLS=comma,list`.
  */
 const DEFAULT_ALLOWED_SKILLS = [
+  "plan-testing",
   "plan-specification",
-  "plan-validators",
   "project-machineroom",
   "role-back",
   "role-clean-code",
-  "role-design",
   "role-front",
+  "role-linux",
 ] as const;
 
 const DEFAULT_TIMEOUT_SECONDS = 300;

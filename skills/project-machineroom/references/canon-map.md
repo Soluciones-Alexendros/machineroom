@@ -15,5 +15,5 @@ Normative sources for machineroom. Prefer links over copying full contracts.
 | [stacks/](../../../stacks/) | Stack snippets |
 | [docs/REUTILIZACION.md](../../../docs/REUTILIZACION.md) | Reuse rules |
 
-Publication remains a separate authorization via `project-publish` / release
+Publication remains a separate authorization via `project-status` / release
 workflow. Reviewing a plan does not authorize tag, release or host mutation.

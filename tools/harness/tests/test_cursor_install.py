@@ -31,14 +31,14 @@ def _user_home(tmp_path: Path) -> Path:
 def test_full_install_idempotence_and_manifest(tmp_path: Path) -> None:
     target = tmp_path / "project"
     first = install_full(ROOT, target)
-    expected = 24
+    expected = 21
     assert first["installed"] == expected
     assert first["changed"] == expected
     assert first["components"] == "full"
     assert first["scope"] == "project"
     assert first["omitted"] == []
     for relative in (
-        ".cursor/skills/plan-continue",
+        ".cursor/skills/project-status",
         ".cursor/rules/machineroom.mdc",
         ".cursor/agents/mr-planner.md",
         ".cursor/agents/mr-worker.md",
@@ -58,7 +58,7 @@ def test_full_install_idempotence_and_manifest(tmp_path: Path) -> None:
     assert len(manifest["resources"]) == expected
 
 
-USER_SCOPE_COMPONENTS = 23  # 17 skills + 3 agents + hooks.json + 2 hook scripts
+USER_SCOPE_COMPONENTS = 20  # 14 skills + 3 agents + hooks.json + 2 hook scripts
 
 
 def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> None:
@@ -77,7 +77,7 @@ def test_user_scope_generates_hooks_and_omits_project_rule(tmp_path: Path) -> No
     assert hooks.is_symlink()
     assert not Path(os.readlink(hooks)).is_absolute()
     assert not (target / "rules").exists()
-    assert (target / "skills" / "plan-continue").is_symlink()
+    assert (target / "skills" / "project-status").is_symlink()
     assert (target / "agents" / "mr-verifier.md").is_symlink()
     second = install_full(ROOT, target, user_scope=True)
     assert second["changed"] == 0
@@ -138,7 +138,7 @@ def test_full_dry_run_creates_nothing(tmp_path: Path) -> None:
 
 def test_real_conflict_aborts_before_any_write(tmp_path: Path) -> None:
     target = tmp_path / "project"
-    (target / ".cursor" / "skills" / "plan-continue").mkdir(parents=True)
+    (target / ".cursor" / "skills" / "project-status").mkdir(parents=True)
     with pytest.raises(ConflictError):
         install_full(ROOT, target)
     assert not (target / ".cursor" / "rules").exists()
@@ -160,7 +160,7 @@ def test_symlink_failure_rolls_back_prior_resources(tmp_path: Path, monkeypatch:
     with pytest.raises(OSError, match="injected"):
         install_full(ROOT, target)
     assert calls == 2  # noqa: PLR2004  # second call injected the failure
-    assert not list(target.rglob("plan-continue"))
+    assert not list(target.rglob("project-status"))
 
 
 def test_uninstall_only_owned_unchanged_links(tmp_path: Path) -> None:
@@ -168,10 +168,10 @@ def test_uninstall_only_owned_unchanged_links(tmp_path: Path) -> None:
     install_full(ROOT, target)
     foreign = target / ".cursor" / "rules" / "foreign.mdc"
     foreign.write_text("keep", encoding="utf-8")
-    changed = target / ".cursor" / "skills" / "plan-continue"
+    changed = target / ".cursor" / "skills" / "project-status"
     changed.unlink()
     changed.write_text("changed", encoding="utf-8")
     uninstall_full(ROOT, target)
     assert changed.read_text(encoding="utf-8") == "changed"
     assert foreign.read_text(encoding="utf-8") == "keep"
-    assert not (target / ".cursor" / "skills" / "plan-validators").exists()
+    assert not (target / ".cursor" / "skills" / "plan-testing").exists()

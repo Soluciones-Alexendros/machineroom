@@ -32,6 +32,7 @@ Prioridad: **P0** (hacer pronto) · **P1** (después de P0). Un ADR puede estar 
 | [ADR-0016](./ADR-0016-autoworkspace-host-del-canon.md)         | autoworkspace es el host del canon              | Accepted                       | P0        |
 | [ADR-0017](./ADR-0017-centralizacion-execution-min-priv.md)    | Centralización de execution y mínimo privilegio | Accepted                       | P1        |
 | [ADR-0018](./ADR-0018-rename-a-machineroom.md)                 | Rename a machineroom y compatibilidad legacy    | Accepted                       | P1        |
+| [ADR-0019](./ADR-0019-catalogo-v9-14-skills.md)                | Catálogo v9: reestructuración a 14 skills       | Accepted                       | P0        |
 
 ## Cómo añadir una
 

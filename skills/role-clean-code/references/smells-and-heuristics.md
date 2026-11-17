@@ -98,7 +98,7 @@ out-of-scope findings instead of silently expanding the change.
 - [ ] Characterization tests cover risky behavior before structural changes.
 - [ ] Focused and full-suite results are reported exactly as executed.
 
-Use → plan-validators to author or repair tests and to assess whole-suite quality.
+Use → plan-testing to author or repair tests and to assess whole-suite quality.
 
 ## Concurrency and runtime
 
@@ -110,7 +110,7 @@ Use → plan-validators to author or repair tests and to assess whole-suite qual
 
 Read [systems-emergence-concurrency.md](systems-emergence-concurrency.md) before
 acting on these findings. Treat concurrency changes as behavioral and verify them
-through → plan-validators.
+through → plan-testing.
 
 ## Final review questions
 

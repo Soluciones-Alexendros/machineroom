@@ -472,9 +472,9 @@ class CursorSubagentAdapter:
         role = (task.get("roles") or ["role-back"])[0]
         agent_name = {
             "plan-specification": "mr-planner",
-            "plan-validators": "mr-verifier",
+            "plan-testing": "mr-verifier",
         }.get(operation.skill, "mr-worker")
-        if operation.skill == "plan-validators" or role == "mr-verifier":
+        if operation.skill == "plan-testing" or role == "mr-verifier":
             agent_name = "mr-verifier"
         write = bool(policy.write_scope)
         prompt = (

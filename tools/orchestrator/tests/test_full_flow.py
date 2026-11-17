@@ -147,7 +147,7 @@ def test_complete_flow_closes_without_applying_to_operator_checkout(
         for task_id, phase, skill in (
             ("define-spec", "DEFINE", "plan-specification"),
             ("implement-output", "IMPLEMENT", "role-back"),
-            ("validate-output", "VALIDATE", "project-publish"),
+            ("validate-output", "VALIDATE", "project-status"),
         ):
             task = status["tasks"][task_id]
             assert task["state"] == "succeeded"

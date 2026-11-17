@@ -15,7 +15,7 @@ from execution.registry import check_registry, load_tools
 from contracts.loader import ContractError, load_execution_contract
 
 # Skills that must appear in the central registry (mutators / orchestrators).
-REQUIRED_REGISTRY_TOOLS = ("local-maintenance", "plan-continue", "project-publish")
+REQUIRED_REGISTRY_TOOLS = ("local-maintenance", "project-status")
 
 
 def catalog(root: Path) -> set[str]:
