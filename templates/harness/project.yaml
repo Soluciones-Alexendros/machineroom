@@ -15,13 +15,13 @@ skills:
   disabled: [] # nombres de skills a excluir del router
 handoffs:
   define: plan-specification
-  continue: plan-continue
+  continue: project-status
   implement_front: role-front
   implement_back: role-back
-  implement_design: role-design
-  validate: plan-validators
-  integrate_publish: project-publish
-  libraries: project-libraries
+  implement_linux: role-linux
+  validate: plan-testing
+  integrate_release: project-status
+  libraries: role-linux
 phases:
   - DEFINE
   - SCHEMAS

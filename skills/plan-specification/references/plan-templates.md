@@ -24,7 +24,7 @@ or as an item in an external tracker:
 
 **Dependencies:** [Task numbers this depends on, or "None"]
 
-**Implementation roles:** [role-back / role-front / role-design — invoke all that apply]
+**Implementation roles:** [role-back / role-front / role-linux / role-clean-code — invoke all that apply; visual design goes to the external Impeccable skill]
 
 **Test surfaces:** [Routes, functions, jobs and end-to-end flows to integrate into the standard suite]
 

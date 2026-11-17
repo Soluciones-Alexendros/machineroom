@@ -6,4 +6,4 @@
 4. **DAG** — implement via orchestrator / roles; no spontaneous permission expansion.
 5. **Validate** — `make validate`, harness natives, orchestration E2E as required.
 6. **Evidence** — digests and artifacts linked to plan/task ids.
-7. **Publish** — separate `project-publish` / release authorization only.
+7. **Publish** — separate `project-status` / release authorization only.

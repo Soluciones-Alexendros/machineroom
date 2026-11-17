@@ -34,28 +34,36 @@ intents:
       - auditd
       - seguridad host
       - forense
-  plan_continuar:
+  estado_proyecto:
     skills:
-      - plan-continue
+      - project-status
     patterns:
       - por donde empiezo
       - ciclo de vida
       - qué hago con este repo
-      - audítalo y publícalo
+      - estado del repo
+      - estado del proyecto
       - pon al día proyecto
+      - higieniza
+      - limpia ramas
+      - ramas fusionadas
+      - cambios sin commitear
   release:
     skills:
-      - project-publish
+      - project-status
     patterns:
       - prepara release
       - publica version
       - changelog
       - semver
       - cierra repo
+      - cierra el incremento
+      - empaqueta
+      - lanza release
   arquitectura:
     skills:
       - project-architecture
-      - plan-continue
+      - project-status
     patterns:
       - revisa la arquitectura
       - acoplamiento
@@ -90,7 +98,7 @@ intents:
       - vulnerabilidad código
   hooks:
     skills:
-      - project-publish
+      - project-status
     patterns:
       - husky
       - lint-staged
@@ -129,15 +137,6 @@ intents:
       - ruta cliente
       - formulario
       - navegación
-  design:
-    skills:
-      - role-design
-    patterns:
-      - design system
-      - tokens
-      - paleta
-      - tipografía
-      - dirección visual
   clean_code:
     skills:
       - role-clean-code
@@ -161,9 +160,9 @@ intents:
       - spec
       - desglosa tareas
       - task breakdown
-  validar_tdd:
+  plan_de_tests:
     skills:
-      - plan-validators
+      - plan-testing
     patterns:
       - tdd
       - test first
@@ -173,16 +172,24 @@ intents:
       - test coverage
       - estrategia de tests
       - tests integrados
+      - plan de tests
       - qa
-  libraries:
+  linux_engineering:
     skills:
-      - project-libraries
+      - role-linux
     patterns:
       - dependencias
       - cve
       - sca
       - sbom
       - typosquatting
+      - empaquetado
+      - paquete deb
+      - pkgbuild
+      - aur
+      - compatibilidad
+      - despliegue
+      - instalación
   machineroom_self:
     skills:
       - project-machineroom
@@ -197,7 +204,7 @@ intents:
       - doctor nativo
   repo_starting:
     skills:
-      - project-audit
+      - project-status
     patterns:
       - audita repo
       - repo standard
@@ -205,4 +212,3 @@ intents:
       - inicio de plan
       - health board
       - evolution plan
-      - estado del repo

@@ -3,12 +3,12 @@ name: web-owasp
 description:
   "Code security review (OWASP): injection, XSS, authn/authz, cryptography,
   SSRF, secrets and misconfiguration. Use when performing security review, OWASP or
-  searching for vulnerabilities in this code. Not for dependency CVEs (→ project-libraries)
+  searching for vulnerabilities in this code. Not for dependency CVEs (→ role-linux)
   nor web compliance (→ web-compliance)."
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: web
   type: audit
   language: en
@@ -40,11 +40,11 @@ in this code.
 
 ## Not for:
 
-not for dependency CVEs (→ project-libraries) nor web compliance (→ web-compliance). Compliance overlap (→ web-compliance).
+not for dependency CVEs (→ role-linux) nor web compliance (→ web-compliance). Compliance overlap (→ web-compliance).
 
 - OS hardening (→ local-security)
-- Release closure (→ project-publish)
-- Dependency audit/SCA (→ project-libraries)
+- Release closure (→ project-status)
+- Dependency audit/SCA (→ role-linux)
 
 ## Normative edition
 
@@ -72,7 +72,7 @@ LLM/API Top 10 projects are separate; cite them only when that scope is explicit
 
 ### A06:2021 Vulnerable and Outdated Components
 
-- Cross-check with → project-libraries for dependency SCA
+- Cross-check with → role-linux for dependency SCA
 
 ### A07:2021 Identification and Authentication Failures
 

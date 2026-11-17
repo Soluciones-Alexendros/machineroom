@@ -50,7 +50,7 @@
               "enum": [
                 "role-back",
                 "role-front",
-                "role-design",
+                "role-linux",
                 "role-clean-code"
               ]
             }

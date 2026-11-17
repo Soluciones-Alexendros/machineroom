@@ -4,12 +4,12 @@ description:
   Write a structured specification before writing any code, then decompose
   it into small verifiable tasks with explicit acceptance criteria. Use when starting
   a project or feature, when requirements are ambiguous, or when the change touches
-  multiple modules. Not for single-line fixes or typo corrections (→ plan-validators
+  multiple modules. Not for single-line fixes or typo corrections (→ plan-testing
   for implementation).
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: plan
   type: orchestrator
   language: en
@@ -42,7 +42,7 @@ is a tangled mess.
 - Work must be parallelized or ordered by dependency
 
 **When NOT to use:** Single-line fixes, typo corrections, or changes where
-not for single-line fixes or typo corrections (→ plan-validators for implementation).
+not for single-line fixes or typo corrections (→ plan-testing for implementation).
 requirements are unambiguous and already well-defined as tasks.
 
 ## Process
@@ -86,7 +86,7 @@ list target: `tasks/todo.md`. Template: [spec-templates.md](references/spec-temp
 
 ### Phase 4: Implement
 
-Execute tasks one at a time following → plan-validators. Before every task or
+Execute tasks one at a time following → plan-testing. Before every task or
 independent implementation action, re-evaluate its scope and invoke every
 matching `role-*` skill, even when a different role handled the previous action.
 Load only the spec sections and source files needed per step. Keep the spec alive
@@ -116,23 +116,26 @@ Every implementation task declares **Implementation roles** and **Test surfaces*
 Select roles at plan start, then repeat the selection before each task or
 independent action; an earlier invocation never covers later work.
 
-| Current surface                              | Required role   |
-| -------------------------------------------- | --------------- |
-| Backend, API, persistence, jobs, queues      | role-back       |
-| Frontend, client routes, state, interactions | role-front      |
-| Visual direction, tokens, component styling  | role-design     |
-| Clean code, refactoring, duplication cleanup | role-clean-code |
+| Current surface                                   | Required role   |
+| ------------------------------------------------- | --------------- |
+| Backend, API, persistence, jobs, queues           | role-back       |
+| Frontend, client routes, state, interactions      | role-front      |
+| Linux app, packaging, dependencies, compatibility | role-linux      |
+| Clean code, refactoring, duplication cleanup      | role-clean-code |
+
+Visual direction and design systems are not a role in this catalog: hand them to
+the external Impeccable skill (`impeccable-design-polish`).
 
 For mixed work, invoke all matching roles and define their contracts and handoffs.
 Re-evaluate whenever scope changes. Cover every declared route, function, job and
-end-to-end flow through → plan-validators and the project's standard test suite.
+end-to-end flow through → plan-testing and the project's standard test suite.
 
 ## Tools
 
 Use Read, Grep, and Glob to inspect before specifying; Write for specs, plans
 and task lists; Bash only for the project's own build/test/lint. Related:
-→ plan-validators (implementation and integrated-test loop), → plan-continue
-(roadmap / repo next steps), → project-libraries (supply-chain before adding dependencies).
+→ plan-testing (implementation and integrated-test loop), → project-status
+(roadmap / repo next steps), → role-linux (supply-chain before adding dependencies).
 
 ## References
 

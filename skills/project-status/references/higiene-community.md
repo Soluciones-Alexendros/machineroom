@@ -1,6 +1,6 @@
 # Higiene de repositorio (community standards)
 
-Checklist absorbida de la antigua skill `repo-hygiene`. Solo lectura; la remediación va en las fases 5–6 de `plan-continue` tras confirmación.
+Checklist absorbida de la antigua skill `repo-hygiene`. Esta checklist es de solo lectura; la remediación va en la etapa de higienización de `project-status` (Stage 2) tras confirmación.
 
 Para la flota Soluciones-Alexendros el contrato P0/P1/P2 completo está en `references/` (fuente: [repo-standard](https://github.com/Soluciones-Alexendros/machineroom)). Esta hoja cubre el mínimo community standards cuando el repo aún no se alinea al canon de flota.
 

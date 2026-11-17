@@ -449,7 +449,7 @@ def _md_next(rep: dict[str, Any]) -> list[str]:
         "1. Si el semáforo es rojo por un hallazgo P0 o un `.env` versionado: parar y rotar.",
         "2. Árbol sucio o clon detrás: preguntar antes de `pull --ff-only`.",
         "3. Con el tablero a la vista, escribir el plan (`/design` o `task_plan.md`).",
-        "4. Al terminar el trabajo: `project-publish` modo G.",
+        "4. Al terminar el trabajo: etapa de cierre de `project-status`.",
         "",
         f"JSON: `{rep.get('json_path') or 'inicio.json'}`",
         f"Tablero HTML: `{rep.get('html_path') or 'ESTADO.html'}`",

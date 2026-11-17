@@ -153,10 +153,10 @@ tools:
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
-  - tool_id: plan-continue
-    skill: plan-continue
+  - tool_id: project-status
+    skill: project-status
     entrypoint: tools/workspace-router
-    description: Execution tool for skill plan-continue
+    description: Execution tool for skill project-status
     execution_kind: orchestrator
     distribution: workspace-required
     shared_dependencies:
@@ -172,14 +172,14 @@ tools:
         idempotency: "yes"
         approval_required: false
         recovery_required: false
-        description: plan-continue:route
+        description: project-status:route
       - id: init
         effect: write-workspace
         dry_run: "yes"
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        description: plan-continue:init
+        description: project-status:init
       - id: schema_write
         effect: write-workspace
         dry_run: "yes"
@@ -190,7 +190,7 @@ tools:
           - SCHEMAS
         required_verifications:
           - schema_deliverable
-        description: plan-continue:schema_write
+        description: project-status:schema_write
       - id: integrate
         effect: write-workspace
         dry_run: "yes"
@@ -201,7 +201,7 @@ tools:
           - INTEGRATE
         required_verifications:
           - integrate_result
-        description: plan-continue:integrate
+        description: project-status:integrate
       - id: status
         effect: read
         dry_run: "yes"
@@ -212,7 +212,47 @@ tools:
           - STATUS
         required_verifications:
           - status_result
-        description: plan-continue:status
+        description: project-status:status
+      - id: status_board
+        effect: write-workspace
+        dry_run: "no"
+        idempotency: "no"
+        approval_required: false
+        recovery_required: false
+        description: project-status:status_board
+      - id: repo_scan
+        effect: read
+        dry_run: "yes"
+        idempotency: "yes"
+        approval_required: false
+        recovery_required: false
+        description: project-status:repo_scan
+      - id: hygiene
+        effect: write-workspace
+        dry_run: "yes"
+        idempotency: "no"
+        approval_required: true
+        recovery_required: true
+        description: project-status:hygiene (branch deletion and uncommitted work integration)
+      - id: local_gates
+        effect: write-workspace
+        dry_run: "yes"
+        idempotency: "yes"
+        approval_required: false
+        recovery_required: false
+        timeout_seconds: 1800
+        completion_phases:
+          - VALIDATE
+        required_verifications:
+          - gate_result
+        description: project-status:local_gates (may write via gate-husky.sh)
+      - id: publish
+        effect: communicate-external
+        dry_run: "no"
+        idempotency: "no"
+        approval_required: true
+        recovery_required: false
+        description: project-status:publish
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
@@ -255,10 +295,10 @@ tools:
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
-  - tool_id: plan-validators
-    skill: plan-validators
+  - tool_id: plan-testing
+    skill: plan-testing
     entrypoint: tools/execution
-    description: Execution tool for skill plan-validators
+    description: Execution tool for skill plan-testing
     execution_kind: agent
     distribution: standalone
     shared_dependencies: []
@@ -272,7 +312,7 @@ tools:
         idempotency: "yes"
         approval_required: false
         recovery_required: false
-        description: plan-validators:discover_stack
+        description: plan-testing:discover_stack
       - id: red_green
         effect: write-workspace
         dry_run: "yes"
@@ -283,43 +323,14 @@ tools:
           - VALIDATE
         required_verifications:
           - gate_result
-        description: plan-validators:red_green
+        description: plan-testing:red_green
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
-  - tool_id: project-audit
-    skill: project-audit
+  - tool_id: role-linux
+    skill: role-linux
     entrypoint: tools/execution
-    description: Execution tool for skill project-audit
-    execution_kind: script
-    distribution: workspace-required
-    shared_dependencies:
-      - tools/execution
-    system_requirements:
-      binaries: []
-      network: false
-    operations:
-      - id: repo_scan
-        effect: read
-        dry_run: "yes"
-        idempotency: "yes"
-        approval_required: false
-        recovery_required: false
-        description: project-audit:repo_scan
-      - id: status_board
-        effect: write-workspace
-        dry_run: "no"
-        idempotency: "no"
-        approval_required: false
-        recovery_required: false
-        description: project-audit:status_board
-    automation_limits:
-      Agent judgment remains for non-script operations; blocked mutators
-      stay blocked without approval.
-  - tool_id: project-libraries
-    skill: project-libraries
-    entrypoint: tools/execution
-    description: Execution tool for skill project-libraries
+    description: Execution tool for skill role-linux
     execution_kind: script
     distribution: workspace-required
     shared_dependencies:
@@ -334,48 +345,38 @@ tools:
         idempotency: "yes"
         approval_required: false
         recovery_required: false
-        description: project-libraries:sca_scan
+        description: role-linux:sca_scan
       - id: sbom_generate
         effect: write-workspace
         dry_run: "no"
         idempotency: "no"
         approval_required: false
         recovery_required: false
-        description: project-libraries:sbom_generate
-    automation_limits:
-      Agent judgment remains for non-script operations; blocked mutators
-      stay blocked without approval.
-  - tool_id: project-publish
-    skill: project-publish
-    entrypoint: tools/workspace-router
-    description: Execution tool for skill project-publish
-    execution_kind: script
-    distribution: workspace-required
-    shared_dependencies:
-      - tools/workspace-router
-    system_requirements:
-      binaries: []
-      network: false
-    operations:
-      - id: local_gates
-        effect: write-workspace
+        description: role-linux:sbom_generate
+      - id: compat_check
+        effect: read
         dry_run: "yes"
         idempotency: "yes"
         approval_required: false
         recovery_required: false
+        description: role-linux:compat_check
+      - id: package
+        effect: write-workspace
+        dry_run: "yes"
+        idempotency: "no"
+        approval_required: false
+        recovery_required: false
         timeout_seconds: 1800
-        completion_phases:
-          - VALIDATE
-        required_verifications:
-          - gate_result
-        description: project-publish:local_gates (may write via gate-husky.sh)
-      - id: publish
-        effect: communicate-external
-        dry_run: "no"
+        description: role-linux:package (deb/rpm/PKGBUILD build in a staging root)
+      - id: install
+        effect: mutate-host
+        dry_run: "yes"
         idempotency: "no"
         approval_required: true
-        recovery_required: false
-        description: project-publish:publish
+        snapshot_required: true
+        recovery_required: true
+        timeout_seconds: 900
+        description: role-linux:install
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.
@@ -410,7 +411,7 @@ tools:
         required_verifications:
           - spec_deliverable
         description: project-machineroom:plan_self_change
-    automation_limits: No publish operations; hand off to project-publish for release.
+    automation_limits: No publish operations; hand off to project-status for release.
   - tool_id: role-back
     skill: role-back
     entrypoint: tools/execution
@@ -458,31 +459,6 @@ tools:
         required_verifications:
           - implementation_deliverable
         description: role-clean-code:refactor
-    automation_limits:
-      Agent judgment remains for non-script operations; blocked mutators
-      stay blocked without approval.
-  - tool_id: role-design
-    skill: role-design
-    entrypoint: tools/execution
-    description: Execution tool for skill role-design
-    execution_kind: agent
-    distribution: standalone
-    shared_dependencies: []
-    system_requirements:
-      binaries: []
-      network: false
-    operations:
-      - id: deliver_visual
-        effect: write-workspace
-        dry_run: "yes"
-        idempotency: "no"
-        approval_required: false
-        recovery_required: false
-        completion_phases:
-          - IMPLEMENT
-        required_verifications:
-          - implementation_deliverable
-        description: role-design:deliver_visual
     automation_limits:
       Agent judgment remains for non-script operations; blocked mutators
       stay blocked without approval.

@@ -26,6 +26,7 @@ from project_load import (  # noqa: E402
     filter_skills,
     handoff_for_phase,
     load_project,
+    stale_handoffs,
 )
 from state_paths import (
     StateDirError,
@@ -83,6 +84,16 @@ def route(repo: Path, phase: str, *, bump: bool, note: str, init: bool = False) 
         raise
     if not allowed:
         raise ProjectConfigError("no skills allowed (enabled: [] or all disabled)")
+    stale = stale_handoffs(project, catalog)
+    if stale:
+        detail = ", ".join(
+            f"{item['key']}={item['skill']}" + (f" → {item['replacement']}" if item["replacement"] else " (retired)")
+            for item in stale
+        )
+        raise ProjectConfigError(
+            f"stale handoffs in {state_dir(repo) / 'project.yaml'} ({detail}); "
+            "update them to catalog skill names"
+        )
     skill = handoff_for_phase(project, phase)
     if skill is None or skill not in catalog:
         raise ProjectConfigError(f"unknown handoff skill for phase {phase}: {skill!r}")

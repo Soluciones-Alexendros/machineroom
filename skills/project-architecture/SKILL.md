@@ -3,12 +3,12 @@ name: project-architecture
 description:
   Code architecture verification and analysis. Use when analyzing code
   structure, dependencies, architectural drift, or refactoring opportunities. Not
-  for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries);
+  for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ role-linux);
   minor implementation without architecture analysis uses role-* skills.
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 7.1.1
+  version: "7.1.2"
   domain: project
   type: audit
   language: en
@@ -40,10 +40,10 @@ operator requests architectural analysis, dependency mapping, or code health ass
 
 ## Not for
 
-not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ project-libraries); minor implementation without architecture analysis uses role-* skills (→ role-clean-code for refactoring outcome).
+not for security code review (→ web-owasp) nor SCA/CVE dependency audits (→ role-linux); minor implementation without architecture analysis uses role-* skills (→ role-clean-code for refactoring outcome).
 
 - Security code review (use web-owasp)
-- Minor implementation changes without architectural analysis (use the matching role-* skill; dependency advisories → project-libraries)
+- Minor implementation changes without architectural analysis (use the matching role-* skill; dependency advisories → role-linux)
 
 ## Architectural Analysis
 

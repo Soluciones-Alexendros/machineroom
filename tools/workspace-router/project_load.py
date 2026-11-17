@@ -98,10 +98,49 @@ def handoff_for_phase(project: dict[str, Any], phase: str) -> str | None:
     h = project.get("handoffs") or {}
     mapping = {
         "DEFINE": h.get("define", "plan-specification"),
-        "SCHEMAS": h.get("continue", "plan-continue"),
+        "SCHEMAS": h.get("continue", "project-status"),
         "IMPLEMENT": h.get("implement_back") or h.get("implement_front") or "role-back",
-        "VALIDATE": h.get("validate", "plan-validators"),
-        "INTEGRATE": h.get("integrate_publish") or h.get("integrate_hooks") or "project-publish",
-        "STATUS": h.get("continue", "plan-continue"),
+        "VALIDATE": h.get("validate", "plan-testing"),
+        "INTEGRATE": (
+            h.get("integrate_release")
+            or h.get("integrate_publish")
+            or h.get("integrate_hooks")
+            or "project-status"
+        ),
+        "STATUS": h.get("continue", "project-status"),
     }
     return mapping.get(phase)
+
+
+# Skills removed or renamed in 9.0.0. A project.yaml that still names them routes
+# nowhere, so the router reports the exact replacement instead of failing silently.
+HANDOFF_MIGRATIONS: dict[str, str] = {
+    "plan-continue": "project-status",
+    "project-audit": "project-status",
+    "project-publish": "project-status",
+    "plan-validators": "plan-testing",
+    "project-libraries": "role-linux",
+    "role-design": "",
+}
+
+
+def stale_handoffs(project: dict[str, Any], catalog: list[str]) -> list[dict[str, str]]:
+    """Return handoff entries that no longer resolve, with the documented replacement."""
+    known = set(catalog)
+    handoffs = project.get("handoffs") or {}
+    if not isinstance(handoffs, dict):
+        return []
+    findings: list[dict[str, str]] = []
+    for key, raw in sorted(handoffs.items()):
+        if not isinstance(raw, str) or not raw:
+            continue
+        if raw in known:
+            continue
+        findings.append(
+            {
+                "key": str(key),
+                "skill": raw,
+                "replacement": HANDOFF_MIGRATIONS.get(raw, ""),
+            }
+        )
+    return findings
