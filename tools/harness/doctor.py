@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
@@ -122,8 +124,6 @@ def handoff_check(root: Path) -> Check:
         return Check("handoffs", "contract", "not_applicable", "no .machineroom/project.yaml")
     catalog = {p.name for p in (root / "skills").iterdir() if p.is_dir() and (p / "SKILL.md").is_file()}
     try:
-        import yaml
-
         data = yaml.safe_load(project.read_text(encoding="utf-8")) or {}
     except Exception as exc:  # pragma: no cover - unreadable config
         return Check("handoffs", "contract", "fail", f"cannot read project.yaml: {exc}")

@@ -102,10 +102,7 @@ def handoff_for_phase(project: dict[str, Any], phase: str) -> str | None:
         "IMPLEMENT": h.get("implement_back") or h.get("implement_front") or "role-back",
         "VALIDATE": h.get("validate", "plan-testing"),
         "INTEGRATE": (
-            h.get("integrate_release")
-            or h.get("integrate_publish")
-            or h.get("integrate_hooks")
-            or "project-status"
+            h.get("integrate_release") or h.get("integrate_publish") or h.get("integrate_hooks") or "project-status"
         ),
         "STATUS": h.get("continue", "project-status"),
     }

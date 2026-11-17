@@ -91,8 +91,7 @@ def route(repo: Path, phase: str, *, bump: bool, note: str, init: bool = False) 
             for item in stale
         )
         raise ProjectConfigError(
-            f"stale handoffs in {state_dir(repo) / 'project.yaml'} ({detail}); "
-            "update them to catalog skill names"
+            f"stale handoffs in {state_dir(repo) / 'project.yaml'} ({detail}); update them to catalog skill names"
         )
     skill = handoff_for_phase(project, phase)
     if skill is None or skill not in catalog:

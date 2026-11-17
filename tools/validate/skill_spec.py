@@ -8,6 +8,7 @@ Exit 0 si todas las skills cumplen; 1 en caso contrario (lista errores).
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import re
 import subprocess
@@ -333,9 +334,7 @@ def check_skill_count_claims(root: Path, count: int) -> None:
         for match in SKILL_COUNT_RE.finditer(head):
             claimed = int(match.group(1))
             if claimed != count:
-                ERRORS.append(
-                    f"[catalog] {rel} declara {claimed} skills y el catálogo tiene {count}"
-                )
+                ERRORS.append(f"[catalog] {rel} declara {claimed} skills y el catálogo tiene {count}")
 
 
 def _role_enum(root: Path) -> set[str]:
@@ -343,8 +342,6 @@ def _role_enum(root: Path) -> set[str]:
     if not path.is_file():
         return set()
     try:
-        import json
-
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         ERRORS.append(f"[roles] no se puede leer {ROLE_ENUM_PATH}: {exc}")
