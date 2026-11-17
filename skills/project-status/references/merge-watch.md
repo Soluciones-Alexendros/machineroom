@@ -16,18 +16,20 @@ Un sí a «aplica remediación», «abre el PR» o cierre BUILD autoriza:
 
 1. Commits en rama de trabajo (`chore/project-status-*`, `plan/*`, `cursor/*`, etc.).
 2. Push + PR (draft si el plan lo pide) a `main`.
-3. **Auto-merge con merge commit** + suscripción a eventos (ver abajo).
+3. **Auto-merge con squash** + suscripción a eventos (ver abajo).
 
 Sigue exigiendo sí aparte: borrar labels legacy, tags, `gh release create`, rulesets, rotar secretos.
 
 ## Política de merge (normativa)
 
-| Permitido                                      | Prohibido                                      |
-| ---------------------------------------------- | ---------------------------------------------- |
-| `gh pr merge <n> --auto --merge --delete-branch` | `--squash`, `--rebase`                         |
-| Esperar checks required vía auto-merge         | `--admin` / bypass de protección o merge queue |
+| Permitido                                         | Prohibido                                      |
+| ------------------------------------------------- | ---------------------------------------------- |
+| `gh pr merge <n> --auto --squash --delete-branch` | `--merge`, `--rebase`                          |
+| Esperar checks required vía auto-merge            | `--admin` / bypass de protección o merge queue |
 
-Si el repo exige otro método en branch protection, documentarlo en el informe y **no** inventar squash.
+Los rulesets de la flota solo admiten `squash`; si un repo declara otro método en
+branch protection, documentarlo en el informe y usar exactamente ese método, sin
+inventar ni forzar `--merge`.
 
 ## Flujo: publicar y escuchar
 
@@ -36,7 +38,7 @@ Tras abrir el PR (y `gh pr ready` si deja de ser draft):
 1. Activar auto-merge:
 
 ```bash
-gh pr merge <n> --auto --merge --delete-branch
+gh pr merge <n> --auto --squash --delete-branch
 ```
 
 2. Suscribir la conversación del agente (Cursor):
@@ -48,8 +50,8 @@ gh pr merge <n> --auto --merge --delete-branch
    No hacer `gh pr checks --watch` ni bucles de polling: el aviso llega como notificación.
 
    En Cursor (usuario): `~/.cursor/hooks.json` refuerza esto —
-   `beforeShellExecution` (`pr_policy.py`, `failClosed`) deniega `--squash`/
-   `--rebase`/`--admin` y exige `--merge` en invocaciones reales de `gh pr merge`
+   `beforeShellExecution` (`pr_policy.py`, `failClosed`) deniega `--merge`/
+   `--rebase`/`--admin` y exige `--squash` en invocaciones reales de `gh pr merge`
    (ignora texto en comillas/heredocs para evitar falsos positivos);
    `afterShellExecution` (`pr_listen.py`) inyecta el recordatorio de suscribir
    solo si la salida parece éxito, sin reinyectar el output crudo (anti-fuga).
@@ -58,7 +60,7 @@ gh pr merge <n> --auto --merge --delete-branch
 
 4. Cuando llegue el evento:
 
-- **CI failure** → corregir en alcance del PR, push (`--force-with-lease` solo si rebase local lo exige; nunca `--force`), reactivar `--auto --merge` si hace falta, volver a suscribir si la suscripción se cerró, terminar turno otra vez.
+- **CI failure** → corregir en alcance del PR, push (`--force-with-lease` solo si rebase local lo exige; nunca `--force`), reactivar `--auto --squash` si hace falta, volver a suscribir si la suscripción se cerró, terminar turno otra vez.
 - **PR merged** → limpieza de ramas/worktrees (`cierre-trabajo.md` paso 6); actualizar informe.
 - **PR closed without merge** → informar bloqueo; no reabrir sin instrucción.
 
