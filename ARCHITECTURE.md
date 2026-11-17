@@ -32,6 +32,12 @@ plan); `project` is the repo/product (architecture, status, self-audit); `role`
 is an implementation surface (back, front, clean-code, linux); `local` is the
 host; `web` is web-surface audit.
 
+Not in this tree by decision: the optional [Herdr](https://herdr.dev) plugin
+(terminal workspace surface). It is documented in `docs/herdr-plugin.md`, decided
+in [ADR-0020](docs/architecture/decisions/ADR-0020-plugin-herdr-opcional.md)
+(`Proposed`) and kept up to date in a draft PR; nothing in the pipeline depends
+on it.
+
 ## Pipeline
 
 ```text
