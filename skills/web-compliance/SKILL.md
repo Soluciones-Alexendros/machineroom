@@ -22,7 +22,7 @@ metadata:
     - gdpr
     - seo
     - remediation
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob
 ---
 

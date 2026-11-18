@@ -20,24 +20,31 @@ Pi, instalación de una release pineada:
 pi install git:github.com/Soluciones-Alexendros/machineroom@v7.1.1
 ```
 
-Desarrollo del checkout o instalación Cursor de solo skills:
+Desarrollo del checkout o instalación de solo skills (Cursor, OpenCode o Pi):
 
 ```bash
 git clone https://github.com/Soluciones-Alexendros/machineroom.git
 bash machineroom/scripts/install-cursor.sh --user
+# o: bash machineroom/scripts/install-opencode.sh --user
+# o: bash machineroom/scripts/install-pi.sh --user
 ```
 
-## Configuración en Cursor y Pi
+## Configuración en Cursor, OpenCode y Pi
 
-Cursor (IDE) y Pi (terminal) son los dos harnesses, ambos en nivel A: la puerta es el symlink, no un binario en CI. El catálogo versionado es solo `skills/`. Cursor versiona hooks, rules y agents bajo `.cursor/`; los symlinks de skills se crean con `install-cursor.sh`.
+Cursor (IDE), OpenCode (terminal, V2) y Pi (terminal) son los tres harnesses, todos en nivel A: la puerta es el symlink, no un binario en CI. El catálogo versionado es solo `skills/`. Cursor versiona hooks, rules y agents bajo `.cursor/`; los symlinks de skills se crean con `install-cursor.sh`, `install-opencode.sh` o `install-pi.sh`.
+
+OpenCode instala en `.opencode/skills/` (proyecto) o `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/` (global). La verificación nativa B es opt-in (`MR_OPENCODE_NATIVE_OPT_IN=1`) y usa un binario OpenCode V2 real; sin él se informa `not_run`, nunca PASS. Cargar una skill no autoriza herramientas ni mutaciones.
 
 ```bash
 git clone https://github.com/Soluciones-Alexendros/machineroom.git
 cd machineroom
 bash scripts/install-cursor.sh --target .cursor/skills
 bash scripts/install-cursor.sh --user
+bash scripts/install-opencode.sh --target .opencode/skills
+bash scripts/install-opencode.sh --user
 bash scripts/install-pi.sh --target .pi/skills
 bash scripts/install-pi.sh --user
+bash scripts/install.sh --harness opencode --target /tmp/ai-opencode --yes --json
 bash scripts/install.sh --harness pi --target /tmp/ai-pi --yes --json
 bash run-validation.sh
 ```
@@ -50,7 +57,7 @@ python tools/workspace-router/run.py --init --repo .   # scaffold once
 python tools/workspace-router/run.py --phase DEFINE --repo . --json   # read-only route
 ```
 
-La ejecución mutadora se declara en `tools/execution/registry.yaml` (schema validado). Las skills enlazan con `metadata.execution: <tool_id>` cuando aplica; las de tipo `audit` no tienen entrada. Mutación solo vía `run_registered` + aprobación. Migraciones del cierre verificable: `docs/verifiable-closure-migrations.md`. Harnesses: `docs/harness-integration.md` (Cursor y Pi, nivel A). [ADR-0017](docs/architecture/decisions/ADR-0017-centralizacion-execution-min-priv.md).
+La ejecución mutadora se declara en `tools/execution/registry.yaml` (schema validado). Las skills enlazan con `metadata.execution: <tool_id>` cuando aplica; las de tipo `audit` no tienen entrada. Mutación solo vía `run_registered` + aprobación. Migraciones del cierre verificable: `docs/verifiable-closure-migrations.md`. Harnesses: `docs/harness-integration.md` (Cursor, OpenCode y Pi, nivel A). [ADR-0017](docs/architecture/decisions/ADR-0017-centralizacion-execution-min-priv.md).
 
 Plantillas de proyecto: `templates/harness/` → copiar a `<repo>/.machineroom/`.
 

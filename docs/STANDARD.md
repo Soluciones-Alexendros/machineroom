@@ -19,7 +19,7 @@ metadata:
 ---
 ```
 
-Optional spec fields (`compatibility`, `allowed-tools`) may be added when they add value.
+Optional spec fields (`compatibility`, `allowed-tools`) may be added when they add value. `compatibility` is the closed set `cursor, pi, opencode` for every catalog skill; OpenCode V2 reads the catalog but does not interpret this field or `allowed-tools`.
 
 ## Description (template)
 

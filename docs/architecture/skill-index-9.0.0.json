@@ -36,7 +36,7 @@
         "sistema arch"
       ],
       "entry": "skills/local-maintenance/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "local-security",
@@ -62,7 +62,7 @@
         "seguridad host"
       ],
       "entry": "skills/local-security/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "plan-specification",
@@ -85,7 +85,7 @@
         "task breakdown"
       ],
       "entry": "skills/plan-specification/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "plan-testing",
@@ -115,7 +115,7 @@
         "tests integrados"
       ],
       "entry": "skills/plan-testing/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "project-architecture",
@@ -139,7 +139,7 @@
         "revisa la arquitectura"
       ],
       "entry": "skills/project-architecture/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "project-machineroom",
@@ -167,7 +167,7 @@
         "self-audit machineroom"
       ],
       "entry": "skills/project-machineroom/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "project-status",
@@ -219,7 +219,7 @@
         "semver"
       ],
       "entry": "skills/project-status/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "role-back",
@@ -254,7 +254,7 @@
         "worker"
       ],
       "entry": "skills/role-back/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "role-clean-code",
@@ -285,7 +285,7 @@
         "small functions"
       ],
       "entry": "skills/role-clean-code/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "role-front",
@@ -315,7 +315,7 @@
         "ruta cliente"
       ],
       "entry": "skills/role-front/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "role-linux",
@@ -347,7 +347,7 @@
         "typosquatting"
       ],
       "entry": "skills/role-linux/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "web-compliance",
@@ -372,7 +372,7 @@
         "wcag"
       ],
       "entry": "skills/web-compliance/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "web-owasp",
@@ -397,7 +397,7 @@
         "xss"
       ],
       "entry": "skills/web-owasp/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     },
     {
       "name": "web-performance",
@@ -421,7 +421,7 @@
         "ttfb"
       ],
       "entry": "skills/web-performance/SKILL.md",
-      "compatibility": "cursor, pi"
+      "compatibility": "cursor, pi, opencode"
     }
   ]
 }

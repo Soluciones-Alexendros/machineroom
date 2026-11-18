@@ -22,7 +22,7 @@ metadata:
     - release
     - branch-cleanup
   execution: project-status
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

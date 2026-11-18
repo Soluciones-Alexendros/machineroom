@@ -21,7 +21,7 @@ metadata:
     - acceptance-criteria
     - capability-map
   execution: plan-specification
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

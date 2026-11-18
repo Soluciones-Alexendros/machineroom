@@ -23,7 +23,7 @@ metadata:
     - forms
     - contracts
   execution: role-front
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

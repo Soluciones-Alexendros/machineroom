@@ -276,8 +276,8 @@ def check_catalog(root: Path, names: set[str]) -> None:
 def check_compatibility(skill: str, fm: dict[str, Any]) -> None:
     raw = str(fm.get("compatibility", ""))
     parts = {part.strip() for part in raw.split(",") if part.strip()}
-    if parts != {"cursor", "pi"}:
-        err(skill, f"compatibility debe ser solo cursor, pi: {raw!r}")
+    if parts != {"cursor", "pi", "opencode"}:
+        err(skill, f"compatibility debe ser cursor, pi, opencode: {raw!r}")
 
 
 def check_skill_md_locations(root: Path) -> None:

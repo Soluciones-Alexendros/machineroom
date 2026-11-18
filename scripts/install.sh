@@ -46,6 +46,7 @@ resolve_project_root() {
 is_skills_dir() {
   case "$1" in
     *.cursor/skills|.cursor/skills) return 0 ;;
+    *.opencode/skills|.opencode/skills) return 0 ;;
     *.pi/skills|.pi/skills) return 0 ;;
     *.pi/agent/skills|.pi/agent/skills) return 0 ;;
     *) return 1 ;;
@@ -59,6 +60,8 @@ resolve_harness_root() {
   local nested
   if [[ "$h" == "cursor" ]]; then
     nested=".cursor/skills"
+  elif [[ "$h" == "opencode" ]]; then
+    nested=".opencode/skills"
   else
     nested=".pi/skills"
   fi
@@ -96,7 +99,7 @@ resolve_harness_root() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --harness)
-      if [[ $# -lt 2 ]]; then echo "ERROR: --harness requires cursor|pi" >&2; exit 2; fi
+      if [[ $# -lt 2 ]]; then echo "ERROR: --harness requires cursor|opencode|pi" >&2; exit 2; fi
       HARNESS="$2"
       shift 2
       ;;
@@ -117,14 +120,16 @@ while [[ $# -gt 0 ]]; do
     --uninstall) UNINSTALL=true; shift ;;
     --help|-h)
       cat <<'HELP'
-Usage: bash scripts/install.sh --harness cursor|pi [--components skills|full] [--target DIR] [--user] [--yes] [--dry-run] [--uninstall] [--json]
+Usage: bash scripts/install.sh --harness cursor|opencode|pi [--components skills|full] [--target DIR] [--user] [--yes] [--dry-run] [--uninstall] [--json]
 
-  --harness cursor|pi   Required. Which harness installer to run.
+  --harness cursor|opencode|pi  Required. Which harness installer to run.
   --target DIR          Destination project directory. '.' is this script's checkout
                         ($ROOT), not the cwd. Relative paths anchor to $ROOT.
-                        A path ending in .cursor/skills, .pi/skills, or .pi/agent/skills
-                        is used as-is. Default without --user: /tmp/ai-<harness>, then nested.
+                        A path ending in .cursor/skills, .opencode/skills, .pi/skills,
+                        or .pi/agent/skills is used as-is. Default without --user:
+                        /tmp/ai-<harness>, then nested.
   --components skills|full  Cursor full installs skills, rules, agents and hooks.
+                        OpenCode and Pi install skills only.
   --user                Install into the harness user directory. Overrides --target.
   --uninstall           Remove only owned resources recorded in the manifest.
   --yes                 Non-interactive (forwarded).
@@ -138,8 +143,8 @@ HELP
   esac
 done
 
-if [[ "$HARNESS" != "cursor" && "$HARNESS" != "pi" ]]; then
-  echo "ERROR: --harness cursor|pi required" >&2
+if [[ "$HARNESS" != "cursor" && "$HARNESS" != "opencode" && "$HARNESS" != "pi" ]]; then
+  echo "ERROR: --harness cursor|opencode|pi required" >&2
   exit 2
 fi
 if [[ "$COMPONENTS" != "skills" && "$COMPONENTS" != "full" ]]; then
@@ -149,7 +154,7 @@ fi
 
 if [[ "$COMPONENTS" == "full" ]]; then
   if [[ "$HARNESS" != "cursor" ]]; then
-    echo "ERROR: --components full is only supported for cursor" >&2
+    echo "ERROR: --components full is only supported for cursor (OpenCode and Pi are skills-only)" >&2
     exit 2
   fi
   if [[ "$USER_MODE" == true ]]; then
@@ -200,6 +205,8 @@ if [[ "$UNINSTALL" == true ]]; then ARGS+=("--uninstall"); fi
 
 if [[ "$HARNESS" == "cursor" ]]; then
   exec bash "$ROOT/scripts/install-cursor.sh" "${ARGS[@]}"
+elif [[ "$HARNESS" == "opencode" ]]; then
+  exec bash "$ROOT/scripts/install-opencode.sh" "${ARGS[@]}"
 else
   exec bash "$ROOT/scripts/install-pi.sh" "${ARGS[@]}"
 fi

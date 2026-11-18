@@ -40,6 +40,7 @@ smoke:
 validate-harnesses:
 	bash scripts/tests/test_pi_native.sh
 	bash scripts/tests/test_cursor_native.sh
+	bash scripts/tests/test_opencode_native.sh
 
 e2e-orchestration:
 	bash scripts/tests/test_orchestration_core.sh

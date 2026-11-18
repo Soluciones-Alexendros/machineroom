@@ -29,7 +29,8 @@ usage() {
   cat <<EOF
 Usage: bash $INSTALLER [--target DIR] [--user] [--dry-run] [--uninstall] [--yes] [--json]
   --target DIR   Destination skills directory. '.' is this script's checkout (\$ROOT), not the cwd.
-                 A path ending in .cursor/skills, .pi/skills, or .pi/agent/skills is used as-is.
+                 A path ending in .cursor/skills, .opencode/skills, .pi/skills, or
+                 .pi/agent/skills is used as-is.
   --user         Destination is the harness user directory. Overrides --target.
                  Reads the catalog from \$HOME/.machineroom (relative symlinks).
   --dry-run      Preflight only — no mkdir, no links, no manifest.
@@ -104,10 +105,10 @@ while [ $# -gt 0 ]; do
     --json) JSON_OUT=1; shift ;;
     --harness)
       HARNESS="${2:-}"
-      if [ "$HARNESS" != "cursor" ] && [ "$HARNESS" != "pi" ]; then
-        echo "ERROR: --harness must be cursor|pi" >&2
-        exit 2
-      fi
+      case "$HARNESS" in
+        cursor|pi|opencode) ;;
+        *) echo "ERROR: --harness must be cursor|pi|opencode" >&2; exit 2 ;;
+      esac
       shift 2
       ;;
     --scope) SCOPE="${2:-}"; shift 2 ;;

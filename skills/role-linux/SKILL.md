@@ -22,7 +22,7 @@ metadata:
     - dependencies
     - compatibility
   execution: role-linux
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

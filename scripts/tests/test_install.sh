@@ -1,7 +1,7 @@
 #!/bin/bash
 # Install matrix: dry-run no mkdir, conflicts, uninstall retain+warn
 set -euo pipefail
-echo "HARNESS_MATRIX: cursor,pi"
+echo "HARNESS_MATRIX: cursor,opencode,pi"
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 SKILL_COUNT=$(find "$ROOT/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d " ")
 TMP=$(mktemp -d)
@@ -388,5 +388,52 @@ test "$(echo "$RULE_OUT" | grep -c '^---$')" = "2"
 if bash "$ROOT/scripts/cursor-user-rule.sh" --bogus 2>/dev/null; then
   echo "FAIL: unknown arg accepted by cursor-user-rule.sh"; exit 1
 fi
+
+
+# --- OpenCode: project scope, flat targets, XDG user scope and config conflict ---
+AI_O="$TMP/ai-opencode"
+WRAP_O=$(bash "$ROOT/scripts/install.sh" --harness opencode --target "$AI_O" --yes --json 2>/dev/null)
+echo "$WRAP_O" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["harness"]=="opencode" and d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith(".opencode/skills"), d' "$SKILL_COUNT"
+test "$(find "$AI_O/.opencode/skills" -maxdepth 1 -type l | wc -l | tr -d " ")" = "$SKILL_COUNT"
+assert_abs_links "$AI_O/.opencode/skills"
+WRAP_O2=$(bash "$ROOT/scripts/install.sh" --harness opencode --target "$AI_O" --yes --json 2>/dev/null)
+echo "$WRAP_O2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["changed"]==0 and d["skipped"]==int(sys.argv[1]), d' "$SKILL_COUNT"
+
+O_FLAT="$TMP/test-opencode"
+O_JSON=$(bash "$ROOT/scripts/install-opencode.sh" --target "$O_FLAT" --yes --json 2>/dev/null)
+echo "$O_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d' "$SKILL_COUNT"
+assert_abs_links "$O_FLAT"
+
+O_DRY="$TMP/dry-opencode"
+O_DRY_OUT=$(bash "$ROOT/scripts/install-opencode.sh" --target "$O_DRY" --dry-run --json 2>/dev/null)
+echo "$O_DRY_OUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["dry_run"] is True and d["installed"]==int(sys.argv[1]), d' "$SKILL_COUNT"
+test ! -e "$O_DRY"
+
+WRAP_DOT_O=$(cd /tmp && bash "$ROOT/scripts/install.sh" --harness opencode --target . --yes --json 2>/dev/null)
+echo "$WRAP_DOT_O" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["target"]==sys.argv[1]+"/.opencode/skills", d' "$ROOT"
+test ! -L "$ROOT/local-maintenance"
+
+if bash "$ROOT/scripts/install.sh" --harness opencode --components full --target "$TMP/invalid-opencode-full" --yes --json 2>/dev/null; then
+  echo "FAIL: OpenCode full mode should be rejected"; exit 1
+fi
+
+HOME_O="$TMP/home-opencode"
+XDG_O="$TMP/xdg-opencode"
+prepare_runtime "$HOME_O"
+mkdir -p "$XDG_O/opencode"
+O_USER=$(HOME="$HOME_O" XDG_CONFIG_HOME="$XDG_O" bash "$ROOT/scripts/install.sh" --harness opencode --user --yes --json 2>/dev/null)
+echo "$O_USER" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["installed"]==int(sys.argv[1]), d; assert d["target"].endswith("opencode/skills"), d; assert d["target"].startswith(sys.argv[2]), d' "$SKILL_COUNT" "$XDG_O"
+assert_rel_links "$XDG_O/opencode/skills"
+
+# A config `skills` entry with the same ids shadows the user links: fail closed.
+printf '{"skills":["%s/skills"]}\n' "$ROOT" > "$XDG_O/opencode/opencode.json"
+if HOME="$HOME_O" XDG_CONFIG_HOME="$XDG_O" bash "$ROOT/scripts/install.sh" --harness opencode --user --yes --json >/dev/null 2>"$TMP/opencode-conflict.err"; then
+  echo "FAIL: duplicate config catalog should conflict"; exit 1
+fi
+grep -q "duplicate skill ids" "$TMP/opencode-conflict.err"
+rm -f "$XDG_O/opencode/opencode.json"
+
+bash "$ROOT/scripts/install.sh" --harness opencode --target "$AI_O" --uninstall --yes --json >/dev/null 2>&1
+test ! -e "$AI_O/.opencode/skills/local-maintenance"
 
 echo "install tests OK"

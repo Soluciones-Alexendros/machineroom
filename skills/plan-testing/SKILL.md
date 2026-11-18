@@ -23,7 +23,7 @@ metadata:
     - red-green
     - quality-gates
   execution: plan-testing
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

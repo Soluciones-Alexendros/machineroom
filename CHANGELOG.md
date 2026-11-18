@@ -6,6 +6,27 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+### Added
+
+- OpenCode V2 como tercer harness de nivel A: `scripts/install-opencode.sh` y
+  `scripts/install.sh --harness opencode` enlazan el catálogo en
+  `.opencode/skills/` (proyecto) o `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/`
+  (global, con links relativos desde `~/.machineroom`). El instalador rechaza
+  entradas `skills` de `opencode.json` que registren los mismos ids para no
+  ocultarlos por precedencia. `--components full` sigue siendo solo de Cursor.
+- `tools/harness/opencode.py` y `doctor.py --harness opencode`: verificación A de
+  enlaces, guarda `opencode-source-collision` y discovery B opt-in
+  (`MR_OPENCODE_NATIVE_OPT_IN=1`, binario V2 real) vía `opencode api get /api/skill`.
+  Sin binario u opt-in se informa `not_run` (exit 3); V1 queda `blocked`.
+  `scripts/tests/test_opencode_native.sh` cubre A/B y sus negativos.
+
+### Changed
+
+- `compatibility` del catálogo pasa a `cursor, pi, opencode` en las 14 skills, el
+  validador, la plantilla y el snapshot congelado. OpenCode V2 no interpreta ese
+  campo ni `allowed-tools`; mantiene `disable-model-invocation` en las dos skills
+  host-mutating como `opencode/autoinvoke: false`.
+
 ## [9.0.2] - 2026-11-17
 
 ### Added

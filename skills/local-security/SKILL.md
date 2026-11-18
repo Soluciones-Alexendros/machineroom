@@ -21,7 +21,7 @@ metadata:
     - forensics
     - cve
   execution: local-security
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 disable-model-invocation: true
 ---

@@ -34,12 +34,17 @@ Legacy `--bump` on the workspace router is rejected (`project-status`).
 
 ## Harness discovery
 
-`skills/` is the only versioned catalog. Cursor and Pi load symlinks created by the installers; those directories are not committed.
+`skills/` is the only versioned catalog. Cursor, OpenCode and Pi load symlinks created by the installers; those directories are not committed.
 
 Cursor:
 
 - `.cursor/skills/<name>/SKILL.md`
 - `~/.cursor/skills/<name>/SKILL.md`
+
+OpenCode (V2):
+
+- `.opencode/skills/<name>/SKILL.md`
+- `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/<name>/SKILL.md`
 
 Pi ([skills](https://pi.dev/docs/latest/skills)):
 
@@ -50,12 +55,15 @@ Install:
 
 ```bash
 bash scripts/install-cursor.sh --target .cursor/skills
+bash scripts/install-opencode.sh --target .opencode/skills
 bash scripts/install-pi.sh --target .pi/skills
 ```
 
+An explicit `skills` entry in `opencode.json` takes precedence over `opencode/skills` links. If both register the same catalog ids, `doctor.py --harness opencode` fails with `opencode-source-collision` and the OpenCode user installer refuses to shadow them.
+
 ## Cursor
 
-Cursor discovers project skills from `.cursor/skills/` after `install-cursor.sh` (symlinks into `skills/`). Invoke by matching `description` or with `/<name>` in Agent chat. Do not ask for an OpenCode-style `skill` tool — Cursor has none.
+Cursor discovers project skills from `.cursor/skills/` after `install-cursor.sh` (symlinks into `skills/`). Invoke by matching `description` or with `/<name>` in Agent chat. Cursor has no `skill` tool; do not ask for one. OpenCode V2 does have one, and treats `disable-model-invocation: true` as `opencode/autoinvoke: false` (hidden from the model, still loadable by id).
 
 Product-mutating skill operations go only through `tools/execution` and `run_registered`. Do not invoke skill scripts ad hoc. Frontmatter `allowed-tools` does not authorize anything in Cursor.
 
