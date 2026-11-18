@@ -1,11 +1,12 @@
 # Harness integration status
 
-Cursor and Pi are the only supported harnesses. Both sit at level A: the deterministic symlink gate. CI does not require either binary.
+Cursor, OpenCode (V2) and Pi are the supported harnesses. All sit at level A: the deterministic symlink gate. CI does not require any harness binary.
 
-| Harness | Level | Evidence                                                                      |
-| ------- | ----- | ----------------------------------------------------------------------------- |
-| Cursor  | A     | `bash scripts/install-cursor.sh --target <dir>` symlinks each `skills/<name>` |
-| Pi      | A     | `bash scripts/install-pi.sh --target <dir>` symlinks each `skills/<name>`     |
+| Harness  | Level | Evidence                                                                        |
+| -------- | ----- | ------------------------------------------------------------------------------- |
+| Cursor   | A     | `bash scripts/install-cursor.sh --target <dir>` symlinks each `skills/<name>`   |
+| OpenCode | A     | `bash scripts/install-opencode.sh --target <dir>` symlinks each `skills/<name>` |
+| Pi       | A     | `bash scripts/install-pi.sh --target <dir>` symlinks each `skills/<name>`       |
 
 ## Level A
 
@@ -13,6 +14,16 @@ Cursor and Pi are the only supported harnesses. Both sit at level A: the determi
 - `--target` does not write `$HOME`. `--user` is the only path that writes the user skills directory.
 - Dry-run creates neither the destination nor the manifest.
 - `scripts/tests/test_install.sh` and `scripts/tests/test_execution_e2e.sh` cover the gate. The E2E script does not invoke a harness binary.
+
+## OpenCode contract surfaces
+
+- Project skills: `<project>/.opencode/skills/<name>/SKILL.md` (absolute links).
+- User skills: `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/<name>/SKILL.md` (relative links from a verified `$HOME/.machineroom` runtime).
+- `scripts/install.sh --harness opencode` is the AI wrapper; `--components full` is rejected because OpenCode has no versioned hooks/rules/agents in this repository.
+- `tools/harness/doctor.py --harness opencode --json` verifies level A links plus `opencode-source-collision`. An explicit `skills` entry in `opencode.json` wins by precedence, so a second catalog with the same ids is a `fail`, never a silent shadow.
+- OpenCode V2 ignores frontmatter `compatibility` and `allowed-tools`; it derives skill ids from paths. `disable-model-invocation: true` behaves as `opencode/autoinvoke: false` and is kept on host-mutating skills.
+- Level B is opt-in only: `MR_OPENCODE_NATIVE_OPT_IN=1` plus a real OpenCode V2 binary. The check calls `opencode api get /api/skill` and requires all 14 catalog ids. Without the binary or opt-in it reports `not_run` (exit 3); a V1 binary is `blocked`. The CLI talks to the operator's running service, so B proves discovery in the active context, not the provenance of a specific target — source links are proven by level A. `scripts/tests/test_opencode_native.sh` covers A/B and both negative lanes.
+- Level C (permissions) is out of scope: loading a skill does not authorize Bash, network, secrets or paths outside the project. No permission widening is installed.
 
 ## Cursor contract surfaces
 
@@ -42,7 +53,7 @@ applies the same keep set through the operator's `enabledModels`.
 
 ## Permissions
 
-Loading a skill does not authorize Bash, network, secrets, or paths outside the project. Product restrictions (`DenyProvider`, `run_registered`, evidence binding) remain even when the harness can load the skill file.
+Loading a skill does not authorize Bash, network, secrets, or paths outside the project, in any harness. Product restrictions (`DenyProvider`, `run_registered`, evidence binding) remain even when the harness can load the skill file. OpenCode V2 permission rules in `opencode.json` are operator-owned and are never written by these installers.
 
 ## Execution API (product)
 

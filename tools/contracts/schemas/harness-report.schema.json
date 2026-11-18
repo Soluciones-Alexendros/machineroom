@@ -20,7 +20,10 @@
   ],
   "properties": {
     "schema_version": { "type": "integer", "const": 1 },
-    "harness": { "type": "string", "enum": ["pi", "cursor", "all"] },
+    "harness": {
+      "type": "string",
+      "enum": ["pi", "cursor", "opencode", "all"]
+    },
     "harness_version": { "type": ["string", "null"] },
     "package_version": { "type": ["string", "null"] },
     "source": { "type": "string" },

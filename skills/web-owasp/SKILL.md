@@ -8,7 +8,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "7.1.2"
+  version: "7.1.3"
   domain: web
   type: audit
   language: en
@@ -20,7 +20,7 @@ metadata:
     - xss
     - authz
     - crypto
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob
 ---
 

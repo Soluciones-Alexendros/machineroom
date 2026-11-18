@@ -9,7 +9,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "3.0.0"
+  version: "3.0.1"
   domain: project
   type: orchestrator
   language: en
@@ -22,7 +22,7 @@ metadata:
     - control-plane
     - doctor
   execution: project-machineroom
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash
 ---
 

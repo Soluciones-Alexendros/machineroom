@@ -17,6 +17,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from harness.base import Check, build_report, report_exit_code  # noqa: E402
+from harness.opencode import opencode_discovery_check, opencode_source_collision_check  # noqa: E402
 
 _VERSION_ASSIGN_RE = re.compile(r"^VERSION=(.+)$", re.MULTILINE)
 _LITERAL_VERSION_RE = re.compile(r'^"([0-9][^"$`]*)"$')
@@ -146,7 +147,8 @@ def handoff_check(root: Path) -> Check:
 def skill_link_check(root: Path, harness: str, *, source_root: Path | None = None) -> Check:
     root = root.resolve()
     source = (source_root or root).resolve() / "skills"
-    destination = root / (".pi/skills" if harness == "pi" else ".cursor/skills")
+    skills_dir = {"pi": ".pi/skills", "opencode": ".opencode/skills"}.get(harness, ".cursor/skills")
+    destination = root / skills_dir
     expected = (
         sorted(path for path in source.iterdir() if path.is_dir() and (path / "SKILL.md").is_file())
         if source.is_dir()
@@ -313,12 +315,18 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
             from harness.cursor import capability_checks  # noqa: PLC0415
 
             checks.extend(capability_checks(root, expected_skills, require_auth=False))
+    if harness in {"opencode", "all"}:
+        checks.append(opencode_source_collision_check(root, source, expected_skills))
+        if native:
+            checks.append(opencode_discovery_check(root, expected_skills))
+        else:
+            checks.append(skill_link_check(root, "opencode", source_root=source))
     return checks
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Machineroom harness doctor")
-    parser.add_argument("--harness", choices=("pi", "cursor", "all"), default="all")
+    parser.add_argument("--harness", choices=("pi", "cursor", "opencode", "all"), default="all")
     parser.add_argument("--target", type=Path, default=Path("."))
     parser.add_argument("--source", type=Path, help="Package/catalog source when it differs from target")
     parser.add_argument(

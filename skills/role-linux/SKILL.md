@@ -9,7 +9,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "8.0.0"
+  version: "8.0.1"
   domain: role
   type: atomic
   language: en
@@ -22,7 +22,7 @@ metadata:
     - dependencies
     - compatibility
   execution: role-linux
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

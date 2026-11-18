@@ -1,17 +1,19 @@
 # Using the skills
 
-## Cursor and Pi
+## Cursor, OpenCode and Pi
 
 Link the catalog instead of copying it. See `docs/harness-setup.md`.
 
 ```bash
 bash scripts/install-cursor.sh --target .cursor/skills
+bash scripts/install-opencode.sh --target .opencode/skills
 bash scripts/install-pi.sh --target .pi/skills
 bash scripts/install-cursor.sh --user
+bash scripts/install-opencode.sh --user
 bash scripts/install-pi.sh --user
 ```
 
-Both harnesses discover `SKILL.md` through its frontmatter (`name` + `description`).
+All three discover `SKILL.md` through its frontmatter (`name` + `description`). OpenCode V2 additionally ignores `allowed-tools` and treats `disable-model-invocation: true` as opt-out from model invocation; it still loads the skill by id.
 
 ## Manual use
 

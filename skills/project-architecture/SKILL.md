@@ -8,7 +8,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "7.1.2"
+  version: "7.1.3"
   domain: project
   type: audit
   language: en
@@ -19,7 +19,7 @@ metadata:
     - dependency-mapping
     - drift
     - metrics
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob
 ---
 

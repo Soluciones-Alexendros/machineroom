@@ -10,7 +10,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "9.0.1"
+  version: "9.0.2"
   domain: project
   type: orchestrator
   language: en
@@ -22,7 +22,7 @@ metadata:
     - release
     - branch-cleanup
   execution: project-status
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

@@ -1,6 +1,21 @@
-# Harness setup — Cursor and Pi
+# Harness setup — Cursor, OpenCode and Pi
 
 `skills/` is the only catalog that is committed. Installers create symlinks; they do not copy skill bodies.
+
+### OpenCode
+
+You need OpenCode **V2** (V1 uses a different config format and is not supported). From a checkout:
+
+```bash
+git clone --depth 1 https://github.com/Soluciones-Alexendros/machineroom.git
+cd machineroom
+bash scripts/install-opencode.sh --target .opencode/skills   # project
+bash scripts/install-opencode.sh --user                     # global
+```
+
+Global scope writes to `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills` and needs the verified `~/.machineroom` runtime (next section). If `opencode.json` already registers a catalog with the same skill ids via `skills`, the installer refuses: remove that entry first.
+
+Start a new OpenCode session (or reload) after installing or updating user skills. Native B verification is opt-in with `MR_OPENCODE_NATIVE_OPT_IN=1`; see `docs/harness-integration.md`.
 
 ## Machine runtime (`~/.machineroom`)
 
@@ -12,21 +27,23 @@ bash scripts/runtime-sync.sh install --version 8.0.1
 
 `sync` refuses to fill `$HOME/.machineroom`. The installed copy records `release:<version>` and rewrites user hooks to `python3 hooks/...`. The version must be a published release; it is not the unpublished working tree.
 
-Then install Cursor and Pi user links (relative paths into the runtime):
+Then install Cursor, OpenCode and Pi user links (relative paths into the runtime):
 
 ```bash
 bash scripts/install.sh --harness cursor --components full --user --yes --json
+bash scripts/install-opencode.sh --user --yes --json
 bash scripts/install-pi.sh --user --yes --json
 ```
 
-| Default path                            | Link kind                                                |
-| --------------------------------------- | -------------------------------------------------------- |
-| `~/.cursor/skills/<name>`               | directory symlink → `../../.machineroom/skills/<name>`   |
-| `~/.cursor/agents/*.md`                 | file symlink                                             |
-| `~/.cursor/hooks/*.py`                  | file symlink                                             |
-| `~/.cursor/hooks.json`                  | file symlink (runtime holds user-scoped commands)        |
-| `~/.pi/agent/skills/<name>`             | directory symlink                                        |
-| `~/.pi/agent/extensions/machineroom.ts` | file symlink → runtime `extensions/machineroom/index.ts` |
+| Default path                                               | Link kind                                                |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
+| `~/.cursor/skills/<name>`                                  | directory symlink → `../../.machineroom/skills/<name>`   |
+| `~/.cursor/agents/*.md`                                    | file symlink                                             |
+| `~/.cursor/hooks/*.py`                                     | file symlink                                             |
+| `~/.cursor/hooks.json`                                     | file symlink (runtime holds user-scoped commands)        |
+| `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/<name>` | directory symlink                                        |
+| `~/.pi/agent/skills/<name>`                                | directory symlink                                        |
+| `~/.pi/agent/extensions/machineroom.ts`                    | file symlink → runtime `extensions/machineroom/index.ts` |
 
 Project installs (`--target`, checkout `.cursor/skills`) keep absolute symlinks into the checkout that runs the installer. That is the CI/fixture contract.
 
@@ -46,17 +63,19 @@ The symlink installers below remain the development flow for a local checkout.
 
 ## Public API (flat destinations)
 
-| Destination                               | Command                                                    |
-| ----------------------------------------- | ---------------------------------------------------------- |
-| Project `.cursor/skills` (default)        | `bash scripts/install-cursor.sh`                           |
-| Project `.cursor/skills` via `--target .` | `bash scripts/install-cursor.sh --target .`                |
-| Project `.cursor/skills` explicit         | `bash scripts/install-cursor.sh --target .cursor/skills`   |
-| User `~/.cursor/skills`                   | `bash scripts/install-cursor.sh --user`                    |
-| Any directory (flat 16 symlinks)          | `bash scripts/install-cursor.sh --target /tmp/test-cursor` |
-| Project `.pi/skills` (default)            | `bash scripts/install-pi.sh`                               |
-| Project `.pi/skills` via `--target .`     | `bash scripts/install-pi.sh --target .`                    |
-| User `~/.pi/agent/skills`                 | `bash scripts/install-pi.sh --user`                        |
-| Any directory (flat 16 symlinks)          | `bash scripts/install-pi.sh --target /tmp/test-pi`         |
+| Destination                               | Command                                                      |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| Project `.cursor/skills` (default)        | `bash scripts/install-cursor.sh`                             |
+| Project `.cursor/skills` via `--target .` | `bash scripts/install-cursor.sh --target .`                  |
+| Project `.cursor/skills` explicit         | `bash scripts/install-cursor.sh --target .cursor/skills`     |
+| User `~/.cursor/skills`                   | `bash scripts/install-cursor.sh --user`                      |
+| Project `.opencode/skills`                | `bash scripts/install-opencode.sh --target .opencode/skills` |
+| User OpenCode skills                      | `bash scripts/install-opencode.sh --user`                    |
+| Any directory (flat 14 symlinks)          | `bash scripts/install-cursor.sh --target /tmp/test-cursor`   |
+| Project `.pi/skills` (default)            | `bash scripts/install-pi.sh`                                 |
+| Project `.pi/skills` via `--target .`     | `bash scripts/install-pi.sh --target .`                      |
+| User `~/.pi/agent/skills`                 | `bash scripts/install-pi.sh --user`                          |
+| Any directory (flat 14 symlinks)          | `bash scripts/install-pi.sh --target /tmp/test-pi`           |
 
 `--target .` (or the checkout root) resolves to the harness default skills directory — it does **not** place symlinks in the repository root. Arbitrary `--target DIR` stays flat (compat 7.0.0).
 
@@ -64,13 +83,14 @@ The symlink installers below remain the development flow for a local checkout.
 
 ## AI wrapper (`install.sh --harness`)
 
-| Destination                     | Command                                                                         |
-| ------------------------------- | ------------------------------------------------------------------------------- |
-| `/tmp/ai-cursor/.cursor/skills` | `bash scripts/install.sh --harness cursor --target /tmp/ai-cursor --yes --json` |
-| `/tmp/ai-pi/.pi/skills`         | `bash scripts/install.sh --harness pi --target /tmp/ai-pi --yes --json`         |
-| User cursor/pi skills           | `bash scripts/install.sh --harness cursor\|pi --user --yes`                     |
+| Destination                         | Command                                                                             |
+| ----------------------------------- | ----------------------------------------------------------------------------------- |
+| `/tmp/ai-cursor/.cursor/skills`     | `bash scripts/install.sh --harness cursor --target /tmp/ai-cursor --yes --json`     |
+| `/tmp/ai-pi/.pi/skills`             | `bash scripts/install.sh --harness pi --target /tmp/ai-pi --yes --json`             |
+| `/tmp/ai-opencode/.opencode/skills` | `bash scripts/install.sh --harness opencode --target /tmp/ai-opencode --yes --json` |
+| User cursor/opencode/pi skills      | `bash scripts/install.sh --harness cursor\|opencode\|pi --user --yes`               |
 
-The wrapper nests under `.cursor/skills` or `.pi/skills` unless the path already ends in a skills directory. `.` and any other relative `--target` anchor to this checkout, not the current working directory. `--user` overrides `--target` and warns on stderr. Public `install-cursor.sh --target /tmp/test-cursor` remains flat.
+The wrapper nests under `.cursor/skills`, `.opencode/skills` or `.pi/skills` unless the path already ends in a skills directory. `.` and any other relative `--target` anchor to this checkout, not the current working directory. `--user` overrides `--target` and warns on stderr. Public `install-cursor.sh --target /tmp/test-cursor` remains flat.
 
 ### Cursor component modes
 

@@ -10,7 +10,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "8.0.0"
+  version: "8.0.1"
   domain: plan
   type: orchestrator
   language: en
@@ -23,7 +23,7 @@ metadata:
     - red-green
     - quality-gates
   execution: plan-testing
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 ---
 

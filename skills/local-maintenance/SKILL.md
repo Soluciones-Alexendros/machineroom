@@ -9,7 +9,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 8.0.1
+  version: "8.0.2"
   domain: local
   type: atomic
   language: en
@@ -23,7 +23,7 @@ metadata:
     - optimization
   execution: local-maintenance
   health: integrated
-compatibility: cursor, pi
+compatibility: cursor, pi, opencode
 allowed-tools: Read, Grep, Glob, Bash, Write
 disable-model-invocation: true
 ---

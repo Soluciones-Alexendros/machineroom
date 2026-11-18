@@ -3,7 +3,7 @@ name: <domain>-<slug>
 description: >-
   What it does in English. Use when the operator asks for "trigger en español", "otro trigger", "English trigger". Not for other family (→ other-skill).
 license: MIT
-compatibility: "cursor, pi"
+compatibility: "cursor, pi, opencode"
 metadata:
   author: "Soluciones-Alexendros"
   version: "1.0.0"
