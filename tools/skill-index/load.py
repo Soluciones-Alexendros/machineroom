@@ -30,32 +30,21 @@ def _scan_skills_fallback(root: Path) -> dict[str, Any]:
     skills_dir = root / "skills"
     if not skills_dir.is_dir():
         return {"skills": []}
-    names = sorted(
-        p.name for p in skills_dir.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()
-    )
+    names = sorted(p.name for p in skills_dir.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
     return {"skills": [{"name": n} for n in names]}
 
 
-def _index_candidates(root: Path) -> list[Path]:
-    """Repo root first, then CWD (parity with the former skill-router route)."""
-    candidates = [root / "skill-index.json"]
-    cwd_index = Path.cwd() / "skill-index.json"
-    if cwd_index.resolve() != candidates[0].resolve():
-        candidates.append(cwd_index)
-    return candidates
-
-
 def _resolve_index_path(root: Path) -> Path | None:
-    for path in _index_candidates(root):
-        if path.is_file():
-            return path
-    return None
+    """Only ``<repo>/skill-index.json`` — never CWD (avoids foreign-index poison)."""
+    path = root / "skill-index.json"
+    return path if path.is_file() else None
 
 
 def load_skill_index(repo: Path | str) -> dict[str, Any]:
-    """Load skill-index.json from repo root, then CWD; generate if missing; fail loud on errors.
+    """Load ``<repo>/skill-index.json``; generate if missing; fail loud on errors.
 
-    Lookup order: ``<repo>/skill-index.json``, then ``./skill-index.json``. Generator /
+    Does not consult ``./skill-index.json`` from CWD: a foreign working directory must
+    not shadow the repo catalog used by workspace-router / skill-router. Generator /
     ``RuntimeError`` failures raise (fail-fast). Falls back to scanning ``skills/`` only when
     the index is still absent after a successful ensure, or when ensure is not applicable.
     """

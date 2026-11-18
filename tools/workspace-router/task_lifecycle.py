@@ -15,6 +15,7 @@ from status_io import (  # noqa: E402
 if TYPE_CHECKING:
     from contracts.plan import PlanDocument
 
+
 def _confined_plan_path(repo: Path, path: Path | str) -> tuple[Path, str]:
     root = repo.resolve()
     candidate = Path(path)
@@ -338,5 +339,3 @@ def retry_task(repo: Path | str, task_id: str) -> dict[str, Any]:
         return out
 
     return _with_status_lock(root, retry)
-
-

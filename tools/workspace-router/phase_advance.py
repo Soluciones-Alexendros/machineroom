@@ -17,6 +17,7 @@ from status_io import (  # noqa: E402
     load_status,
 )
 
+
 def _bump_semver(version: str, kind: str) -> str:
     parts = version.strip().split(".")
     while len(parts) < STATUS_PATH_PARTS:

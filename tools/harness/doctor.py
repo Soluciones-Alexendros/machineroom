@@ -135,8 +135,7 @@ def legacy_runtime_home_check(home: Path | None = None) -> Check:
             "legacy-runtime-home",
             "contract",
             "fail",
-            f"two runtimes present: {legacy} and {current}; "
-            "call migrate_legacy_runtime / remove one",
+            f"two runtimes present: {legacy} and {current}; call migrate_legacy_runtime / remove one",
         )
     if current.is_dir():
         return Check(
@@ -343,11 +342,7 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
     else:
         checks = version_coherence_checks(source, expected_version)
         checks.append(handoff_check(source))
-    want_home = (
-        home is not None
-        or check_home
-        or os.environ.get("MR_CHECK_HOME_RUNTIME") == "1"
-    )
+    want_home = home is not None or check_home or os.environ.get("MR_CHECK_HOME_RUNTIME") == "1"
     if want_home:
         checks.append(legacy_runtime_home_check(home))
     expected_skills = {
@@ -370,10 +365,10 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
             checks.extend(capability_checks(root, expected_skills, require_auth=False))
     if harness in {"opencode", "all"}:
         checks.append(opencode_source_collision_check(root, source, expected_skills))
+        # Level A links always; --native adds B discovery (parity with Cursor).
+        checks.append(skill_link_check(root, "opencode", source_root=source))
         if native:
             checks.append(opencode_discovery_check(root, expected_skills))
-        else:
-            checks.append(skill_link_check(root, "opencode", source_root=source))
     return checks
 
 

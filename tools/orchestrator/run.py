@@ -4,14 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import sys
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
-
-import importlib.util
 
 TOOLS = Path(__file__).resolve().parents[1]
 _boot_spec = importlib.util.spec_from_file_location(

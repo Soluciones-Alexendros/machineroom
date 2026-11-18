@@ -123,8 +123,7 @@ def test_router_route_rejects_legacy_only_state(tmp_path: Path) -> None:
     state = tmp_path / ".autoworkspace"
     state.mkdir()
     (state / "project.yaml").write_text(
-        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n"
-        "handoffs: {define: plan-specification}\n",
+        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\nhandoffs: {define: plan-specification}\n",
         encoding="utf-8",
     )
     proc = subprocess.run(

@@ -16,8 +16,9 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from harness import naming
 from structured_failure import StructuredFailure
+
+from harness import naming
 
 RUNTIME_DIRNAME = naming.RUNTIME_DIRNAME
 LEGACY_RUNTIME_DIRNAME = naming.LEGACY_RUNTIME_DIRNAME

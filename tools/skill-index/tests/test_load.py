@@ -49,9 +49,12 @@ def test_load_skill_index_missing_index_empty_skills(tmp_path: Path, monkeypatch
     assert (tmp_path / "skill-index.json").is_file()
 
 
-def test_load_skill_index_prefers_repo_root_then_cwd(tmp_path: Path, monkeypatch: Any) -> None:
+def test_load_skill_index_ignores_foreign_cwd_index(tmp_path: Path, monkeypatch: Any) -> None:
+    """CWD skill-index.json must not shadow or replace the repo catalog."""
     repo = tmp_path / "repo"
-    repo.mkdir()
+    skills = repo / "skills" / "from-repo"
+    skills.mkdir(parents=True)
+    (skills / "SKILL.md").write_text("---\nname: from-repo\ndescription: d\n---\n", encoding="utf-8")
     cwd = tmp_path / "cwd"
     cwd.mkdir()
     (cwd / "skill-index.json").write_text(
@@ -60,11 +63,14 @@ def test_load_skill_index_prefers_repo_root_then_cwd(tmp_path: Path, monkeypatch
     )
     monkeypatch.chdir(cwd)
     data = load_skill_index(repo)
-    assert data["skills"][0]["name"] == "from-cwd"
+    names = [s["name"] for s in data["skills"]]
+    assert "from-repo" in names
+    assert "from-cwd" not in names
+    assert (repo / "skill-index.json").is_file()
 
     (repo / "skill-index.json").write_text(
-        json.dumps({"skills": [{"name": "from-repo"}]}),
+        json.dumps({"skills": [{"name": "from-repo-index"}]}),
         encoding="utf-8",
     )
     data = load_skill_index(repo)
-    assert data["skills"][0]["name"] == "from-repo"
+    assert data["skills"][0]["name"] == "from-repo-index"

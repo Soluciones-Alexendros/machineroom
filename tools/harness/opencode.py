@@ -24,6 +24,7 @@ _TIMEOUT_SECONDS = 60
 
 
 def _strip_jsonc_comments(text: str) -> str:
+    """Strip // and /* */ comments, then trailing commas before } or ]."""
     out: list[str] = []
     index, length = 0, len(text)
     in_string = False
@@ -55,7 +56,39 @@ def _strip_jsonc_comments(text: str) -> str:
             continue
         out.append(char)
         index += 1
-    return "".join(out)
+    stripped = "".join(out)
+    # Trailing commas are common in JSONC; strip outside strings only.
+    cleaned: list[str] = []
+    in_string = False
+    escaped = False
+    i = 0
+    while i < len(stripped):
+        ch = stripped[i]
+        if in_string:
+            cleaned.append(ch)
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            i += 1
+            continue
+        if ch == '"':
+            in_string = True
+            cleaned.append(ch)
+            i += 1
+            continue
+        if ch == ",":
+            j = i + 1
+            while j < len(stripped) and stripped[j] in " \t\r\n":
+                j += 1
+            if j < len(stripped) and stripped[j] in "}]":
+                i += 1
+                continue
+        cleaned.append(ch)
+        i += 1
+    return "".join(cleaned)
 
 
 def _config_home() -> Path:

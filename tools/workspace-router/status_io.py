@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import fcntl
 import os
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from state_paths import state_file as _state_file
 

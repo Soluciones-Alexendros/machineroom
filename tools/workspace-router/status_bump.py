@@ -13,6 +13,11 @@ _bc = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_bc)
 _bc.boot(__file__, extra=(Path(__file__).resolve().parent,))
 
+from phase_advance import (  # noqa: E402
+    advance_status,
+    bump_kind_for_phase,
+    resolve_awaiting_agent,
+)
 from status_io import (  # noqa: E402
     PHASES,
     STATUS_SCHEMA_VERSION,
@@ -31,11 +36,6 @@ from task_lifecycle import (  # noqa: E402
     ready_tasks,
     retry_task,
     start_task,
-)
-from phase_advance import (  # noqa: E402
-    advance_status,
-    bump_kind_for_phase,
-    resolve_awaiting_agent,
 )
 
 __all__ = [
