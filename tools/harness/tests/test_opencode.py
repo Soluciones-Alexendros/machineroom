@@ -74,9 +74,7 @@ def test_source_collision_detects_duplicate_catalog(tmp_path: Path, monkeypatch:
     (skill / "SKILL.md").write_text("---\nname: role-linux\n---\n", encoding="utf-8")
     config_home = tmp_path / "xdg" / "opencode"
     config_home.mkdir(parents=True)
-    (config_home / "opencode.json").write_text(
-        json.dumps({"skills": [str(catalog)]}), encoding="utf-8"
-    )
+    (config_home / "opencode.json").write_text(json.dumps({"skills": [str(catalog)]}), encoding="utf-8")
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     check = opencode_source_collision_check(tmp_path, tmp_path / "catalog", {"role-linux"})
     assert check.outcome == "fail"

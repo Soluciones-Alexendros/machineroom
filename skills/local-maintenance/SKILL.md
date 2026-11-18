@@ -9,7 +9,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: 8.0.1
+  version: "8.0.2"
   domain: local
   type: atomic
   language: en

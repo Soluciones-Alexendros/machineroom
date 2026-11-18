@@ -9,7 +9,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "7.1.2"
+  version: "7.1.3"
   domain: web
   type: audit
   language: en

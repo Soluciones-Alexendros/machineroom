@@ -10,7 +10,7 @@ description:
 license: MIT
 metadata:
   author: Soluciones-Alexendros
-  version: "8.0.0"
+  version: "8.0.1"
   domain: plan
   type: orchestrator
   language: en
