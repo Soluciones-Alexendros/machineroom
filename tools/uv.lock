@@ -338,7 +338,7 @@ wheels = [
 
 [[package]]
 name = "machineroom"
-version = "9.0.1"
+version = "9.0.2"
 source = { virtual = "." }
 
 [package.dev-dependencies]

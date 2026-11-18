@@ -6,6 +6,33 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.0.2] - 2026-11-17
+
+### Added
+
+- `docs/herdr-plugin.md` y [ADR-0020](docs/architecture/decisions/ADR-0020-plugin-herdr-opcional.md) (`Proposed`):
+  el plugin de [Herdr](https://herdr.dev) queda documentado como superficie
+  opcional —objetivos, potencial, costes y condiciones para retomarlo— y aparcado
+  fuera de `main`. El trabajo se conserva actualizado en un PR draft (#85).
+
+### Fixed
+
+- `project-status` (`merge-watch.md` y `cierre-trabajo.md`) ordenaba el comando
+  contrario al contrato: «merge commit (`--merge`) es la política; nunca squash»,
+  cuando los rulesets `main:` y `plan/*:` solo admiten `squash` y `AGENTS.md`
+  prohíbe `--merge`/`--rebase`/`--admin`. Las dos referencias pasan a squash,
+  documentan que el método del ruleset manda y describen el hook `pr_policy.py`
+  correctamente. El defecto venía de absorber `project-publish` sin revisar sus
+  referencias de cierre (#83).
+- `.machineroom/project.yaml` declaraba `name: autoworkspace`; vuelve a
+  `machineroom`.
+
+### Changed
+
+- `gh pr merge --auto --squash --delete-branch` vuelve a ser el comando único en
+  la etapa de cierre de `project-status`, con la excepción documentada: si un repo
+  declara otro método en branch protection, se usa ese y se reporta.
+
 ## [9.0.1] - 2026-11-17
 
 ### Fixed
