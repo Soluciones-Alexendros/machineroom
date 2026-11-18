@@ -114,15 +114,19 @@ case "$HARNESS" in
   pi)
     pi install "$PACKAGE" >"$WORK/install.log" 2>&1
     INSTALLED="pi"
+    mkdir -p "$WORK/doctor-home"
     uv run --project "$PACKAGE/tools" --frozen python "$PACKAGE/tools/harness/doctor.py" --harness pi --native \
-      --source "$PACKAGE" --target "$TARGET" --expected-version "$VERSION" --json >"$WORK/doctor.json"
+      --source "$PACKAGE" --target "$TARGET" --expected-version "$VERSION" \
+      --home "$WORK/doctor-home" --json >"$WORK/doctor.json"
     ;;
   cursor)
     bash "$PACKAGE/scripts/install.sh" --harness cursor --components full \
       --target "$TARGET" --yes --json >"$WORK/install.log"
     INSTALLED="cursor"
+    mkdir -p "$WORK/doctor-home"
     uv run --project "$PACKAGE/tools" --frozen python "$PACKAGE/tools/harness/doctor.py" --harness cursor --full \
-      --source "$PACKAGE" --target "$TARGET" --expected-version "$VERSION" --json >"$WORK/doctor.json"
+      --source "$PACKAGE" --target "$TARGET" --expected-version "$VERSION" \
+      --home "$WORK/doctor-home" --json >"$WORK/doctor.json"
     ;;
 esac
 python3 - "$WORK/doctor.json" <<'PY'

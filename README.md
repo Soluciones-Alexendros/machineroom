@@ -14,10 +14,14 @@ Versión **9.1.0**. 14 skills en 5 dominios (`plan`, `local`, `project`, `web`, 
 
 ## Inicio rápido
 
-Pi, instalación de una release pineada:
+Runtime de máquina (release verificada en `~/.machineroom`):
 
 ```bash
-pi install git:github.com/Soluciones-Alexendros/machineroom@v7.1.1
+bash scripts/runtime-sync.sh install --version 9.0.2
+# o, cuando haya una release más nueva publicada:
+bash scripts/runtime-sync.sh update --latest
+# desde el propio runtime (sin checkout):
+# ~/.machineroom/scripts/runtime-sync.sh update --latest
 ```
 
 Desarrollo del checkout o instalación de solo skills (Cursor, OpenCode o Pi):
@@ -28,6 +32,8 @@ bash machineroom/scripts/install-cursor.sh --user
 # o: bash machineroom/scripts/install-opencode.sh --user
 # o: bash machineroom/scripts/install-pi.sh --user
 ```
+
+Pi también admite `pi install git:github.com/Soluciones-Alexendros/machineroom@vX.Y.Z` pineado a un tag publicado.
 
 ## Configuración en Cursor, OpenCode y Pi
 

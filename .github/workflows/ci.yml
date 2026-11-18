@@ -54,7 +54,7 @@ jobs:
         "$tmpdir/actionlint" -color
         bash scripts/check-structure.sh templates/product
       test-command: make -f templates/product/Makefile test
-      smoke-command: bash scripts/smoke.sh
+      smoke-command: MR_SMOKE_FIXTURE=1 bash scripts/smoke.sh
 
   # Verifica el direccionamiento que usarán los callers (ruta completa + SHA).
   caller-reusable-path:

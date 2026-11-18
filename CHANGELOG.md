@@ -19,6 +19,13 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
   (`MR_OPENCODE_NATIVE_OPT_IN=1`, binario V2 real) vía `opencode api get /api/skill`.
   Sin binario u opt-in se informa `not_run` (exit 3); V1 queda `blocked`.
   `scripts/tests/test_opencode_native.sh` cubre A/B y sus negativos.
+- `scripts/runtime-sync.sh update --latest` (con `--dry-run` que resuelve versión,
+  checksum, attestation y digest sin escribir el runtime) y
+  `scripts/runtime-sync.sh` dentro del payload de `~/.machineroom` para
+  auto-actualización.
+- Checks `runtime-version` y `runtime-payload` en `doctor.py`.
+- Gates herméticos `test_runtime_cross_version.sh` y `test_bootstrap.sh` en
+  `make validate`; `scripts/smoke.sh` real (`MR_SMOKE_FIXTURE=1` en CI).
 
 ### Changed
 
@@ -26,6 +33,13 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
   validador, la plantilla y el snapshot congelado. OpenCode V2 no interpreta ese
   campo ni `allowed-tools`; mantiene `disable-model-invocation` en las dos skills
   host-mutating como `opencode/autoinvoke: false`.
+
+### Fixed
+
+- `runtime-sync.sh install` ejecuta `harness.runtime` del release extraído, no del
+  checkout invocante, así un árbol nuevo puede instalar releases anteriores.
+- Errores de payload incompleto nombran la ruta relativa y la release, sin traza.
+- `release.yml` `provenance` comprueba `PAYLOAD_*` sobre el tarball antes del upload.
 
 ## [9.0.2] - 2026-11-17
 

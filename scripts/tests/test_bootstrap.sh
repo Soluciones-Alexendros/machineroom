@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 # End-to-end bootstrap tests with a local release fixture; no network or real release.
+# Fixture is built with `git archive HEAD` so it matches a published tarball layout.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 VERSION=$(python3 -c 'import json; print(json.load(open("package.json"))["version"])' "$ROOT")
 TMP=$(mktemp -d /tmp/machineroom-bootstrap-test-XXXXXX)
 trap 'rm -rf "$TMP"' EXIT
 RELEASE="$TMP/release"
-PACKAGE="$TMP/package/machineroom-${VERSION}"
-mkdir -p "$PACKAGE" "$RELEASE" "$TMP/bin"
-cp -a "$ROOT/package.json" "$ROOT/README.md" "$PACKAGE/"
-cp -a "$ROOT/scripts" "$ROOT/skills" "$ROOT/extensions" "$ROOT/.cursor" "$ROOT/.cursor-plugin" "$PACKAGE/"
-# Installation artifacts are not source files and must not enter a release fixture.
-rm -rf "$PACKAGE/.cursor/skills"
-mkdir -p "$PACKAGE/tools"
-cp -a "$ROOT/tools/pyproject.toml" "$ROOT/tools/uv.lock" "$PACKAGE/tools/"
-for component in harness execution contracts workspace-router orchestrator; do
-  cp -a "$ROOT/tools/$component" "$PACKAGE/tools/"
-done
-tar -czf "$RELEASE/machineroom-${VERSION}.tar.gz" -C "$TMP/package" "machineroom-${VERSION}"
+PACKAGE_ROOT="$TMP/package"
+PACKAGE="$PACKAGE_ROOT/machineroom-${VERSION}"
+mkdir -p "$PACKAGE_ROOT" "$RELEASE" "$TMP/bin"
+git -C "$ROOT" archive --format=tar --prefix="machineroom-${VERSION}/" HEAD | tar -x -C "$PACKAGE_ROOT"
+# Overlay working-tree harness so uncommitted doctor/runtime fixes are in the fixture.
+cp -a "$ROOT/tools/harness/." "$PACKAGE/tools/harness/"
+cp -a "$ROOT/tools/structured_failure.py" "$PACKAGE/tools/structured_failure.py"
+mkdir -p "$PACKAGE/scripts"
+cp -a "$ROOT/scripts/runtime-sync.sh" "$PACKAGE/scripts/runtime-sync.sh"
+tar -czf "$RELEASE/machineroom-${VERSION}.tar.gz" -C "$PACKAGE_ROOT" "machineroom-${VERSION}"
 (
   cd "$RELEASE"
   sha256sum "machineroom-${VERSION}.tar.gz" > SHA256SUMS
@@ -106,5 +105,31 @@ if AW_BOOTSTRAP_RELEASE_DIR="$HOSTILE" bash "$ROOT/scripts/bootstrap.sh" --versi
   echo "FAIL: hostile archive accepted"; exit 1
 fi
 test ! -e "$TMP/hostile-target/.cursor"
+
+# Incomplete payload: drop a PAYLOAD_FILES member and expect install_verified-style failure
+# when syncing via the current harness (controlled failure, not a traceback).
+INCOMPLETE="$TMP/incomplete-package/machineroom-${VERSION}"
+mkdir -p "$TMP/incomplete-package"
+git -C "$ROOT" archive --format=tar --prefix="machineroom-${VERSION}/" HEAD | tar -x -C "$TMP/incomplete-package"
+rm -f "$INCOMPLETE/tools/structured_failure.py"
+set +e
+INCOMPLETE_ERR=$(
+  PYTHONPATH="$ROOT/tools" python3 - <<PY
+from pathlib import Path
+from harness.runtime import InstallFailure, require_payload_present
+try:
+    require_payload_present(Path("$INCOMPLETE"), origin="release:$VERSION")
+except InstallFailure as exc:
+    print(exc.detail)
+    raise SystemExit(1)
+raise SystemExit(0)
+PY
+)
+INCOMPLETE_RC=$?
+set -e
+test "$INCOMPLETE_RC" -ne 0
+echo "$INCOMPLETE_ERR" | grep -q "tools/structured_failure.py"
+echo "$INCOMPLETE_ERR" | grep -q "release $VERSION"
+echo "incomplete payload detection: PASS"
 
 echo "bootstrap tests OK"
