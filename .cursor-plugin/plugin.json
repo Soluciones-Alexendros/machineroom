@@ -1,6 +1,6 @@
 {
   "name": "machineroom",
-  "version": "9.0.2",
+  "version": "9.1.0",
   "description": "Machineroom Cursor harness: skills, execution contract rule, shell gate hooks, and mr-verifier.",
   "license": "MIT",
   "skills": "skills",

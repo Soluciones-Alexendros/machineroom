@@ -8,7 +8,7 @@
 
 **Machineroom** (antes machineroom) es el workspace agéntico de Soluciones-Alexendros (MIT): no es una vitrina de skills, sino un pipeline preprogramado con variables por proyecto — especificación → esquemas/tests → código → validación → integración → status declarativo versionado. También es el **host público del canon de flota** (antes `repo-standard`).
 
-Versión **9.0.2**. 14 skills en 5 dominios (`plan`, `local`, `project`, `web`, `role`). Nombres y contenido de skills en inglés; conversaciones en español.
+Versión **9.1.0**. 14 skills en 5 dominios (`plan`, `local`, `project`, `web`, `role`). Nombres y contenido de skills en inglés; conversaciones en español.
 
 **Deps:** version-updates vía [Renovate](.github/renovate.json) (Dependabot Alerts de seguridad pueden quedar ON). App Renovate en la org es prerrequisito humano.
 
