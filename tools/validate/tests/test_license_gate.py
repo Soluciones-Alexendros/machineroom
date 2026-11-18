@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[3]
 GATE = ROOT / "tools" / "validate" / "license_gate.py"
 ALLOWLIST = ROOT / "tools" / "validate" / "license_allowlist.txt"

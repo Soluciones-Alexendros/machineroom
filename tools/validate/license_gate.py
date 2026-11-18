@@ -38,10 +38,7 @@ def load_allowlist(path: Path) -> set[str]:
 
 def is_denied(spdx_id: str) -> bool:
     upper = spdx_id.upper()
-    for prefix in _DENY_PREFIXES:
-        if upper == prefix or upper.startswith(prefix + "-"):
-            return True
-    return False
+    return any(upper == prefix or upper.startswith(prefix + "-") for prefix in _DENY_PREFIXES)
 
 
 def _normalize_token(token: str) -> str:
