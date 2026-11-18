@@ -134,6 +134,9 @@ def test_doctor_registers_opencode_checks(tmp_path: Path, monkeypatch: Any) -> N
     (skill / "SKILL.md").write_text("---\nname: role-linux\n---\n", encoding="utf-8")
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     monkeypatch.delenv(NATIVE_OPT_IN, raising=False)
+    isolated = tmp_path / "isolated-home"
+    isolated.mkdir()
+    monkeypatch.setattr(Path, "home", lambda: isolated)
     static = collect_checks(tmp_path, "opencode", None)
     ids = {check.check_id for check in static}
     assert "opencode-skill-links" in ids

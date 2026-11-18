@@ -106,6 +106,34 @@ jobs:
           echo "ARCHIVE=machineroom-${VERSION}.tar.gz" >> "$GITHUB_ENV"
       - name: Checksum source archive
         run: sha256sum "${ARCHIVE}" > SHA256SUMS
+      - name: Verify payload completeness against this commit
+        run: |
+          set -euo pipefail
+          EXTRACT=$(mktemp -d)
+          tar -xzf "${ARCHIVE}" -C "$EXTRACT"
+          PACKAGE="$EXTRACT/machineroom-${VERSION}"
+          test -d "$PACKAGE"
+          PYTHONPATH="$PACKAGE/tools" python3 - "$PACKAGE" <<'PY'
+          import sys
+          from pathlib import Path
+          from harness.runtime import PAYLOAD_CURSOR, PAYLOAD_DIRS, PAYLOAD_FILES
+
+          package = Path(sys.argv[1])
+          missing = []
+          for relative in (*PAYLOAD_DIRS, *PAYLOAD_CURSOR):
+              if not (package / relative).is_dir():
+                  missing.append(relative)
+          for relative in PAYLOAD_FILES:
+              if not (package / relative).is_file():
+                  missing.append(relative)
+          if missing:
+              print("payload incomplete:", ", ".join(missing), file=sys.stderr)
+              raise SystemExit(1)
+          print(
+              f"payload complete: {len(PAYLOAD_DIRS) + len(PAYLOAD_CURSOR)} dirs, "
+              f"{len(PAYLOAD_FILES)} files"
+          )
+          PY
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ${{ env.ARCHIVE }}

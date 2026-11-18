@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import jsonschema
+import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -19,10 +20,18 @@ from harness.doctor import (  # noqa: E402
     cursor_full_check,
     installer_version_check,
     legacy_runtime_home_check,
+    runtime_payload_check,
+    runtime_version_check,
     skill_link_check,
     version_coherence_checks,
 )
-from harness.runtime import make_relative_symlink, sync_payload  # noqa: E402
+from harness.runtime import (  # noqa: E402
+    MANIFEST_NAME,
+    InstallFailure,
+    make_relative_symlink,
+    require_payload_present,
+    sync_payload,
+)
 
 
 def _schema() -> dict[str, Any]:
@@ -164,19 +173,21 @@ def test_legacy_runtime_home_fails_when_both_exist(tmp_path: Path) -> None:
     assert "migrate_legacy_runtime" in check.detail
 
 
-def test_collect_checks_skips_real_home_by_default(tmp_path: Path, monkeypatch: Any) -> None:
+def test_collect_checks_skips_legacy_home_by_default(tmp_path: Path, monkeypatch: Any) -> None:
     _versioned_repo(tmp_path)
     destination = tmp_path / ".cursor" / "skills"
     destination.mkdir(parents=True)
     (destination / "fixture-skill").symlink_to(tmp_path / "skills" / "fixture-skill")
-
-    def boom() -> Path:
-        raise AssertionError("Path.home must not be called")
-
-    monkeypatch.setattr(Path, "home", boom)
+    isolated = tmp_path / "isolated-home"
+    isolated.mkdir()
+    monkeypatch.setattr(Path, "home", lambda: isolated)
     monkeypatch.delenv("MR_CHECK_HOME_RUNTIME", raising=False)
     checks = collect_checks(tmp_path, "cursor", "1.2.3")
     assert not any(check.check_id == "legacy-runtime-home" for check in checks)
+    runtime_checks = {check.check_id: check for check in checks if check.check_id.startswith("runtime-")}
+    assert runtime_checks["runtime-version"].outcome == "not_applicable"
+    assert runtime_checks["runtime-payload"].outcome == "not_applicable"
+    assert runtime_checks["runtime-version"].required is False
 
 
 def test_collect_checks_runs_home_when_injected(tmp_path: Path, monkeypatch: Any) -> None:
@@ -192,6 +203,64 @@ def test_collect_checks_runs_home_when_injected(tmp_path: Path, monkeypatch: Any
     home_checks = [check for check in checks if check.check_id == "legacy-runtime-home"]
     assert len(home_checks) == 1
     assert home_checks[0].outcome == "pass"
+
+
+def test_runtime_version_detects_mismatch(tmp_path: Path) -> None:
+    checkout = tmp_path / "checkout"
+    home = tmp_path / "home"
+    checkout.mkdir()
+    (checkout / "package.json").write_text(json.dumps({"version": "9.1.0"}), encoding="utf-8")
+    runtime = home / ".machineroom"
+    runtime.mkdir(parents=True)
+    (runtime / MANIFEST_NAME).write_text(
+        json.dumps({"schema_version": 1, "version": "9.0.2", "digest": "abc", "origin": "release:9.0.2"}),
+        encoding="utf-8",
+    )
+    check = runtime_version_check(checkout, home)
+    assert check.outcome == "fail"
+    assert "9.0.2" in check.detail and "9.1.0" in check.detail
+
+
+def test_runtime_payload_uses_stable_set_when_versions_diverge(tmp_path: Path) -> None:
+    checkout = tmp_path / "checkout"
+    home = tmp_path / "home"
+    checkout.mkdir()
+    (checkout / "package.json").write_text(json.dumps({"version": "9.1.0"}), encoding="utf-8")
+    sync_payload(ROOT, home / ".machineroom", origin="sync")
+    # Divergent versions: stable set must not require scripts/runtime-sync.sh or structured_failure.
+    (home / ".machineroom" / MANIFEST_NAME).write_text(
+        json.dumps({"schema_version": 1, "version": "9.0.2", "digest": "x", "origin": "release:9.0.2"}),
+        encoding="utf-8",
+    )
+    (home / ".machineroom" / "scripts" / "runtime-sync.sh").unlink(missing_ok=True)
+    (home / ".machineroom" / "tools" / "structured_failure.py").unlink(missing_ok=True)
+    assert runtime_payload_check(checkout, home).outcome == "pass"
+    (home / ".machineroom" / "tools" / "execution" / "deny_list.py").unlink()
+    check = runtime_payload_check(checkout, home)
+    assert check.outcome == "fail"
+    assert "tools/execution/deny_list.py" in check.detail
+
+
+def test_runtime_checks_not_applicable_without_runtime(tmp_path: Path) -> None:
+    checkout = tmp_path / "checkout"
+    home = tmp_path / "home"
+    checkout.mkdir()
+    home.mkdir()
+    (checkout / "package.json").write_text(json.dumps({"version": "9.1.0"}), encoding="utf-8")
+    version = runtime_version_check(checkout, home)
+    payload = runtime_payload_check(checkout, home)
+    assert version.outcome == "not_applicable" and version.required is False
+    assert payload.outcome == "not_applicable" and payload.required is False
+
+
+def test_missing_payload_file_names_relative_path(tmp_path: Path) -> None:
+    release = tmp_path / "machineroom-9.1.0"
+    sync_payload(ROOT, release, origin="sync")
+    (release / "tools" / "structured_failure.py").unlink()
+    with pytest.raises(InstallFailure) as caught:
+        require_payload_present(release, origin="release:9.1.0")
+    assert caught.value.detail == "payload missing file: tools/structured_failure.py (release 9.1.0)"
+    assert "traceback" not in caught.value.detail.lower()
 
 
 def test_skill_links_must_resolve_to_catalog(tmp_path: Path) -> None:

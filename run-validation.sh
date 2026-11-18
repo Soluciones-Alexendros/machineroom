@@ -91,6 +91,12 @@ if [ "$FULL" = 1 ]; then
   echo "[8b] Execution E2E mínimo"
   bash scripts/tests/test_execution_e2e.sh
 
+  echo "[8c] Cross-version runtime install"
+  bash scripts/tests/test_runtime_cross_version.sh
+
+  echo "[8d] Bootstrap fixture (git archive)"
+  bash scripts/tests/test_bootstrap.sh
+
   echo "[9] Bash syntax (scripts/ + root wrappers)"
   while IFS= read -r -d '' f; do
     bash -n "$f"

@@ -33,6 +33,16 @@ PAYLOAD_FILES = (
     "tools/execution/__init__.py",
     "tools/execution/deny_list.py",
     "tools/structured_failure.py",
+    # Self-update entry: wrapper only; harness code comes from the next extract.
+    "scripts/runtime-sync.sh",
+)
+# Payload members present from v9.0.2 onward (doctor uses this when versions diverge).
+STABLE_PAYLOAD_DIRS = PAYLOAD_DIRS + PAYLOAD_CURSOR
+STABLE_PAYLOAD_FILES = (
+    "package.json",
+    ".cursor/hooks.json",
+    "tools/execution/__init__.py",
+    "tools/execution/deny_list.py",
 )
 _SEMVER = re.compile(r"\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.-]+)?")
 _RELEASE_ORIGIN = re.compile(rf"^release:({_SEMVER.pattern})$")
@@ -170,15 +180,58 @@ def _digest_tree(root: Path) -> str:
     return hasher.hexdigest()
 
 
-def _verify_payload_tree(root: Path, *, function: str) -> None:
-    for relative in PAYLOAD_DIRS + PAYLOAD_CURSOR:
+def _origin_label(origin: str) -> str:
+    match = _RELEASE_ORIGIN.fullmatch(origin)
+    if match is not None:
+        return f"release {match.group(1)}"
+    return origin
+
+
+def require_payload_present(
+    root: Path,
+    *,
+    function: str = "sync_payload",
+    origin: str = "sync",
+    dirs: tuple[str, ...] | None = None,
+    files: tuple[str, ...] | None = None,
+) -> None:
+    """Raise ``InstallFailure`` naming the relative path (and release) before any copy."""
+    label = _origin_label(origin)
+    for relative in dirs if dirs is not None else PAYLOAD_DIRS + PAYLOAD_CURSOR:
         path = root / relative
         if not path.is_dir():
-            raise InstallFailure(relative, function, f"payload missing directory: {path}")
-    for relative in PAYLOAD_FILES:
+            raise InstallFailure(
+                relative,
+                function,
+                f"payload missing directory: {relative} ({label})",
+            )
+    for relative in files if files is not None else PAYLOAD_FILES:
         path = root / relative
         if not path.is_file():
-            raise InstallFailure(relative, function, f"payload missing file: {path}")
+            raise InstallFailure(
+                relative,
+                function,
+                f"payload missing file: {relative} ({label})",
+            )
+
+
+def _verify_payload_tree(root: Path, *, function: str, origin: str = "sync") -> None:
+    require_payload_present(root, function=function, origin=origin)
+
+
+def payload_tree_digest(root: Path) -> str:
+    """SHA-256 of a payload tree (relative paths + file bytes)."""
+    return _digest_tree(root)
+
+
+def read_runtime_manifest(runtime: Path) -> dict[str, Any] | None:
+    """Return the runtime manifest object, or ``None`` when absent/unreadable."""
+    path = runtime / MANIFEST_NAME
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _is_home_runtime(destination: Path) -> bool:
@@ -276,6 +329,8 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
     if _is_home_runtime(destination):
         stable_source = _require_home_release(source, origin)
 
+    require_payload_present(source, function="sync_payload", origin=origin)
+
     staging = destination.parent / f"{RUNTIME_DIRNAME}-staging-{os.getpid()}"
     if staging.exists():
         shutil.rmtree(staging)
@@ -284,26 +339,17 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
 
     try:
         for relative in PAYLOAD_DIRS:
-            src = source / relative
-            if not src.is_dir():
-                raise InstallFailure(relative, "sync_payload", f"payload missing directory: {src}")
-            _copy_tree(src, staging / relative)
+            _copy_tree(source / relative, staging / relative)
         for relative in PAYLOAD_CURSOR:
-            src = source / relative
-            if not src.is_dir():
-                raise InstallFailure(relative, "sync_payload", f"payload missing directory: {src}")
-            _copy_tree(src, staging / relative)
+            _copy_tree(source / relative, staging / relative)
         for relative in PAYLOAD_FILES:
-            src = source / relative
-            if not src.is_file():
-                raise InstallFailure(relative, "sync_payload", f"payload missing file: {src}")
             dest = staging / relative
             dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dest)
+            shutil.copy2(source / relative, dest)
 
         if stable_source is not None:
             write_user_hooks_config(staging)
-        _verify_payload_tree(staging, function="sync_payload")
+        _verify_payload_tree(staging, function="sync_payload", origin=origin)
 
         version = json.loads((staging / "package.json").read_text(encoding="utf-8"))["version"]
         digest = _digest_tree(staging)
@@ -331,7 +377,7 @@ def sync_payload(  # noqa: C901, PLR0912, PLR0915  # staging/backup/verify branc
             backup = None
         else:
             staging.rename(destination)
-        _verify_payload_tree(destination, function="sync_payload")
+        _verify_payload_tree(destination, function="sync_payload", origin=origin)
     except Exception:
         if backup is not None and backup.exists() and not destination.exists():
             backup.rename(destination)

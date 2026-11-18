@@ -35,7 +35,11 @@ test:
 		-q
 
 smoke:
-	bash scripts/smoke.sh
+	@if [ "$${CI:-}" = "true" ] || [ "$${MR_SMOKE_FIXTURE:-}" = "1" ]; then \
+		MR_SMOKE_FIXTURE=1 bash scripts/smoke.sh; \
+	else \
+		bash scripts/smoke.sh; \
+	fi
 
 validate-harnesses:
 	bash scripts/tests/test_pi_native.sh

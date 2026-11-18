@@ -156,6 +156,104 @@ def legacy_runtime_home_check(home: Path | None = None) -> Check:
         "contract",
         "not_applicable",
         "no home runtime directory",
+        required=False,
+    )
+
+
+def runtime_version_check(checkout: Path, home: Path | None = None) -> Check:
+    """Compare ``~/.machineroom`` manifest version with the checkout ``package.json``."""
+    from harness.runtime import read_runtime_manifest, runtime_root  # noqa: PLC0415
+
+    runtime = runtime_root(home if home is not None else Path.home())
+    if not runtime.is_dir():
+        return Check(
+            "runtime-version",
+            "contract",
+            "not_applicable",
+            "no home runtime directory",
+            required=False,
+        )
+    manifest = read_runtime_manifest(runtime)
+    runtime_version = None if manifest is None else manifest.get("version")
+    checkout_version = _json_version(checkout / "package.json")
+    if not isinstance(runtime_version, str) or not runtime_version:
+        return Check(
+            "runtime-version",
+            "contract",
+            "fail",
+            f"runtime manifest missing version at {runtime}",
+        )
+    if not checkout_version:
+        return Check(
+            "runtime-version",
+            "contract",
+            "fail",
+            "checkout package.json version missing",
+        )
+    if runtime_version != checkout_version:
+        return Check(
+            "runtime-version",
+            "contract",
+            "fail",
+            f"runtime {runtime_version} ≠ checkout {checkout_version}",
+        )
+    return Check(
+        "runtime-version",
+        "contract",
+        "pass",
+        f"runtime={runtime_version} checkout={checkout_version}",
+    )
+
+
+def runtime_payload_check(checkout: Path, home: Path | None = None) -> Check:
+    """Verify installed runtime payload; use stable set when versions diverge."""
+    from harness.runtime import (  # noqa: PLC0415
+        PAYLOAD_CURSOR,
+        PAYLOAD_DIRS,
+        PAYLOAD_FILES,
+        STABLE_PAYLOAD_DIRS,
+        STABLE_PAYLOAD_FILES,
+        read_runtime_manifest,
+        runtime_root,
+    )
+
+    runtime = runtime_root(home if home is not None else Path.home())
+    if not runtime.is_dir():
+        return Check(
+            "runtime-payload",
+            "contract",
+            "not_applicable",
+            "no home runtime directory",
+            required=False,
+        )
+    manifest = read_runtime_manifest(runtime)
+    runtime_version = None if manifest is None else manifest.get("version")
+    checkout_version = _json_version(checkout / "package.json")
+    matched = (
+        isinstance(runtime_version, str) and isinstance(checkout_version, str) and runtime_version == checkout_version
+    )
+    dirs = PAYLOAD_DIRS + PAYLOAD_CURSOR if matched else STABLE_PAYLOAD_DIRS
+    files = PAYLOAD_FILES if matched else STABLE_PAYLOAD_FILES
+    missing: list[str] = []
+    for relative in dirs:
+        if not (runtime / relative).is_dir():
+            missing.append(relative)
+    for relative in files:
+        if not (runtime / relative).is_file():
+            missing.append(relative)
+    if missing:
+        return Check(
+            "runtime-payload",
+            "contract",
+            "fail",
+            f"missing {missing[0]}" + (f" (+{len(missing) - 1} more)" if len(missing) > 1 else ""),
+        )
+    scope = "checkout" if matched else "stable"
+    return Check(
+        "runtime-payload",
+        "contract",
+        "pass",
+        f"payload complete ({scope} set, {len(dirs) + len(files)} paths)",
     )
 
 
@@ -342,6 +440,9 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
     else:
         checks = version_coherence_checks(source, expected_version)
         checks.append(handoff_check(source))
+    home_root = home if home is not None else Path.home()
+    checks.append(runtime_version_check(source, home_root))
+    checks.append(runtime_payload_check(source, home_root))
     want_home = home is not None or check_home or os.environ.get("MR_CHECK_HOME_RUNTIME") == "1"
     if want_home:
         checks.append(legacy_runtime_home_check(home))
