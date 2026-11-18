@@ -259,7 +259,7 @@ def _check_action_pins(rel: str, text: str) -> None:
 def release_asset_errors(
     root: Path,
 ) -> list[str]:  # ordered release asset gate
-    """Require archive → checksum → attestation → upload in the release workflow."""
+    """Require archive → checksum → attestation → sign → sbom → upload in release.yml."""
     path = root / ".github" / "workflows" / "release.yml"
     if not path.is_file():
         return []
@@ -271,38 +271,70 @@ def release_asset_errors(
     errors: list[str] = []
     if (provenance.get("permissions") or {}).get("contents") != "write":
         errors.append("release provenance needs contents: write for asset upload")
-    runs = [str(step.get("run", "")) for step in steps if isinstance(step, dict)]
-    uses = [str(step.get("uses", "")) for step in steps if isinstance(step, dict)]
-    archive = next((i for i, run in enumerate(runs) if "git archive" in run), None)
+
+    def _run(step: object) -> str:
+        return str(step.get("run", "")) if isinstance(step, dict) else ""
+
+    def _uses(step: object) -> str:
+        return str(step.get("uses", "")) if isinstance(step, dict) else ""
+
+    # Indices are over the full provenance steps list so order compares across uses/run.
+    archive = next((i for i, step in enumerate(steps) if "git archive" in _run(step)), None)
     checksum = next(
-        (i for i, run in enumerate(runs) if "sha256sum" in run and "SHA256SUMS" in run),
+        (i for i, step in enumerate(steps) if "sha256sum" in _run(step) and re.search(r">\s*SHA256SUMS", _run(step))),
         None,
     )
     attest = next(
-        (i for i, use in enumerate(uses) if "actions/attest-build-provenance@" in use),
+        (i for i, step in enumerate(steps) if "actions/attest-build-provenance@" in _uses(step)),
         None,
     )
-    upload = next((i for i, run in enumerate(runs) if "gh release upload" in run), None)
+    sign = next(
+        (i for i, step in enumerate(steps) if "cosign" in _run(step) and "sign-blob" in _run(step)),
+        None,
+    )
+    sbom = next(
+        (
+            i
+            for i, step in enumerate(steps)
+            if "gh release upload" not in _run(step) and ("syft" in _run(step) or ".cdx.json" in _run(step))
+        ),
+        None,
+    )
+    upload = next((i for i, step in enumerate(steps) if "gh release upload" in _run(step)), None)
     positions = {
         "archive": archive,
         "checksum": checksum,
         "attestation": attest,
+        "sign": sign,
+        "sbom": sbom,
         "upload": upload,
     }
     for name, position in positions.items():
         if position is None:
             errors.append(f"release provenance missing {name} step")
-    if archive is not None and checksum is not None and attest is not None and upload is not None:
-        ordered = [archive, checksum, attest, upload]
-        if ordered != sorted(ordered):
-            errors.append("release asset steps must be ordered archive → checksum → attestation → upload")
+    ordered_keys = ("archive", "checksum", "attestation", "sign", "sbom", "upload")
+    ordered_ints: list[int] = []
+    order_complete = True
+    for name in ordered_keys:
+        pos = positions[name]
+        if pos is None:
+            order_complete = False
+            break
+        ordered_ints.append(pos)
+    if order_complete and ordered_ints != sorted(ordered_ints):
+        errors.append("release asset steps must be ordered archive → checksum → attestation → sign → sbom → upload")
     if upload is not None:
-        upload_run = runs[upload]
+        upload_step = steps[upload]
+        upload_run = _run(upload_step)
         if "SHA256SUMS" not in upload_run or "${ARCHIVE}" not in upload_run:
             errors.append("release upload must include archive and SHA256SUMS")
+        if "sigstore" not in upload_run and ".sig" not in upload_run:
+            errors.append("release upload must include signature bundles")
+        if ".cdx.json" not in upload_run and "sbom" not in upload_run.lower():
+            errors.append("release upload must include SBOM (cdx/sbom) artifact")
         if "--clobber" in upload_run:
             errors.append("release upload must not clobber existing assets")
-        if "GH_TOKEN" not in str(steps[upload].get("env", {})):
+        if "GH_TOKEN" not in str(upload_step.get("env", {}) if isinstance(upload_step, dict) else {}):
             errors.append("release upload requires GH_TOKEN")
         # Guard the historical v7.1.0 failure mode: upload resolving VERSION from branch name.
         compact = "".join(upload_run.split()).replace('"', "").replace("'", "")
@@ -326,6 +358,10 @@ def release_asset_errors(
             errors.append("post-release-smoke must verify SHA256SUMS")
         if "gh attestation verify" not in smoke_text:
             errors.append("post-release-smoke must verify attestation")
+        if "cosign verify-blob" not in smoke_text:
+            errors.append("post-release-smoke must verify cosign signatures with verify-blob")
+        if ".cdx.json" not in smoke_text and "sbom" not in smoke_text.lower():
+            errors.append("post-release-smoke must verify SBOM asset presence")
         if "bootstrap.sh" not in smoke_text:
             errors.append("post-release-smoke must run bootstrap without models")
         smoke_compact = "".join(smoke_text.split()).replace('"', "").replace("'", "")

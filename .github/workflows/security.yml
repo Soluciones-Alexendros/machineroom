@@ -3,6 +3,7 @@ name: Security
 on:
   schedule:
     - cron: "0 6 * * 1"
+  workflow_dispatch:
   push:
     paths:
       - ".github/**"
@@ -31,3 +32,124 @@ jobs:
           ref: ${{ github.sha }}
       - name: Lint workflows
         uses: ./skills/project-status/actions/actionlint
+
+  mutation-pilot:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+      - name: Setup uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
+        with:
+          python-version: "3.12"
+          enable-cache: false
+      - name: Sync tools project
+        run: uv sync --frozen --project tools
+      - name: Install mutmut 3.4.0 (pinned wheel SHA-256)
+        env:
+          MUTMUT_WHEEL: mutmut-3.4.0-py3-none-any.whl
+          MUTMUT_SHA256: 77233282c0cfb198c0605d640aacf26f8c6f2540cec15a940e5c8f144672cd2f
+          MUTMUT_URL: https://files.pythonhosted.org/packages/cf/bf/391def84fbb3269dcb4322cb380f2bbd189c609464300d974dfdc00e491d/mutmut-3.4.0-py3-none-any.whl
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "${MUTMUT_WHEEL}" "${MUTMUT_URL}"
+          echo "${MUTMUT_SHA256}  ${MUTMUT_WHEEL}" | sha256sum -c -
+          uv pip install --python "$(uv run --project tools python3 -c 'import sys; print(sys.executable)')" "${MUTMUT_WHEEL}"
+      - name: Configure mutmut pilot targets
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            '[mutmut]' \
+            'paths_to_mutate=tools/validate/ci_gate.py,tools/skill-router/route.py' \
+            'also_copy=tools/,skills/,skill-index.json' \
+            'runner=python -m pytest -x -q --tb=no' \
+            'tests_dir=tools/validate/tests:tools/skill-router/tests' \
+            > setup.cfg
+          cat setup.cfg
+      - name: Run mutation pilot
+        env:
+          PYTHONPATH: tools
+        run: uv run --project tools mutmut run --max-children 2
+      - name: Score and gate (floor 60%)
+        run: |
+          set -euo pipefail
+          uv run --project tools python3 <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import sys
+          from collections import defaultdict
+          from pathlib import Path
+
+          status_by_exit_code = defaultdict(
+              lambda: "suspicious",
+              {
+                  1: "killed",
+                  3: "killed",
+                  -24: "killed",
+                  0: "survived",
+                  5: "no tests",
+                  2: "check was interrupted by user",
+                  None: "not checked",
+                  33: "no tests",
+                  34: "skipped",
+                  35: "suspicious",
+                  36: "timeout",
+                  24: "timeout",
+                  152: "timeout",
+                  255: "timeout",
+                  -11: "segfault",
+                  -9: "segfault",
+              },
+          )
+
+          counts: dict[str, int] = defaultdict(int)
+          for meta in Path("mutants").rglob("*.meta"):
+              data = json.loads(meta.read_text(encoding="utf-8"))
+              for code in data.get("exit_code_by_key", {}).values():
+                  counts[status_by_exit_code[code]] += 1
+
+          killed = counts["killed"]
+          survived = counts["survived"]
+          denom = killed + survived
+          score = (100.0 * killed / denom) if denom else 0.0
+          floor = 60.0
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          lines = [
+              "## mutation-pilot",
+              "",
+              f"- killed: {killed}",
+              f"- survived: {survived}",
+              f"- no tests: {counts['no tests']}",
+              f"- timeout: {counts['timeout']}",
+              f"- suspicious: {counts['suspicious']}",
+              f"- skipped: {counts['skipped']}",
+              f"- not checked: {counts['not checked']}",
+              f"- **score: {score:.1f}%** (floor {floor:.0f}%)",
+              "",
+          ]
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+
+          if denom == 0:
+              print("mutation-pilot blocked: no decisive mutants (killed+survived=0)", file=sys.stderr)
+              sys.exit(1)
+          if score < floor:
+              print(
+                  f"mutation-pilot blocked: score {score:.1f}% below floor {floor:.0f}%",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+          PY

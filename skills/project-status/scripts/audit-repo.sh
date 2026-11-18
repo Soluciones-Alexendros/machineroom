@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-trap 'rc=$?; echo "audit-repo.sh: error en línea $LINENO (exit $rc)" >&2' ERR
+trap 'echo "audit-repo.sh: error en línea $LINENO (exit $?)" >&2' ERR
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="$(basename "$0")"

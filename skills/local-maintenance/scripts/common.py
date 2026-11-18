@@ -219,9 +219,7 @@ def run(cmd: str, timeout: int = 10) -> str:
     """
     try:
         proc = subprocess.run(
-            cmd,
-            shell=True,
-            executable="/bin/bash",
+            ["bash", "-lc", cmd],
             capture_output=True,
             timeout=timeout,
             text=True,
@@ -247,9 +245,7 @@ def run_capture(cmd: str, timeout: int = 10) -> tuple[int, str]:
     """Legacy shell runner returning (returncode, stdout). Prefer run_result."""
     try:
         proc = subprocess.run(
-            cmd,
-            shell=True,
-            executable="/bin/bash",
+            ["bash", "-lc", cmd],
             capture_output=True,
             timeout=timeout,
             text=True,

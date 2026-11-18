@@ -1,0 +1,8 @@
+# Gitleaks config for machineroom (used by skills/project-status/actions/secret-scan).
+title = "machineroom"
+
+[[allowlists]]
+description = "Historical Upstash docs example (defaultUser/defaultPassword JWT); path removed from tree after catalog restructure"
+paths = [
+  '''skills/upstash/.*''',
+]

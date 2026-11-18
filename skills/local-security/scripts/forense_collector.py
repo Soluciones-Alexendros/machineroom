@@ -41,9 +41,7 @@ def which(cmd: str) -> str | None:
 def run_cmd(cmd: str, timeout: int = 120) -> str:
     try:
         proc = subprocess.run(
-            cmd,
-            shell=True,
-            executable="/bin/bash",
+            ["bash", "-lc", cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             timeout=timeout,

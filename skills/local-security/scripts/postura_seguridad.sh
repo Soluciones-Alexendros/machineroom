@@ -8,7 +8,7 @@
 # Sin CANON_TERMINAL_DIR se informa "no-configurado" (sin hardcodeos de rutas).
 set -euo pipefail
 
-trap 'rc=$?; echo "postura_seguridad.sh: error en línea $LINENO (exit $rc)" >&2' ERR
+trap 'echo "postura_seguridad.sh: error en línea $LINENO (exit $?)" >&2' ERR
 
 SCRIPT_NAME="$(basename "$0")"
 JSON_MODE=0
@@ -62,7 +62,15 @@ for dep in echo cat; do
 done
 
 OUT_LINES="$(mktemp)"
-trap 'rc=$?; rm -f "$OUT_LINES"; [ $rc -ne 0 ] && echo "postura_seguridad.sh: error (exit $rc)" >&2' EXIT
+cleanup_out_lines() {
+  local ec=$?
+  rm -f "$OUT_LINES"
+  if [ "$ec" -ne 0 ]; then
+    echo "postura_seguridad.sh: error (exit $ec)" >&2
+  fi
+  exit "$ec"
+}
+trap cleanup_out_lines EXIT
 
 say() { echo "$1: $2" >>"$OUT_LINES"; }
 

@@ -29,3 +29,8 @@ We acknowledge reports and, when a fix ships, credit the reporter in the changel
 - Skills, `tools/`, install scripts, and CI/validators of machineroom.
 - Fleet contracts: docs, reusable workflows, `templates/product/`, Renovate and `main` protection conventions.
 - Not covered: production secrets, customer credentials, or third-party product runtimes (report in those repos).
+
+## Related
+
+- Release archive verification (checksum, attestation, cosign): [`docs/reproducible-builds.md`](docs/reproducible-builds.md)
+- ASVS applicability (no L2 certification claim): [`docs/security/asvs-applicability.md`](docs/security/asvs-applicability.md)
