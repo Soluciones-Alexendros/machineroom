@@ -49,14 +49,18 @@ DRY=$(bash "$ROOT/scripts/bootstrap.sh" --version "$VERSION" --harness cursor --
 echo "$DRY" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["status"]=="simulated" and d["dry_run"] is True'
 test ! -e "$DRY_TARGET"
 
-HOME="$TMP/home-pi" bash "$ROOT/scripts/bootstrap.sh" --version "$VERSION" --harness pi \
-  --target "$TMP/project-pi" --json >"$TMP/pi.json"
-python3 - "$TMP/pi.json" <<'PY'
+if command -v pi >/dev/null 2>&1; then
+  HOME="$TMP/home-pi" bash "$ROOT/scripts/bootstrap.sh" --version "$VERSION" --harness pi \
+    --target "$TMP/project-pi" --json >"$TMP/pi.json"
+  python3 - "$TMP/pi.json" <<'PY'
 import json,sys
 result=json.load(open(sys.argv[1]))
 assert result["status"]=="installed" and result["doctor"]=="pass", result
 print("bootstrap Pi + native doctor: PASS")
 PY
+else
+  echo "not_run: Pi binary not found — skipping Pi bootstrap lane (Cursor lane still required)"
+fi
 
 bash "$ROOT/scripts/bootstrap.sh" --version "$VERSION" --harness cursor \
   --target "$TMP/project-cursor" --json >"$TMP/cursor.json"

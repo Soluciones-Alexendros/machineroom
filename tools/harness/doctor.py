@@ -230,9 +230,7 @@ def runtime_payload_check(checkout: Path, home: Path | None = None) -> Check:
     runtime_version = None if manifest is None else manifest.get("version")
     checkout_version = _json_version(checkout / "package.json")
     matched = (
-        isinstance(runtime_version, str)
-        and isinstance(checkout_version, str)
-        and runtime_version == checkout_version
+        isinstance(runtime_version, str) and isinstance(checkout_version, str) and runtime_version == checkout_version
     )
     dirs = PAYLOAD_DIRS + PAYLOAD_CURSOR if matched else STABLE_PAYLOAD_DIRS
     files = PAYLOAD_FILES if matched else STABLE_PAYLOAD_FILES

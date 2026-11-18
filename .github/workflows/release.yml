@@ -113,13 +113,12 @@ jobs:
           tar -xzf "${ARCHIVE}" -C "$EXTRACT"
           PACKAGE="$EXTRACT/machineroom-${VERSION}"
           test -d "$PACKAGE"
-          PACKAGE="$PACKAGE" PYTHONPATH="$PACKAGE/tools" python3 - <<'PY'
-          import os
+          PYTHONPATH="$PACKAGE/tools" python3 - "$PACKAGE" <<'PY'
           import sys
           from pathlib import Path
           from harness.runtime import PAYLOAD_CURSOR, PAYLOAD_DIRS, PAYLOAD_FILES
 
-          package = Path(os.environ["PACKAGE"])
+          package = Path(sys.argv[1])
           missing = []
           for relative in (*PAYLOAD_DIRS, *PAYLOAD_CURSOR):
               if not (package / relative).is_dir():
