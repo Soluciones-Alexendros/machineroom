@@ -6,6 +6,8 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.1.0] - 2026-11-18
+
 ### Added
 
 - OpenCode V2 como tercer harness de nivel A: `scripts/install-opencode.sh` y
