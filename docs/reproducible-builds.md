@@ -30,7 +30,12 @@ Download the release assets for `v${VERSION}` (the same set `post-release-smoke`
 - `SHA256SUMS`
 - `machineroom-${VERSION}.tar.gz.sigstore.json`
 - `SHA256SUMS.sigstore.json`
-- `machineroom-${VERSION}.cdx.json` (SBOM; presence check only below)
+- `machineroom-${VERSION}.cdx.json` (SBOM; presence check only below). The
+  provenance job publishes this asset only after
+  [`tools/validate/license_gate.py`](../tools/validate/license_gate.py) accepts
+  declared SPDX ids against
+  [`tools/validate/license_allowlist.txt`](../tools/validate/license_allowlist.txt);
+  policy: [`docs/licensing.md`](licensing.md).
 
 Then:
 

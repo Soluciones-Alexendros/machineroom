@@ -1,6 +1,6 @@
 {
   "name": "machineroom",
-  "version": "9.2.0",
+  "version": "9.2.1",
   "description": "Machineroom — agentic pipeline: spec → schemas/tests → code → validate → integrate → declarative status",
   "private": true,
   "keywords": [
@@ -16,7 +16,7 @@
   },
   "scripts": {
     "prepare": "node scripts/prepare.mjs",
-    "syntax-check": "python3 -m py_compile tools/validate/skill_spec.py tools/validate/skill_links.py tools/validate/release_coherence.py tools/validate/hygiene.py tools/validate/private_denylist.py tools/validate/g1_run_expressions.py tools/validate/ci_gate.py tools/contracts/loader.py tools/contracts/result.py tools/version/bump.py tools/version/cut_tag.py && echo 'syntax-check: OK'",
+    "syntax-check": "python3 -m py_compile tools/validate/skill_spec.py tools/validate/skill_links.py tools/validate/release_coherence.py tools/validate/hygiene.py tools/validate/private_denylist.py tools/validate/g1_run_expressions.py tools/validate/ci_gate.py tools/validate/license_gate.py tools/contracts/loader.py tools/contracts/result.py tools/version/bump.py tools/version/cut_tag.py && echo 'syntax-check: OK'",
     "typecheck": "uv run --project tools --frozen mypy --config-file mypy.ini --strict .",
     "test": "uv run --project tools --frozen bash run-validation.sh --pytest-only --smoke-only",
     "lint": "prettier --config config/prettierrc.json --check .",

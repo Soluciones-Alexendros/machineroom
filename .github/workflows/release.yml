@@ -177,6 +177,13 @@ jobs:
           syft "dir:${PACKAGE}" -o "cyclonedx-json=${SBOM}"
           test -f "$SBOM"
           echo "SBOM=${SBOM}" >> "$GITHUB_ENV"
+      - name: License gate on CycloneDX SBOM
+        run: |
+          set -euo pipefail
+          test -f "machineroom-${VERSION}.cdx.json"
+          python3 tools/validate/license_gate.py \
+            --sbom "machineroom-${VERSION}.cdx.json" \
+            --allowlist tools/validate/license_allowlist.txt
       - name: Upload attested release assets
         env:
           GH_TOKEN: ${{ github.token }}
