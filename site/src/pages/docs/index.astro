@@ -1,0 +1,39 @@
+---
+import Base from "../../layouts/Base.astro";
+import SearchForm from "../../components/SearchForm.astro";
+import { catalog } from "../../lib/catalog";
+
+const groups: string[] = [];
+for (const doc of catalog.docs) {
+  if (!groups.includes(doc.group)) groups.push(doc.group);
+}
+
+const labels: Record<string, string> = {
+  instalar: "Instalar",
+  canon: "Canon",
+  stacks: "Stacks",
+};
+---
+
+<Base title="Docs" description="Documentos públicos de machineroom.">
+  <h1>Docs</h1>
+  <SearchForm />
+  <div data-pagefind-body>
+    {
+      groups.map((group) => (
+        <section class="scroll-mt-nav" id={group}>
+          <h2>{labels[group] ?? group}</h2>
+          <ul>
+            {catalog.docs
+              .filter((doc) => doc.group === group)
+              .map((doc) => (
+                <li>
+                  <a href={`/docs/${doc.slug}/`}>{doc.title}</a>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</Base>

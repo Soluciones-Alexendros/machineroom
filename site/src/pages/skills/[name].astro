@@ -1,0 +1,49 @@
+---
+import Base from "../../layouts/Base.astro";
+import { catalog, plainText, type Skill } from "../../lib/catalog";
+import { renderMarkdown } from "../../lib/markdown";
+
+export function getStaticPaths() {
+  return catalog.skills.map((skill) => ({
+    params: { name: skill.name },
+    props: { skill },
+  }));
+}
+
+interface Props {
+  skill: Skill;
+}
+
+const { skill } = Astro.props;
+const tools = catalog.tools.filter((tool) => tool.skill === skill.name);
+const overview = renderMarkdown(skill.overview_markdown);
+const when = renderMarkdown(skill.when_to_use_markdown);
+---
+
+<Base title={skill.name} description={plainText(skill.description).slice(0, 180)}>
+  <article lang="en" data-pagefind-body>
+    <h1>{skill.name}</h1>
+    <p>{skill.description}</p>
+    <h2>Overview</h2>
+    <div set:html={overview} />
+    <h2>When to Use</h2>
+    <div set:html={when} />
+    {
+      tools.length > 0 && (
+        <>
+          <h2>Tools</h2>
+          <ul>
+            {tools.map((tool) => (
+              <li>
+                <a href={`/cableado/#${tool.tool_id}`}>{tool.tool_id}</a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+  </article>
+  <p>
+    <a href={skill.source_url}>Ver fuente de esta skill</a>
+  </p>
+</Base>

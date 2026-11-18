@@ -1,0 +1,69 @@
+---
+import Link from "../../.portal/src/components/Link.astro";
+import Icon from "../../.portal/src/components/ui/Icon.astro";
+import { catalog } from "../lib/catalog";
+
+interface Props {
+  pathname: string;
+}
+
+const { pathname } = Astro.props;
+const items = [
+  { href: "/", label: "Producto" },
+  { href: "/cableado/", label: "Cableado" },
+  { href: "/skills/", label: "Skills" },
+  { href: "/docs/", label: "Docs" },
+];
+
+function current(href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href);
+}
+---
+
+<header
+  id="site-header"
+  class="chrome-surface sticky top-0 z-50 border-b border-border"
+  data-pagefind-ignore
+>
+  <div class="header-bar">
+    <nav class="header-nav" aria-label="Secciones">
+      <ul class="site-nav">
+        {
+          items.map((item) => (
+            <li>
+              <Link href={item.href} variant="nav" current={current(item.href)}>
+                {item.label}
+              </Link>
+            </li>
+          ))
+        }
+        <li>
+          <Link
+            href={`https://github.com/${catalog.repo}`}
+            variant="nav"
+            rel="noreferrer"
+          >
+            Repositorio
+          </Link>
+        </li>
+      </ul>
+    </nav>
+    <button
+      type="button"
+      class="btn btn-ghost btn-square js-only h-11 w-11"
+      data-theme-toggle
+      aria-label="Tema"
+    >
+      <span data-theme-icon="system">
+        <Icon name="theme-system" />
+      </span>
+      <span data-theme-icon="alexlight" hidden>
+        <Icon name="sun" />
+      </span>
+      <span data-theme-icon="alexdark" hidden>
+        <Icon name="moon" />
+      </span>
+    </button>
+  </div>
+</header>

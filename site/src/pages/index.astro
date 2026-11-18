@@ -1,0 +1,47 @@
+---
+import Button from "../../.portal/src/components/Button.astro";
+import Base from "../layouts/Base.astro";
+import { catalog, plainText } from "../lib/catalog";
+import { renderMarkdown } from "../lib/markdown";
+
+const hero = renderMarkdown(catalog.hero_markdown);
+const description = plainText(catalog.hero_markdown).slice(0, 180);
+---
+
+<Base title="Machineroom" description={description}>
+  <h1 class="site-title">Machineroom</h1>
+  <p class="site-count tnum">
+    {catalog.skill_count} skills · versión {catalog.product_version}
+  </p>
+  <div set:html={hero} />
+  <p>El repositorio es público. No hace falta una cuenta ni una credencial.</p>
+  <div class="site-actions">
+    <Button href="/docs/instalar/">Instalar</Button>
+    <Button href="/cableado/" variant="secondary">Cableado por defecto</Button>
+  </div>
+  <h2 class="scroll-mt-nav" id="fases">Fases</h2>
+  <p>
+    El router de fase, con la plantilla, resuelve cada fase en una skill. No es
+    la única skill que un trabajo puede invocar.
+  </p>
+  <div class="phase-column">
+    {
+      catalog.phases.map((phase) => (
+        <section class="scroll-mt-nav" id={phase.id}>
+          <h3>
+            <a href={`/cableado/#${phase.id}`}>{phase.id}</a>
+          </h3>
+          <p>
+            Resuelve en <a href={`/skills/${phase.skill}/`}>{phase.skill}</a>.
+          </p>
+        </section>
+      ))
+    }
+  </div>
+  <h2 class="scroll-mt-nav" id="seguir">Seguir</h2>
+  <p>
+    <a href="/docs/instalar/">Instalar</a>
+    {" · "}
+    <a href="/cableado/">Cableado por defecto</a>
+  </p>
+</Base>

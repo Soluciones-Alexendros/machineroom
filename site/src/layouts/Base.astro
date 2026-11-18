@@ -1,0 +1,40 @@
+---
+import "../styles/site.css";
+import SkipLink from "../../.portal/src/components/SkipLink.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { catalog } from "../lib/catalog";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const full = title === "Machineroom" ? title : `${title} · Machineroom`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{full}</title>
+    <meta name="description" content={description} />
+    <meta name="machineroom-sha" content={catalog.source_sha} />
+    <meta name="portal-sha" content={catalog.portal_sha} />
+    <link rel="canonical" href={canonical} />
+    <script is:inline src="/theme-init.js"></script>
+  </head>
+  <body>
+    <SkipLink />
+    <SiteHeader pathname={Astro.url.pathname} />
+    <main id="main" class="page-shell reading">
+      <slot />
+    </main>
+    <SiteFooter />
+    <script is:inline src="/theme-toggle.js"></script>
+    <script is:inline src="/search.js"></script>
+  </body>
+</html>

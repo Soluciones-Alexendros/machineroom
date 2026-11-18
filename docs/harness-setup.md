@@ -1,5 +1,33 @@
 # Harness setup — Cursor and Pi
 
+The repository is public. You do not need an account or a credential.
+
+## Start here
+
+### Pi
+
+You need Pi.
+
+```bash
+pi install git:github.com/Soluciones-Alexendros/machineroom@v9.0.1
+```
+
+You do not need to clone the repository first.
+
+### Cursor
+
+You need git, bash and Cursor.
+
+```bash
+git clone --depth 1 --branch v9.0.1 https://github.com/Soluciones-Alexendros/machineroom.git
+cd machineroom
+bash scripts/install-cursor.sh
+```
+
+That links the skills into `.cursor/skills` inside this clone. To link them into another project, run the same installer from this clone with `--target` pointing at that project's `.cursor/skills`. The link points at this clone; removing the clone breaks it. `/path/to/project` later in this page means your project, not a path on the author's machine.
+
+`--user` is not this first step. It reads `~/.machineroom`, which `runtime-sync` fills from a published release. That flow is the next section.
+
 `skills/` is the only catalog that is committed. Installers create symlinks; they do not copy skill bodies.
 
 ## Machine runtime (`~/.machineroom`)
@@ -7,7 +35,7 @@
 User-scope installs (`--user`) never link into a development checkout. They read a real directory at `$HOME/.machineroom` (not a symlink). That directory is a verified release downloaded from the repository. The development checkout stays in the working tree and is not copied there.
 
 ```bash
-bash scripts/runtime-sync.sh install --version 8.0.1
+bash scripts/runtime-sync.sh install --version 9.0.1
 ```
 
 `sync` refuses to fill `$HOME/.machineroom`. The installed copy records `release:<version>` and rewrites user hooks to `python3 hooks/...`. The version must be a published release; it is not the unpublished working tree.
@@ -37,7 +65,7 @@ On failure, install and sync print `FAIL <component> <function>: <detail>` on st
 Install an immutable release as one Pi package; no symlink installer is needed:
 
 ```bash
-pi install git:github.com/Soluciones-Alexendros/machineroom@v7.1.1
+pi install git:github.com/Soluciones-Alexendros/machineroom@v9.0.1
 ```
 
 Use `--local` for a project-local declaration, subject to Pi project trust. `pi list` shows the configured package. Updating requires selecting a new tag explicitly; a pinned ref does not move on `pi update`. npm distribution is not part of this release channel.
@@ -109,7 +137,7 @@ After install or update of user-level skills, run `/reload` (or start a new Pi s
 Quickstart (install a published release into the home runtime, then install project and user surfaces; the last line is the idempotent user rerun):
 
 ```bash
-bash scripts/runtime-sync.sh install --version 8.0.1
+bash scripts/runtime-sync.sh install --version 9.0.1
 bash scripts/install-pi.sh
 bash scripts/install-pi.sh --user --yes --json
 bash scripts/install.sh --harness pi --target /tmp/ai-pi --yes --json | jq .installed
@@ -118,10 +146,10 @@ bash scripts/install-pi.sh --user --yes --json | jq '{installed,changed,skipped}
 
 ## Verified release bootstrap
 
-With `gh`, `uv` and the selected harness available, this one-line flow clones the installer at an immutable tag, downloads the release assets, verifies SHA-256 and provenance before extraction, installs, and runs the doctor:
+With `gh`, `uv` and the selected harness available, this one-line flow clones the installer at an immutable tag, downloads the release assets, verifies SHA-256 and provenance before extraction, installs, and runs the doctor. `/path/to/project` is your project directory.
 
 ```bash
-git clone --depth 1 --branch v7.1.1 https://github.com/Soluciones-Alexendros/machineroom.git /tmp/machineroom-7.1.1 && bash /tmp/machineroom-7.1.1/scripts/bootstrap.sh --version 7.1.1 --harness cursor --target /path/to/project --json
+git clone --depth 1 --branch v9.0.1 https://github.com/Soluciones-Alexendros/machineroom.git /tmp/machineroom-9.0.1 && bash /tmp/machineroom-9.0.1/scripts/bootstrap.sh --version 9.0.1 --harness cursor --target /path/to/project --json
 ```
 
 Use `--harness pi` for the bootstrap flow, or the simpler native `pi install git:…@vX.Y.Z` command above. `--dry-run` performs no writes. A checksum, attestation, extraction or doctor failure prevents installation or triggers owned-resource rollback. No `curl | bash` is used.

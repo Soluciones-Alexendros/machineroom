@@ -1,0 +1,123 @@
+---
+import Base from "../layouts/Base.astro";
+import { catalog } from "../lib/catalog";
+
+const groups = [
+  { id: "root", label: "package.json de la raíz", rows: catalog.dependencies.root },
+  {
+    id: "tools",
+    label: "tools/pyproject.toml",
+    rows: catalog.dependencies.tools,
+  },
+  { id: "site", label: "site/package.json", rows: catalog.dependencies.site },
+];
+
+function approvalLine(ops: { approval_required: boolean }[]): string {
+  if (ops.length === 0) return "sin operaciones declaradas";
+  if (ops.some((op) => op.approval_required)) {
+    return "hay operaciones que piden aprobación";
+  }
+  return "ninguna operación pide aprobación";
+}
+---
+
+<Base
+  title="Cableado por defecto"
+  description="Fases, skills, herramientas declaradas y dependencias directas de machineroom."
+>
+  <h1>Cableado por defecto</h1>
+  <p>
+    Dos listas. Una política declarada no es una ejecución observada. El router
+    de fase no es la única skill que un trabajo puede invocar.
+  </p>
+
+  <h2 class="scroll-mt-nav" id="fases">Fase a skill</h2>
+  <div class="phase-column">
+    {
+      catalog.phases.map((phase) => (
+        <section class="scroll-mt-nav" id={phase.id}>
+          <h3>{phase.id}</h3>
+          <p>
+            Resuelve en <a href={`/skills/${phase.skill}/`}>{phase.skill}</a>
+            {phase.fallback ? ` · respaldo ${phase.fallback}` : ""}.
+          </p>
+          {phase.others.map((other) => (
+            <p>
+              <a href={`/skills/${other.skill}/`}>{other.skill}</a>
+              {` · ${other.key} · ${other.note}.`}
+            </p>
+          ))}
+        </section>
+      ))
+    }
+  </div>
+
+  <h2 class="scroll-mt-nav" id="herramientas">Skill a herramienta</h2>
+  <div class="phase-column">
+    {
+      catalog.tools.map((tool) => (
+        <section class="scroll-mt-nav" id={tool.tool_id}>
+          <h3>
+            {tool.tool_id} · <a href={`/skills/${tool.skill}/`}>{tool.skill}</a>
+          </h3>
+          <p>
+            {tool.operations.length} operaciones · {approvalLine(tool.operations)}.
+          </p>
+          {tool.operations.length > 0 && (
+            <details>
+              <summary>Operaciones de {tool.tool_id}</summary>
+              <ul>
+                {tool.operations.map((op) => (
+                  <li>
+                    {op.id} · {op.effect} · aprobación{" "}
+                    {op.approval_required ? "sí" : "no"} · dry_run {op.dry_run}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </section>
+      ))
+    }
+  </div>
+
+  <h2 class="scroll-mt-nav" id="capas">Capas</h2>
+  <ul>
+    {catalog.layers.map((layer) => <li><code>{layer}</code></li>)}
+  </ul>
+
+  <h2 class="scroll-mt-nav" id="dependencias">Dependencias directas declaradas</h2>
+  <p>No es el árbol instalado ni lo que hace falta para usar el pipeline.</p>
+  {
+    groups.map((group) => (
+      <section class="scroll-mt-nav" id={group.id}>
+        <h3>{group.label}</h3>
+        {group.rows.length === 0 ? (
+          <p>Ninguna declarada.</p>
+        ) : (
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Dependencias directas declaradas</caption>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Rango</th>
+                  <th>Tipo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {group.rows.map((row) => (
+                  <tr>
+                    <td>{row.name}</td>
+                    <td class="tnum">{row.spec}</td>
+                    <td>{row.kind}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    ))
+  }
+</Base>

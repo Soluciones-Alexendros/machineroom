@@ -1,0 +1,59 @@
+# Each row is one published page. A new file does not enter by its folder.
+# Left out on purpose:
+# - docs/USAGE.md links .env.example, docs/CONTRIBUTING.md and README.md
+# - docs/STANDARD.md links agentskills.io and CHANGELOG.md
+# - docs/REUTILIZACION.md links several ADRs
+# - docs/architecture/overview.md links a directory and ADRs
+# - docs/guides/ links ADRs and templates/product
+# - CONTRIBUTING.md links CHANGELOG.md, templates and docs/STANDARD.md
+# - ARCHITECTURE.md links .github/renovate.json
+# - README.md is the hero source, not a page
+# - runbooks, archives, plans, AGENTS.md, .env.example, skill references and scripts
+allowed_hosts:
+  - github.com
+  - alexendros.dev
+  - pi.dev
+images: []
+docs:
+  - source: docs/harness-setup.md
+    slug: instalar
+    group: instalar
+    lang: en
+  - source: docs/routing.md
+    slug: routing
+    group: canon
+    lang: es
+  - source: docs/TAXONOMY.md
+    slug: taxonomia
+    group: canon
+    lang: en
+  - source: docs/GLOSARIO.md
+    slug: glosario
+    group: canon
+    lang: es
+  - source: docs/harness-integration.md
+    slug: integracion
+    group: canon
+    lang: en
+  - source: SECURITY.md
+    slug: seguridad
+    group: canon
+    lang: es
+  - source: stacks/infra/README.md
+    slug: stack-infra
+    group: stacks
+    lang: es
+  - source: stacks/rust/README.md
+    slug: stack-rust
+    group: stacks
+    lang: es
+  - source: stacks/python/README.md
+    slug: stack-python
+    group: stacks
+    lang: es
+  - source: stacks/typescript/README.md
+    slug: stack-typescript
+    group: stacks
+    lang: es
+consult_on_github:
+  - source: docs/architecture/decisions/ADR-0007-coverage-gate-opcional.md

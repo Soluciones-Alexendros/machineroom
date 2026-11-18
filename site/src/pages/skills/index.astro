@@ -1,0 +1,35 @@
+---
+import Base from "../../layouts/Base.astro";
+import SearchForm from "../../components/SearchForm.astro";
+import { catalog, domainsInOrder } from "../../lib/catalog";
+
+const domains = domainsInOrder();
+---
+
+<Base
+  title="Skills"
+  description="Catálogo público de skills de machineroom."
+>
+  <h1>Skills</h1>
+  <p>{catalog.skill_count} skills en este build.</p>
+  <SearchForm />
+  <div data-pagefind-body>
+    {
+      domains.map((domain) => (
+        <section class="scroll-mt-nav" id={domain}>
+          <h2>{domain}</h2>
+          <ul>
+            {catalog.skills
+              .filter((skill) => skill.domain === domain)
+              .map((skill) => (
+                <li>
+                  <a href={`/skills/${skill.name}/`}>{skill.name}</a>
+                  <span lang="en"> {skill.description}</span>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</Base>

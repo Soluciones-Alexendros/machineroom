@@ -1,0 +1,29 @@
+---
+import Base from "../../layouts/Base.astro";
+import { catalog, plainText, type DocPage } from "../../lib/catalog";
+import { renderMarkdown } from "../../lib/markdown";
+
+export function getStaticPaths() {
+  return catalog.docs.map((doc) => ({
+    params: { slug: doc.slug },
+    props: { doc },
+  }));
+}
+
+interface Props {
+  doc: DocPage;
+}
+
+const { doc } = Astro.props;
+const html = renderMarkdown(doc.markdown);
+const description = plainText(doc.markdown).slice(0, 180);
+---
+
+<Base title={doc.title} description={description}>
+  <article lang={doc.lang} data-pagefind-body>
+    <div set:html={html} />
+  </article>
+  <p>
+    <a href={doc.source_url}>Ver Markdown original</a>
+  </p>
+</Base>

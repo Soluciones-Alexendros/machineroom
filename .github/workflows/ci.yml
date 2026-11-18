@@ -219,6 +219,32 @@ jobs:
           path: docs/architecture/diagrams/rendered/
           retention-days: 14
 
+  site:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen --project tools
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Construir el sitio
+        run: bash site/scripts/build.sh
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: site
+          path: site/dist
+          retention-days: 14
+
   ci-gate:
     name: ci-gate
     needs:
@@ -234,6 +260,7 @@ jobs:
         validate,
         check-bump,
         diagrams,
+        site,
       ]
     if: always()
     permissions: {}

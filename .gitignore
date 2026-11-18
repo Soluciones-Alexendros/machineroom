@@ -52,6 +52,12 @@ proteccion-*.zip
 !templates/product/.pi/skills/**
 skill-index.json
 
+# Sitio: checkout del portal, catálogo generado y el script de tema copiado.
+site/.portal/
+site/.astro/
+site/src/generated/
+site/public/theme-init.js
+
 # Env local (P11 T4)
 .env
 .env.*
