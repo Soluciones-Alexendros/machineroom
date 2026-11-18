@@ -230,6 +230,46 @@ jobs:
           persist-credentials: false
       - uses: ./skills/project-status/actions/secret-scan
 
+  license-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Syft v1.57.2 (pinned checksum)
+        env:
+          SYFT_VERSION: "1.57.2"
+          SYFT_SHA256: "ad92bd3ec1b94a3df01d4d0aec199afa9c42b72e86da436ff5f837914d32706b"
+        run: |
+          set -euo pipefail
+          archive="syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "$archive" \
+            "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/${archive}"
+          echo "${SYFT_SHA256}  ${archive}" | sha256sum -c -
+          tar -xzf "$archive" syft
+          mkdir -p "$HOME/.local/bin"
+          mv syft "$HOME/.local/bin/syft"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          syft version
+      - name: Archive HEAD, SBOM, license gate
+        run: |
+          set -euo pipefail
+          git archive --format=tar.gz --prefix="machineroom-SNAPSHOT/" \
+            -o machineroom-SNAPSHOT.tar.gz HEAD
+          EXTRACT=$(mktemp -d)
+          tar -xzf machineroom-SNAPSHOT.tar.gz -C "$EXTRACT"
+          PACKAGE="$EXTRACT/machineroom-SNAPSHOT"
+          test -d "$PACKAGE"
+          SBOM=machineroom-SNAPSHOT.cdx.json
+          syft "dir:${PACKAGE}" -o "cyclonedx-json=${SBOM}"
+          test -f "$SBOM"
+          python3 tools/validate/license_gate.py \
+            --sbom "$SBOM" \
+            --allowlist tools/validate/license_allowlist.txt
+
   codeql:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -404,6 +444,7 @@ jobs:
         check-bump,
         diagrams,
         secret-scan,
+        license-gate,
         codeql,
         semgrep,
         shellcheck,

@@ -6,6 +6,15 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+### Added
+
+- License gate: `tools/validate/license_gate.py` checks CycloneDX SBOM SPDX
+  against `tools/validate/license_allowlist.txt` (deny GPL/AGPL/SSPL/CPAL in
+  code). Documented in `docs/licensing.md`; wired into `ci-gate` and release
+  provenance before SBOM upload.
+- `release_asset_errors` order includes `license` between `sbom` and `upload`.
+- Version **9.2.1** (package manifests aligned for workflow/`release_coherence` bump).
+
 ## [9.2.0] - 2026-11-18
 
 ### Added

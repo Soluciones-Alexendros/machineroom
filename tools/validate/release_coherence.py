@@ -259,7 +259,7 @@ def _check_action_pins(rel: str, text: str) -> None:
 def release_asset_errors(
     root: Path,
 ) -> list[str]:  # ordered release asset gate
-    """Require archive → checksum → attestation → sign → sbom → upload in release.yml."""
+    """Require archive → checksum → attestation → sign → sbom → license → upload in release.yml."""
     path = root / ".github" / "workflows" / "release.yml"
     if not path.is_file():
         return []
@@ -296,7 +296,17 @@ def release_asset_errors(
         (
             i
             for i, step in enumerate(steps)
-            if "gh release upload" not in _run(step) and ("syft" in _run(step) or ".cdx.json" in _run(step))
+            if "gh release upload" not in _run(step)
+            and "license_gate.py" not in _run(step)
+            and ("syft" in _run(step) or ".cdx.json" in _run(step))
+        ),
+        None,
+    )
+    license_step = next(
+        (
+            i
+            for i, step in enumerate(steps)
+            if "license_gate.py" in _run(step) and "syft" not in _run(step)
         ),
         None,
     )
@@ -307,12 +317,13 @@ def release_asset_errors(
         "attestation": attest,
         "sign": sign,
         "sbom": sbom,
+        "license": license_step,
         "upload": upload,
     }
     for name, position in positions.items():
         if position is None:
             errors.append(f"release provenance missing {name} step")
-    ordered_keys = ("archive", "checksum", "attestation", "sign", "sbom", "upload")
+    ordered_keys = ("archive", "checksum", "attestation", "sign", "sbom", "license", "upload")
     ordered_ints: list[int] = []
     order_complete = True
     for name in ordered_keys:
@@ -322,7 +333,10 @@ def release_asset_errors(
             break
         ordered_ints.append(pos)
     if order_complete and ordered_ints != sorted(ordered_ints):
-        errors.append("release asset steps must be ordered archive → checksum → attestation → sign → sbom → upload")
+        errors.append(
+            "release asset steps must be ordered "
+            "archive → checksum → attestation → sign → sbom → license → upload"
+        )
     if upload is not None:
         upload_step = steps[upload]
         upload_run = _run(upload_step)
