@@ -28,7 +28,9 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
   Require review from Code Owners.
 - `release_asset_errors` order: archive → checksum → attestation → sign → sbom → upload.
 - Shell hygiene for shellcheck `-S warning` in install and skill scripts
-  (`local-security` 7.1.4, `project-status` 9.0.4).
+  (`local-security` 7.1.5, `project-status` 9.0.4, `local-maintenance` 8.0.3).
+- Legacy skill runners use `bash -lc` argv instead of `subprocess` `shell=True`
+  so Semgrep ERROR gate stays clean.
 - Semgrep uses `p/python` + `r/bash` (`p/bash` 404); distro containers pinned by digest.
 - CodeQL advanced workflow owns scanning (default setup disabled to avoid SARIF clash).
 
