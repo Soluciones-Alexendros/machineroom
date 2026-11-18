@@ -1,4 +1,5 @@
-# Canon surfaces — informational (solo-dev; CODEOWNERS does not block).
+# Canon surfaces — informational (solo-dev; CODEOWNERS does not block alone).
+# Require review from Code Owners is an operator GitHub ruleset click; this file alone does not enforce it.
 /.github/workflows/ @Alexendros
 /stacks/ @Alexendros
 /rulesets/ @Alexendros
@@ -8,3 +9,9 @@
 # Existing validation / release tooling ownership.
 /tools/validate/ @Alexendros
 /tools/version/ @Alexendros
+
+# Harness, execution plane, skills catalog, and install scripts.
+/scripts/ @Alexendros
+/skills/ @Alexendros
+/tools/execution/ @Alexendros
+/tools/harness/ @Alexendros

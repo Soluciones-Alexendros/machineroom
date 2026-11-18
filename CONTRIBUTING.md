@@ -51,6 +51,17 @@ bash skills/<skill>/scripts/tests/smoke_sh.sh
 - Conventional Commits. Renovate is the only dependency update bot; do not add `dependabot.yml` for version updates.
 - Contacto de conducta / ops: **operaciones@alexendros.dev** (ver `CODE_OF_CONDUCT.md` / plantilla).
 
+## GitHub ruleset (operator clicks)
+
+[`.github/CODEOWNERS`](.github/CODEOWNERS) is informational by itself: it names owners but does **not** block merges until the repository ruleset requires it.
+
+When the operator chooses to harden `main` (or the protected branch set) in the GitHub UI — **Settings → Rules → Rulesets** (or the equivalent branch/ruleset screen) — enable these two options by clicking them in the ruleset editor. Do not invent or commit ruleset JSON from this doc:
+
+1. **Require signed commits** — every commit on the protected ref must carry a verified signature.
+2. **Require review from Code Owners** — changes that touch paths listed in `CODEOWNERS` need an approving review from the listed owner(s).
+
+These toggles are an operator act on GitHub. Documenting them here does not activate them.
+
 ## Issues
 
 Use the `.github/ISSUE_TEMPLATE/` templates (bug or skill proposal/improvement).

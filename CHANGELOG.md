@@ -6,6 +6,27 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+### Added
+
+- CI `ci-gate` jobs: `secret-scan` (gitleaks), `codeql`, `semgrep`, `shellcheck`,
+  `distro-smoke` (ubuntu/debian/arch `install.sh --dry-run`).
+- Release provenance: cosign keyless `sign-blob` (`*.sigstore.json`) and Syft
+  CycloneDX SBOM (`*.cdx.json`); `post-release-smoke` verifies both.
+- `docs/reproducible-builds.md` and `docs/security/asvs-applicability.md`
+  (ASVS applicability without L2 claim); linked from `SECURITY.md`.
+- Perf budget pytest for `skill-router` / `workspace-router` `route()` (5.0s median).
+- `mutation-pilot` job in `security.yml` (schedule + `workflow_dispatch`, 60% floor;
+  outside `ci-gate`).
+
+### Changed
+
+- `.github/CODEOWNERS` covers `scripts/`, `skills/`, `tools/execution/`, `tools/harness/`.
+- `CONTRIBUTING.md` documents operator ruleset clicks: Require signed commits and
+  Require review from Code Owners.
+- `release_asset_errors` order: archive → checksum → attestation → sign → sbom → upload.
+- Shell hygiene for shellcheck `-S warning` in install and skill scripts
+  (`local-security` 7.1.4, `project-status` 9.0.3).
+
 ## [9.1.0] - 2026-11-18
 
 ### Added

@@ -44,11 +44,11 @@ resolve_project_root() {
 }
 
 is_skills_dir() {
+  # `*` may be empty, so `*.cursor/skills` already matches `.cursor/skills`.
   case "$1" in
-    *.cursor/skills|.cursor/skills) return 0 ;;
-    *.opencode/skills|.opencode/skills) return 0 ;;
-    *.pi/skills|.pi/skills) return 0 ;;
-    *.pi/agent/skills|.pi/agent/skills) return 0 ;;
+    *.cursor/skills) return 0 ;;
+    *.opencode/skills) return 0 ;;
+    *.pi/skills|*.pi/agent/skills) return 0 ;;
     *) return 1 ;;
   esac
 }
