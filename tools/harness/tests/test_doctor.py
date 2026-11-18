@@ -27,7 +27,9 @@ from harness.doctor import (  # noqa: E402
 )
 from harness.runtime import (  # noqa: E402
     MANIFEST_NAME,
+    InstallFailure,
     make_relative_symlink,
+    require_payload_present,
     sync_payload,
 )
 
@@ -252,8 +254,6 @@ def test_runtime_checks_not_applicable_without_runtime(tmp_path: Path) -> None:
 
 
 def test_missing_payload_file_names_relative_path(tmp_path: Path) -> None:
-    from harness.runtime import InstallFailure, require_payload_present
-
     release = tmp_path / "machineroom-9.1.0"
     sync_payload(ROOT, release, origin="sync")
     (release / "tools" / "structured_failure.py").unlink()
