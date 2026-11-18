@@ -51,9 +51,7 @@ def test_missing_sign_step_is_rejected(tmp_path: Path) -> None:
 def test_missing_license_gate_step_is_rejected(tmp_path: Path) -> None:
     data = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
     steps = data["jobs"]["provenance"]["steps"]
-    data["jobs"]["provenance"]["steps"] = [
-        step for step in steps if "license_gate.py" not in str(step.get("run", ""))
-    ]
+    data["jobs"]["provenance"]["steps"] = [step for step in steps if "license_gate.py" not in str(step.get("run", ""))]
     _write_workflow(tmp_path, data)
     errors = release_asset_errors(tmp_path)
     assert any("license" in error for error in errors), errors
@@ -202,6 +200,6 @@ def test_canonical_order_message_mentions_sign_and_sbom(tmp_path: Path) -> None:
     steps[sign_idx], steps[sbom_idx] = steps[sbom_idx], steps[sign_idx]
     _write_workflow(tmp_path, mutated)
     flipped = release_asset_errors(tmp_path)
-    assert any(
-        "archive → checksum → attestation → sign → sbom → license → upload" in error for error in flipped
-    ), flipped
+    assert any("archive → checksum → attestation → sign → sbom → license → upload" in error for error in flipped), (
+        flipped
+    )

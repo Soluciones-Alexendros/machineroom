@@ -303,11 +303,7 @@ def release_asset_errors(
         None,
     )
     license_step = next(
-        (
-            i
-            for i, step in enumerate(steps)
-            if "license_gate.py" in _run(step) and "syft" not in _run(step)
-        ),
+        (i for i, step in enumerate(steps) if "license_gate.py" in _run(step) and "syft" not in _run(step)),
         None,
     )
     upload = next((i for i, step in enumerate(steps) if "gh release upload" in _run(step)), None)
@@ -334,8 +330,7 @@ def release_asset_errors(
         ordered_ints.append(pos)
     if order_complete and ordered_ints != sorted(ordered_ints):
         errors.append(
-            "release asset steps must be ordered "
-            "archive → checksum → attestation → sign → sbom → license → upload"
+            "release asset steps must be ordered archive → checksum → attestation → sign → sbom → license → upload"
         )
     if upload is not None:
         upload_step = steps[upload]
