@@ -6,6 +6,8 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.2.1] - 2026-11-18
+
 ### Added
 
 - License gate: `tools/validate/license_gate.py` checks CycloneDX SBOM SPDX
@@ -671,7 +673,8 @@ Primera publicación pública del repo `Soluciones-Alexendros/autoworkspace` (21
 - Estructura `skills/<nombre>/` con frontmatter normalizado (`license: MIT`, `metadata` con autor, versión, dominio e idioma).
 - Validadores `tools/validate/` (spec + enlaces), CI en `.github/workflows/` y `run-validation.sh` agregado.
 
-[Unreleased]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.2.0...HEAD
+[Unreleased]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.2.1...HEAD
+[9.2.1]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.2.0...v9.2.1
 [9.2.0]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.2...v9.1.0
 [9.0.2]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.1...v9.0.2
