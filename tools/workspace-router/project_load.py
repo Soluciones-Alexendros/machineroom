@@ -1,14 +1,24 @@
-"""Load and validate .machineroom/project.yaml (legacy .machineroom fallback)."""
+"""Load and validate .machineroom/project.yaml.
+
+Legacy ``.autoworkspace`` is not a silent fallback: call ``migrate_state`` first.
+"""
 
 from __future__ import annotations
 
-import sys
+import importlib.util
 from pathlib import Path
 from typing import Any
 
 _TOOLS = Path(__file__).resolve().parents[1]
-if str(_TOOLS) not in sys.path:
-    sys.path.insert(0, str(_TOOLS))
+_boot_spec = importlib.util.spec_from_file_location(
+    "mr_tools_bootstrap",
+    _TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {_TOOLS / '_bootstrap.py'}")
+_boot = importlib.util.module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
 
 from state_paths import state_dir as _state_dir  # noqa: E402
 from state_paths import state_file as _state_file  # noqa: E402

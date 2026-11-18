@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from harness import naming
+from structured_failure import StructuredFailure
 
 RUNTIME_DIRNAME = naming.RUNTIME_DIRNAME
 LEGACY_RUNTIME_DIRNAME = naming.LEGACY_RUNTIME_DIRNAME
@@ -30,26 +31,14 @@ PAYLOAD_FILES = (
     # gate imports this module, so the engine has to travel with the payload.
     "tools/execution/__init__.py",
     "tools/execution/deny_list.py",
+    "tools/structured_failure.py",
 )
 _SEMVER = re.compile(r"\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.-]+)?")
 _RELEASE_ORIGIN = re.compile(rf"^release:({_SEMVER.pattern})$")
 
 
-class InstallFailure(ValueError):  # noqa: N818  # plan contract name (component/function/detail)
+class InstallFailure(StructuredFailure):  # noqa: N818  # plan contract name (component/function/detail)
     """Structured install/update failure: component + function + detail."""
-
-    def __init__(self, component: str, function: str, detail: str) -> None:
-        self.component = component
-        self.function = function
-        self.detail = detail
-        super().__init__(format_failure(component, function, detail))
-
-    def to_dict(self) -> dict[str, str]:
-        return {
-            "component": self.component,
-            "function": self.function,
-            "detail": self.detail,
-        }
 
 
 def format_failure(component: str, function: str, detail: str) -> str:

@@ -14,7 +14,7 @@ from typing import Any
 from contracts.result import new_run_id as _canonical_run_id
 from state_paths import excluded_prefixes, state_dir
 
-from execution.ops import NON_TERMINAL, OpResult
+from execution.ops import PHASE_BLOCKING_OUTCOMES, OpResult
 from execution.registry import OpSpec, get_operation, known_operation_ids
 
 TERMINAL_OK = frozenset({"succeeded"})
@@ -387,7 +387,7 @@ def _validate_succeeded_payload(data: dict[str, Any], *, for_complete: bool = Fa
 
 
 def _assert_storable_outcome(result: OpResult) -> None:
-    if result.outcome in NON_TERMINAL:
+    if result.outcome in PHASE_BLOCKING_OUTCOMES:
         raise ValueError(f"non-terminal outcome cannot be stored as evidence: {result.outcome}")
     if result.outcome not in TERMINAL_OK and result.outcome != "failed":
         raise ValueError(f"unsupported outcome for evidence: {result.outcome}")
@@ -537,7 +537,7 @@ def _read_evidence_file(repo: Path, run_id: str) -> dict[str, Any]:
     if not path.is_file():
         raise FileNotFoundError(f"evidence missing for run_id={run_id}")
     data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("outcome") in NON_TERMINAL:
+    if data.get("outcome") in PHASE_BLOCKING_OUTCOMES:
         raise ValueError("evidence outcome is non-terminal")
     if data.get("outcome") != "succeeded":
         raise ValueError(f"evidence outcome not success: {data.get('outcome')}")

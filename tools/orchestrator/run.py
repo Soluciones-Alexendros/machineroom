@@ -11,13 +11,20 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-TOOLS = Path(__file__).resolve().parents[1]
-if str(TOOLS) not in sys.path:
-    sys.path.insert(0, str(TOOLS))
+import importlib.util
 
+TOOLS = Path(__file__).resolve().parents[1]
+_boot_spec = importlib.util.spec_from_file_location(
+    "mr_tools_bootstrap",
+    TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {TOOLS / '_bootstrap.py'}")
+_boot = importlib.util.module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
 WORKSPACE_ROUTER = TOOLS / "workspace-router"
-if str(WORKSPACE_ROUTER) not in sys.path:
-    sys.path.insert(0, str(WORKSPACE_ROUTER))
+_boot.ensure_on_path(WORKSPACE_ROUTER)
 
 from contracts.plan import load_plan  # noqa: E402
 from harness.cursor import CursorSubagentAdapter  # noqa: E402

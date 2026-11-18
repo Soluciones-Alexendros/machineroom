@@ -14,11 +14,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+_BC = Path(__file__).resolve().parents[1] / "bootstrap_cli.py"
+_spec = importlib.util.spec_from_file_location("mr_bootstrap_cli", _BC)
+if _spec is None or _spec.loader is None:
+    raise RuntimeError(f"cannot load {_BC}")
+_bc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_bc)
+_bc.boot(__file__, extra=(Path(__file__).resolve().parent,))
+
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-_TOOLS = Path(__file__).resolve().parents[1]
-if str(_TOOLS) not in sys.path:
-    sys.path.insert(0, str(_TOOLS))
 
 from project_load import (  # noqa: E402
     PHASES,
@@ -28,7 +32,8 @@ from project_load import (  # noqa: E402
     load_project,
     stale_handoffs,
 )
-from state_paths import (
+from skill_index_load import load_skill_index  # noqa: E402
+from state_paths import (  # noqa: E402
     StateDirError,
     format_state_failure,
     migrate_state,
@@ -38,18 +43,7 @@ from status_bump import advance_status, load_status, migrate_status  # noqa: E40
 
 
 def load_catalog() -> list[str]:
-    index = ROOT / "skill-index.json"
-    if not index.is_file():
-        gen_path = ROOT / "tools" / "skill-index" / "generate.py"
-        spec = importlib.util.spec_from_file_location("skill_index_generate", gen_path)
-        if spec is not None and spec.loader is not None:
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            mod.ensure_index(ROOT)
-    if not index.is_file():
-        skills_dir = ROOT / "skills"
-        return sorted(p.name for p in skills_dir.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
-    data = json.loads(index.read_text(encoding="utf-8"))
+    data = load_skill_index(ROOT)
     return [s["name"] for s in data.get("skills", [])]
 
 
@@ -171,6 +165,14 @@ def _fail(message: object) -> int:
     return 2
 
 
+def _fail_state(exc: StateDirError) -> int:
+    print(
+        format_state_failure(exc.component, exc.function, exc.detail),
+        file=sys.stderr,
+    )
+    return _fail(exc.detail)
+
+
 def _cmd_init(repo: Path, args: argparse.Namespace) -> int:
     ensure_scaffold(repo)
     print(json.dumps({"init": True, "repo": str(repo)}) if args.json else f"initialized {repo}/.machineroom")
@@ -183,6 +185,8 @@ def _cmd_list(repo: Path, args: argparse.Namespace) -> int:
             ensure_scaffold(repo)
         project = load_project(repo)
         allowed = filter_skills(load_catalog(), project)
+    except StateDirError as exc:
+        return _fail_state(exc)
     except ProjectConfigError as exc:
         return _fail(exc)
     print(json.dumps({"allowed_skills": allowed}) if args.json else "\n".join(allowed))
@@ -193,11 +197,7 @@ def _cmd_migrate_state(repo: Path, args: argparse.Namespace) -> int:
     try:
         data = migrate_state(repo, dry_run=args.dry_run)
     except StateDirError as exc:
-        print(
-            format_state_failure(exc.component, exc.function, exc.detail),
-            file=sys.stderr,
-        )
-        return _fail(exc.detail)
+        return _fail_state(exc)
     print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else data["detail"])
     return 0
 
@@ -205,6 +205,8 @@ def _cmd_migrate_state(repo: Path, args: argparse.Namespace) -> int:
 def _cmd_status(repo: Path, args: argparse.Namespace) -> int:
     try:
         status = load_status(repo)
+    except StateDirError as exc:
+        return _fail_state(exc)
     except Exception as exc:  # el CLI informa de cualquier fallo de lectura
         return _fail(exc)
     print(json.dumps(status, ensure_ascii=False, indent=2) if args.json else status)
@@ -214,6 +216,8 @@ def _cmd_status(repo: Path, args: argparse.Namespace) -> int:
 def _cmd_migrate_status(repo: Path, args: argparse.Namespace) -> int:
     try:
         data = migrate_status(repo)
+    except StateDirError as exc:
+        return _fail_state(exc)
     except (ValueError, OSError) as exc:
         return _fail(exc)
     print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else "status migration complete")
@@ -229,6 +233,8 @@ def _cmd_awaiting(repo: Path, args: argparse.Namespace) -> int:
             evidence_ok=False,
             allow_awaiting=True,
         )
+    except StateDirError as exc:
+        return _fail_state(exc)
     except ValueError as exc:
         return _fail(exc)
     print(json.dumps(data, ensure_ascii=False, indent=2) if args.json else f"awaiting_agent phase={args.phase}")
@@ -267,6 +273,8 @@ def _cmd_complete(repo: Path, args: argparse.Namespace) -> int:
             evidence_ok=True,
             run_id=args.run_id,
         )
+    except StateDirError as exc:
+        return _fail_state(exc)
     except _InvalidProjectError as exc:
         return _fail(f"invalid project config: {exc}")
     except (ValueError, FileNotFoundError) as exc:
@@ -281,6 +289,8 @@ def _cmd_complete(repo: Path, args: argparse.Namespace) -> int:
 def _cmd_route(repo: Path, args: argparse.Namespace) -> int:
     try:
         out = route(repo, args.phase, bump=args.bump, note=args.note, init=args.init)
+    except StateDirError as exc:
+        return _fail_state(exc)
     except ProjectConfigError as exc:
         return _fail(exc)
     if args.json:

@@ -53,7 +53,6 @@ APPROVAL_EFFECTS = frozenset({"mutate-host", "communicate-external", "access-sec
 # Outcomes that may never complete a pipeline phase (execution layer).
 # Distinct from contracts.result.NON_TERMINAL (schema awaiting_* only).
 PHASE_BLOCKING_OUTCOMES = frozenset({"simulated", "awaiting_agent", "awaiting_approval", "blocked"})
-NON_TERMINAL = PHASE_BLOCKING_OUTCOMES  # compat alias
 
 
 def _reject_shell_escape(argv: list[str]) -> str | None:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import sys
+import importlib.util
 import threading
 import uuid
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
@@ -14,9 +14,17 @@ from orchestrator.ports import AdapterResult, SubagentAdapter
 from orchestrator.runner import WorktreeAdapter
 from orchestrator.worktrees import RunWorkspace
 
-WORKSPACE_ROUTER = Path(__file__).resolve().parents[1] / "workspace-router"
-if str(WORKSPACE_ROUTER) not in sys.path:
-    sys.path.insert(0, str(WORKSPACE_ROUTER))
+_TOOLS = Path(__file__).resolve().parents[1]
+_boot_spec = importlib.util.spec_from_file_location(
+    "mr_tools_bootstrap",
+    _TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {_TOOLS / '_bootstrap.py'}")
+_boot = importlib.util.module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
+_boot.ensure_on_path(_TOOLS / "workspace-router")
 
 from state_paths import state_file  # noqa: E402
 from status_bump import (  # noqa: E402

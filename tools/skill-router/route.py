@@ -17,25 +17,22 @@ import sys
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-INDEX_PATHS = [
-    ROOT / "skill-index.json",
-    pathlib.Path("skill-index.json"),
-]
+_TOOLS = ROOT / "tools"
+_boot_spec = importlib.util.spec_from_file_location(
+    "mr_tools_bootstrap",
+    _TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {_TOOLS / '_bootstrap.py'}")
+_boot = importlib.util.module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
+
+from skill_index_load import load_skill_index  # noqa: E402
 
 
 def load_index():
-    for p in INDEX_PATHS:
-        if p.is_file():
-            return json.loads(p.read_text(encoding="utf-8"))
-    gen_path = ROOT / "tools" / "skill-index" / "generate.py"
-    spec = importlib.util.spec_from_file_location("skill_index_generate", gen_path)
-    if spec is None or spec.loader is None:
-        print("skill-index.json not found", file=sys.stderr)
-        sys.exit(1)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    mod.ensure_index(ROOT)
-    return json.loads((ROOT / "skill-index.json").read_text(encoding="utf-8"))
+    return load_skill_index(ROOT)
 
 
 def tokenize(s: str):

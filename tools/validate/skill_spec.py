@@ -59,8 +59,15 @@ ERRORS: list[str] = []
 TEST_DIR_NAMES = {"tests"}
 TEST_FILE_PREFIX = "test_"
 _TOOLS_DIR = Path(__file__).resolve().parents[1]
-if str(_TOOLS_DIR) not in sys.path:
-    sys.path.insert(0, str(_TOOLS_DIR))
+_boot_spec = __import__("importlib.util", fromlist=["util"]).spec_from_file_location(
+    "mr_tools_bootstrap",
+    _TOOLS_DIR / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {_TOOLS_DIR / '_bootstrap.py'}")
+_boot = __import__("importlib.util", fromlist=["util"]).module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
 _known_tool_ids_fn: Callable[[], frozenset[str]] | None
 try:
     from execution.registry import known_tool_ids as _known_tool_ids_fn
@@ -74,8 +81,7 @@ def _registry_tool_ids(root: Path) -> frozenset[str]:
     if cached is not None:
         return cached
     tools_path = root / "tools"
-    if str(tools_path) not in sys.path:
-        sys.path.insert(0, str(tools_path))
+    _boot.ensure_on_path(tools_path)
     if _known_tool_ids_fn is None:
         ERRORS.append("[registry] cannot load tool ids: execution.registry unavailable")
         _REGISTRY_CACHE["ids"] = frozenset()

@@ -1,4 +1,4 @@
-"""D3/H2: ``.machineroom`` state with legacy ``.autoworkspace`` fallback."""
+"""D3/H2: ``.machineroom`` state; legacy ``.autoworkspace`` requires migrate_state."""
 
 from __future__ import annotations
 
@@ -30,15 +30,14 @@ def test_constants_and_paths(tmp_path: Path) -> None:
     assert state_file(tmp_path, "status.yaml") == tmp_path / ".machineroom" / "status.yaml"
 
 
-def test_legacy_fallback_warns_once(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_legacy_only_raises_migrate_state(tmp_path: Path) -> None:
     (tmp_path / ".autoworkspace").mkdir()
-    first = state_dir(tmp_path)
-    assert first == tmp_path / ".autoworkspace"
-    captured = capsys.readouterr()
-    assert "deprecation" in captured.err
-    assert "9.0.0" in captured.err
-    state_dir(tmp_path)
-    assert capsys.readouterr().err == ""
+    with pytest.raises(StateDirError) as caught:
+        state_dir(tmp_path)
+    assert caught.value.component == "state"
+    assert caught.value.function == "state_dir"
+    assert "migrate_state" in caught.value.detail
+    assert "9.0.0" in caught.value.detail
 
 
 def test_current_dir_wins_over_legacy(tmp_path: Path) -> None:
@@ -101,7 +100,7 @@ def test_router_reads_current_state(tmp_path: Path) -> None:
     assert "deprecation" not in proc.stderr
 
 
-def test_router_accepts_legacy_state_with_warning(tmp_path: Path) -> None:
+def test_router_rejects_legacy_only_state(tmp_path: Path) -> None:
     state = tmp_path / ".autoworkspace"
     state.mkdir()
     (state / "project.yaml").write_text(
@@ -112,7 +111,37 @@ def test_router_accepts_legacy_state_with_warning(tmp_path: Path) -> None:
         [sys.executable, str(ROUTER), "--repo", str(tmp_path), "--list", "--json"],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
-    assert json.loads(proc.stdout)["allowed_skills"]
-    assert "deprecation" in proc.stderr
+    assert proc.returncode != 0
+    assert "migrate_state" in proc.stderr
+    assert "FAIL state state_dir:" in proc.stderr
+    assert "Traceback" not in proc.stderr
+
+
+def test_router_route_rejects_legacy_only_state(tmp_path: Path) -> None:
+    state = tmp_path / ".autoworkspace"
+    state.mkdir()
+    (state / "project.yaml").write_text(
+        "schema_version: 1\nname: demo\nprofile: P1\nphases: [DEFINE]\n"
+        "handoffs: {define: plan-specification}\n",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(ROUTER),
+            "--repo",
+            str(tmp_path),
+            "--phase",
+            "DEFINE",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode != 0
+    assert "FAIL state state_dir:" in proc.stderr
+    assert "migrate_state" in proc.stderr
+    assert "Traceback" not in proc.stderr

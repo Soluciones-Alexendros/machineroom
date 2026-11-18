@@ -4,11 +4,18 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_BC = Path(__file__).resolve().parents[1] / "bootstrap_cli.py"
+_spec = importlib.util.spec_from_file_location("mr_bootstrap_cli", _BC)
+if _spec is None or _spec.loader is None:
+    raise RuntimeError(f"cannot load {_BC}")
+_bc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_bc)
+_bc.boot(__file__)
 
 from execution.registry import check_registry, load_tools
 
@@ -27,7 +34,7 @@ def _validate_standalone(skill_path: Path) -> int:
     try:
         load_execution_contract(skill_path)
     except ContractError as exc:
-        print(f"CONTRACTS: FAIL [{skill_path.name}] {exc}")
+        print(f"CONTRACTS: FAIL [{skill_path.name}] {exc.detail}")
         return 1
     print(f"CONTRACTS: OK (standalone {skill_path.name})")
     return 0

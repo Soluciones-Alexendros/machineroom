@@ -46,9 +46,14 @@ CRITICAL_KEYS = {
 
 _SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "execution.schema.json"
 
+from structured_failure import StructuredFailure  # noqa: E402
 
-class ContractError(ValueError):
-    pass
+
+class ContractError(StructuredFailure):
+    """Structured contract failure: component + function + detail."""
+
+    def __init__(self, detail: str) -> None:
+        super().__init__("contracts", "load", detail)
 
 
 @functools.lru_cache(maxsize=1)
@@ -233,8 +238,9 @@ def load_execution_contract(
 ) -> dict[str, Any]:
     """Load contract for a skill from tools/execution/registry.yaml."""
     tools_dir = Path(__file__).resolve().parent.parent
-    if str(tools_dir) not in sys.path:
-        sys.path.insert(0, str(tools_dir))
+    from _bootstrap import ensure_on_path  # noqa: PLC0415
+
+    ensure_on_path(tools_dir)
     from execution.registry import get_tool_for_skill  # noqa: PLC0415
 
     skill = skill_path.name
