@@ -274,8 +274,9 @@ jobs:
       - name: Semgrep (ERROR fails; WARNING does not)
         run: |
           set -euo pipefail
+          # p/bash is 404 on semgrep.dev; Bash is covered by the shellcheck job.
           semgrep --metrics=off --error --severity ERROR \
-            --config p/python --config p/bash \
+            --config p/python --config r/bash \
             scripts/ tools/ skills/
 
   shellcheck:
@@ -316,10 +317,12 @@ jobs:
             runs-on: ubuntu-latest
           - name: debian-12-slim
             runs-on: ubuntu-latest
-            container: debian:12-slim
+            # debian 12-slim linux/amd64 (hub digest 2026-11)
+            container: debian@sha256:c67e92c8099ba22853ab4cfda7cfb494d253d6012ca82dee98ba8976772af018
           - name: archlinux
             runs-on: ubuntu-latest
-            container: archlinux:latest
+            # archlinux:latest linux/amd64 (hub digest 2026-11)
+            container: archlinux@sha256:fcee73ea1b96e236248f53a213f71276cc9072d9025b58bce9915e32f19963ae
     name: distro-smoke (${{ matrix.name }})
     runs-on: ${{ matrix.runs-on }}
     container: ${{ matrix.container }}
@@ -327,23 +330,30 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Ensure bash curl git
+      - name: Ensure bash curl git python3
         shell: sh
         run: |
           set -eu
-          install_pkgs() {
+          need_bash=0
+          need_curl=0
+          need_git=0
+          need_python=0
+          command -v bash >/dev/null 2>&1 || need_bash=1
+          command -v curl >/dev/null 2>&1 || need_curl=1
+          command -v git >/dev/null 2>&1 || need_git=1
+          command -v python3 >/dev/null 2>&1 || need_python=1
+          if [ "$need_bash$need_curl$need_git$need_python" != "0000" ]; then
             if command -v apt-get >/dev/null 2>&1; then
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-                bash curl git ca-certificates
+                bash curl git ca-certificates python3
             elif command -v pacman >/dev/null 2>&1; then
-              pacman -Sy --noconfirm bash curl git
+              pacman -Sy --noconfirm --needed archlinux-keyring
+              pacman -Sy --noconfirm --needed bash curl git python
+            else
+              echo "missing package manager (need apt-get or pacman)"
+              exit 1
             fi
-          }
-          if ! command -v bash >/dev/null 2>&1 \
-            || ! command -v curl >/dev/null 2>&1 \
-            || ! command -v git >/dev/null 2>&1; then
-            install_pkgs
           fi
           if ! command -v bash >/dev/null 2>&1; then
             echo "missing package: bash"
@@ -355,6 +365,10 @@ jobs:
           fi
           if ! command -v git >/dev/null 2>&1; then
             echo "missing package: git"
+            exit 1
+          fi
+          if ! command -v python3 >/dev/null 2>&1; then
+            echo "missing package: python3"
             exit 1
           fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

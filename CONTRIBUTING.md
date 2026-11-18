@@ -58,7 +58,9 @@ bash skills/<skill>/scripts/tests/smoke_sh.sh
 When the operator chooses to harden `main` (or the protected branch set) in the GitHub UI — **Settings → Rules → Rulesets** (or the equivalent branch/ruleset screen) — enable these two options by clicking them in the ruleset editor. Do not invent or commit ruleset JSON from this doc:
 
 1. **Require signed commits** — every commit on the protected ref must carry a verified signature.
+   Already enforced on `main` / `plan/*` rulesets (`required_signatures`).
 2. **Require review from Code Owners** — changes that touch paths listed in `CODEOWNERS` need an approving review from the listed owner(s).
+   Currently **off** (`require_code_owner_review: false`); enable only with an explicit operator click.
 
 These toggles are an operator act on GitHub. Documenting them here does not activate them.
 

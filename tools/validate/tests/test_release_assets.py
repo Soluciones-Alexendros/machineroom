@@ -41,9 +41,7 @@ def test_missing_sign_step_is_rejected(tmp_path: Path) -> None:
     data = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
     steps = data["jobs"]["provenance"]["steps"]
     data["jobs"]["provenance"]["steps"] = [
-        step
-        for step in steps
-        if not ("cosign" in str(step.get("run", "")) and "sign-blob" in str(step.get("run", "")))
+        step for step in steps if not ("cosign" in str(step.get("run", "")) and "sign-blob" in str(step.get("run", "")))
     ]
     _write_workflow(tmp_path, data)
     errors = release_asset_errors(tmp_path)
@@ -53,9 +51,7 @@ def test_missing_sign_step_is_rejected(tmp_path: Path) -> None:
 def test_missing_sbom_step_is_rejected(tmp_path: Path) -> None:
     data = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8"))
     steps = data["jobs"]["provenance"]["steps"]
-    data["jobs"]["provenance"]["steps"] = [
-        step for step in steps if "syft" not in str(step.get("run", ""))
-    ]
+    data["jobs"]["provenance"]["steps"] = [step for step in steps if "syft" not in str(step.get("run", ""))]
     _write_workflow(tmp_path, data)
     errors = release_asset_errors(tmp_path)
     assert any("sbom" in error.lower() for error in errors), errors
@@ -82,7 +78,7 @@ def test_upload_without_signature_or_sbom_assets_is_rejected(tmp_path: Path) -> 
         run = str(step.get("run", ""))
         if "gh release upload" in run:
             step["run"] = (
-                'set -euo pipefail\n'
+                "set -euo pipefail\n"
                 'gh release view "v${VERSION}" >/dev/null\n'
                 'gh release upload "v${VERSION}" "${ARCHIVE}" SHA256SUMS\n'
             )
@@ -99,8 +95,8 @@ def test_smoke_without_cosign_or_sbom_is_rejected(tmp_path: Path) -> None:
         run = str(step.get("run", ""))
         if "gh release download" in run:
             step["run"] = (
-                'set -euo pipefail\n'
-                'TMP=$(mktemp -d)\n'
+                "set -euo pipefail\n"
+                "TMP=$(mktemp -d)\n"
                 'gh release download "v${VERSION}" --dir "$TMP" '
                 '--pattern "machineroom-${VERSION}.tar.gz" --pattern SHA256SUMS\n'
                 '( cd "$TMP" && sha256sum -c SHA256SUMS )\n'
@@ -110,9 +106,7 @@ def test_smoke_without_cosign_or_sbom_is_rejected(tmp_path: Path) -> None:
             break
     # Drop the dedicated cosign install step so verify-blob cannot appear elsewhere.
     data["jobs"]["post-release-smoke"]["steps"] = [
-        step
-        for step in data["jobs"]["post-release-smoke"]["steps"]
-        if "cosign" not in str(step.get("run", ""))
+        step for step in data["jobs"]["post-release-smoke"]["steps"] if "cosign" not in str(step.get("run", ""))
     ]
     _write_workflow(tmp_path, data)
     errors = release_asset_errors(tmp_path)
@@ -187,6 +181,4 @@ def test_canonical_order_message_mentions_sign_and_sbom(tmp_path: Path) -> None:
     steps[sign_idx], steps[sbom_idx] = steps[sbom_idx], steps[sign_idx]
     _write_workflow(tmp_path, mutated)
     flipped = release_asset_errors(tmp_path)
-    assert any(
-        "archive → checksum → attestation → sign → sbom → upload" in error for error in flipped
-    ), flipped
+    assert any("archive → checksum → attestation → sign → sbom → upload" in error for error in flipped), flipped

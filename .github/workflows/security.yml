@@ -66,20 +66,17 @@ jobs:
       - name: Configure mutmut pilot targets
         run: |
           set -euo pipefail
-          cat > setup.cfg <<'EOF'
-          [mutmut]
-          paths_to_mutate=
-              tools/validate/ci_gate.py
-              tools/skill-router/route.py
-          also_copy=
-              tools/
-              skills/
-              skill-index.json
-          pytest_add_cli_args_test_selection=
-              tools/validate/tests/test_ci_gate.py
-              tools/skill-router/tests/test_route.py
-          EOF
+          printf '%s\n' \
+            '[mutmut]' \
+            'paths_to_mutate=tools/validate/ci_gate.py,tools/skill-router/route.py' \
+            'also_copy=tools/,skills/,skill-index.json' \
+            'runner=python -m pytest -x -q --tb=no' \
+            'tests_dir=tools/validate/tests:tools/skill-router/tests' \
+            > setup.cfg
+          cat setup.cfg
       - name: Run mutation pilot
+        env:
+          PYTHONPATH: tools
         run: uv run --project tools mutmut run --max-children 2
       - name: Score and gate (floor 60%)
         run: |

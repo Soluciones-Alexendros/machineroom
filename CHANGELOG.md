@@ -6,6 +6,8 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 
 ## [Unreleased]
 
+## [9.2.0] - 2026-11-18
+
 ### Added
 
 - CI `ci-gate` jobs: `secret-scan` (gitleaks), `codeql`, `semgrep`, `shellcheck`,
@@ -17,6 +19,7 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
 - Perf budget pytest for `skill-router` / `workspace-router` `route()` (5.0s median).
 - `mutation-pilot` job in `security.yml` (schedule + `workflow_dispatch`, 60% floor;
   outside `ci-gate`).
+- `.gitleaks.toml` allowlist for historical Upstash docs JWT example (path removed).
 
 ### Changed
 
@@ -25,7 +28,9 @@ La versión `2.1.0` de `package.json` no se publicó (no hubo tag ni sección de
   Require review from Code Owners.
 - `release_asset_errors` order: archive → checksum → attestation → sign → sbom → upload.
 - Shell hygiene for shellcheck `-S warning` in install and skill scripts
-  (`local-security` 7.1.4, `project-status` 9.0.3).
+  (`local-security` 7.1.4, `project-status` 9.0.4).
+- Semgrep uses `p/python` + `r/bash` (`p/bash` 404); distro containers pinned by digest.
+- CodeQL advanced workflow owns scanning (default setup disabled to avoid SARIF clash).
 
 ## [9.1.0] - 2026-11-18
 
@@ -655,7 +660,9 @@ Primera publicación pública del repo `Soluciones-Alexendros/autoworkspace` (21
 - Estructura `skills/<nombre>/` con frontmatter normalizado (`license: MIT`, `metadata` con autor, versión, dominio e idioma).
 - Validadores `tools/validate/` (spec + enlaces), CI en `.github/workflows/` y `run-validation.sh` agregado.
 
-[Unreleased]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.2...HEAD
+[Unreleased]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.2.0...HEAD
+[9.2.0]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.1.0...v9.2.0
+[9.1.0]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.2...v9.1.0
 [9.0.2]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.1...v9.0.2
 [9.0.1]: https://github.com/Soluciones-Alexendros/machineroom/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/Soluciones-Alexendros/machineroom/compare/v8.1.1...v9.0.0

@@ -281,11 +281,7 @@ def release_asset_errors(
     # Indices are over the full provenance steps list so order compares across uses/run.
     archive = next((i for i, step in enumerate(steps) if "git archive" in _run(step)), None)
     checksum = next(
-        (
-            i
-            for i, step in enumerate(steps)
-            if "sha256sum" in _run(step) and re.search(r">\s*SHA256SUMS", _run(step))
-        ),
+        (i for i, step in enumerate(steps) if "sha256sum" in _run(step) and re.search(r">\s*SHA256SUMS", _run(step))),
         None,
     )
     attest = next(
@@ -293,19 +289,14 @@ def release_asset_errors(
         None,
     )
     sign = next(
-        (
-            i
-            for i, step in enumerate(steps)
-            if "cosign" in _run(step) and "sign-blob" in _run(step)
-        ),
+        (i for i, step in enumerate(steps) if "cosign" in _run(step) and "sign-blob" in _run(step)),
         None,
     )
     sbom = next(
         (
             i
             for i, step in enumerate(steps)
-            if "gh release upload" not in _run(step)
-            and ("syft" in _run(step) or ".cdx.json" in _run(step))
+            if "gh release upload" not in _run(step) and ("syft" in _run(step) or ".cdx.json" in _run(step))
         ),
         None,
     )
@@ -331,10 +322,7 @@ def release_asset_errors(
             break
         ordered_ints.append(pos)
     if order_complete and ordered_ints != sorted(ordered_ints):
-        errors.append(
-            "release asset steps must be ordered "
-            "archive → checksum → attestation → sign → sbom → upload"
-        )
+        errors.append("release asset steps must be ordered archive → checksum → attestation → sign → sbom → upload")
     if upload is not None:
         upload_step = steps[upload]
         upload_run = _run(upload_step)
