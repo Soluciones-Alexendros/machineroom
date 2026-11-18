@@ -12,19 +12,18 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from structured_failure import StructuredFailure
+
 COMPONENT = "model-scope"
 SCOPE_NAME = Path("extensions") / "machineroom" / "model-scope.json"
 _GLOB_CHARS = frozenset("*?[]")
 
 
-class ModelScopeError(ValueError):
+class ModelScopeError(StructuredFailure):
     """Structured model-scope failure: component + function + detail."""
 
     def __init__(self, function: str, detail: str) -> None:
-        self.component = COMPONENT
-        self.function = function
-        self.detail = detail
-        super().__init__(f"FAIL {COMPONENT} {function}: {detail}")
+        super().__init__(COMPONENT, function, detail)
 
 
 @dataclass(frozen=True)

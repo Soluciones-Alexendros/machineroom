@@ -19,6 +19,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from structured_failure import StructuredFailure
+
 COMPONENT = "deny-list"
 DENY_LIST_NAME = Path("extensions") / "machineroom" / "deny-list.json"
 PERMISSION_DENY = "deny"
@@ -26,21 +28,11 @@ PERMISSION_ASK = "ask"
 PERMISSION_ALLOW = "allow"
 
 
-class DenyListError(ValueError):
+class DenyListError(StructuredFailure):
     """Structured deny-list failure: component + function + detail."""
 
     def __init__(self, function: str, detail: str) -> None:
-        self.component = COMPONENT
-        self.function = function
-        self.detail = detail
-        super().__init__(f"FAIL {COMPONENT} {function}: {detail}")
-
-    def to_dict(self) -> dict[str, str]:
-        return {
-            "component": self.component,
-            "function": self.function,
-            "detail": self.detail,
-        }
+        super().__init__(COMPONENT, function, detail)
 
 
 @dataclass(frozen=True)

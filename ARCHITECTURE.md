@@ -4,11 +4,11 @@
 
 - **Objetivos:** Describir el producto machineroom (pipeline agéntico), el árbol de skills y tools, las capas del canon/CI de flota, y cómo se valida.
 - **Estructura:** Esta meta-sección → producto → árbol → pipeline → capas canon/CI → CI → supply chain.
-- **Contenido a integrar según contexto:** Contratos de fase en `.machineroom/` (legacy; destino `.machineroom/`); canon de flota en `docs/architecture/`, `stacks/` y `templates/product/`.
+- **Contenido a integrar según contexto:** Contratos de fase en `.machineroom/` (el directorio vivo; el legacy era `.autoworkspace/`); canon de flota en `docs/architecture/`, `stacks/` y `templates/product/`.
 
 ## Producto
 
-**Machineroom** is an agentic pipeline for Soluciones-Alexendros, not a skill showcase. Operators route work through skills under `skills/` and declarative project status under `.machineroom/` (migrating to `.machineroom/`). There is no production web deploy: the deliverable is the skill catalog, validators, routers, and (from P11) the **fleet canon** previously hosted in `repo-standard`.
+**Machineroom** is an agentic pipeline for Soluciones-Alexendros, not a skill showcase. Operators route work through skills under `skills/` and declarative project status under `.machineroom/` (legacy project state lived in `.autoworkspace/`). There is no production web deploy: the deliverable is the skill catalog, validators, routers, and (from P11) the **fleet canon** previously hosted in `repo-standard`.
 
 ## Tree
 
@@ -50,7 +50,7 @@ Phase routing:
 python tools/workspace-router/run.py --phase DEFINE --repo . --json
 ```
 
-Per-task role selection (backend / front / design / clean-code) is mandatory when the surface matches; the phase router skill is only a fallback.
+Three control-plane routers: `workspace-router` selects the phase handoff skill; `skill-router` selects a skill by natural-language intent; `orchestrator` runs the active plan DAG. Per-task role selection (`role-back`, `role-front`, `role-clean-code`, `role-linux`; visual direction via the external Impeccable skill) is mandatory when the surface matches; the phase router skill is only a fallback.
 
 ## Capas canon / CI
 

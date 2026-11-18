@@ -1,3 +1,5 @@
+<!-- Histórico: plan v5 archivado; no es el plan vivo. El incremento actual es tasks/plan-9.2.0-control-plane-cohesion.md -->
+
 # Tasks: taxonomía v5 con role-clean-code
 
 Origen: `tasks/plan.md` (aprobado) y `.autoworkspace/SPEC.md`.

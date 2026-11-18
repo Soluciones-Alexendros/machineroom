@@ -108,16 +108,16 @@ con responsabilidades solapadas degrada cada plan que arranca con el router.
 
 ## Checklist de implementación
 
-- [ ] ADR-0019 publicado e indexado en `docs/architecture/decisions/README.md`.
-- [ ] `git mv` de las tres skills y reescritura de `SKILL.md` + referencias.
-- [ ] Bajas de `role-design`, `project-audit` y `project-publish`.
-- [ ] `registry.yaml`, `intent-map.yaml`, `project_load.py`, `plan.schema.json`,
+- [x] ADR-0019 publicado e indexado en `docs/architecture/decisions/README.md`.
+- [x] `git mv` de las tres skills y reescritura de `SKILL.md` + referencias.
+- [x] Bajas de `role-design`, `project-audit` y `project-publish`.
+- [x] `registry.yaml`, `intent-map.yaml`, `project_load.py`, `plan.schema.json`,
       plantillas `project.yaml` y docs sincronizados a 14 skills.
-- [ ] `skill-index.json` regenerado y snapshot `skill-index-9.0.0.json`.
-- [ ] `skill_spec.py` valida flechas de cuerpo, conteo de skills y lista de roles.
-- [ ] `project_load.py` valida `handoffs` contra el catálogo.
-- [ ] `CHANGELOG.md` `[9.0.0]` y bump de `package.json`.
-- [ ] `make validate && make test && make smoke` en verde.
+- [x] `skill-index.json` regenerado y snapshot `skill-index-9.0.0.json`.
+- [x] `skill_spec.py` valida flechas de cuerpo, conteo de skills y lista de roles.
+- [x] `project_load.py` valida `handoffs` contra el catálogo.
+- [x] `CHANGELOG.md` `[9.0.0]` y bump de `package.json`.
+- [x] `make validate && make test && make smoke` en verde.
 
 ## Alternativas
 

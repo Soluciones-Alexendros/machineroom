@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -12,9 +14,13 @@ from typing import Any
 
 import yaml
 
-TOOLS = Path(__file__).resolve().parents[1]
-if str(TOOLS) not in sys.path:
-    sys.path.insert(0, str(TOOLS))
+_BC = Path(__file__).resolve().parents[1] / "bootstrap_cli.py"
+_spec = importlib.util.spec_from_file_location("mr_bootstrap_cli", _BC)
+if _spec is None or _spec.loader is None:
+    raise RuntimeError(f"cannot load {_BC}")
+_bc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_bc)
+TOOLS = _bc.boot(__file__)
 
 from harness.base import Check, build_report, report_exit_code  # noqa: E402
 from harness.opencode import opencode_discovery_check, opencode_source_collision_check  # noqa: E402
@@ -115,6 +121,42 @@ _HANDOFF_KEYS = (
     "integrate_hooks",
     "libraries",
 )
+
+
+def legacy_runtime_home_check(home: Path | None = None) -> Check:
+    """Fail when only legacy or both home runtimes exist; do not migrate from doctor."""
+    from harness.runtime import legacy_runtime_root, runtime_root  # noqa: PLC0415
+
+    home_root = home if home is not None else Path.home()
+    current = runtime_root(home_root)
+    legacy = legacy_runtime_root(home_root)
+    if current.is_dir() and legacy.is_dir():
+        return Check(
+            "legacy-runtime-home",
+            "contract",
+            "fail",
+            f"two runtimes present: {legacy} and {current}; call migrate_legacy_runtime / remove one",
+        )
+    if current.is_dir():
+        return Check(
+            "legacy-runtime-home",
+            "contract",
+            "pass",
+            f"runtime at {current}",
+        )
+    if legacy.is_dir():
+        return Check(
+            "legacy-runtime-home",
+            "contract",
+            "fail",
+            f"legacy runtime at {legacy}; call migrate_legacy_runtime",
+        )
+    return Check(
+        "legacy-runtime-home",
+        "contract",
+        "not_applicable",
+        "no home runtime directory",
+    )
 
 
 def handoff_check(root: Path) -> Check:
@@ -281,7 +323,10 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
     native: bool = False,
     source_root: Path | None = None,
     full: bool = False,
+    home: Path | None = None,
+    check_home: bool = False,
 ) -> list[Check]:
+    """Repo doctor checks; home runtime skipped unless ``home=``, ``check_home``, or ``MR_CHECK_HOME_RUNTIME=1``."""
     source = (source_root or root).resolve()
     if (source / ".runtime-manifest.json").is_file():
         # Machine runtime payload: package.json only (no plugin / installer scripts).
@@ -297,6 +342,9 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
     else:
         checks = version_coherence_checks(source, expected_version)
         checks.append(handoff_check(source))
+    want_home = home is not None or check_home or os.environ.get("MR_CHECK_HOME_RUNTIME") == "1"
+    if want_home:
+        checks.append(legacy_runtime_home_check(home))
     expected_skills = {
         path.name for path in (source / "skills").iterdir() if path.is_dir() and (path / "SKILL.md").is_file()
     }
@@ -317,10 +365,10 @@ def collect_checks(  # noqa: PLR0913  # doctor entry: keyword-only harness/nativ
             checks.extend(capability_checks(root, expected_skills, require_auth=False))
     if harness in {"opencode", "all"}:
         checks.append(opencode_source_collision_check(root, source, expected_skills))
+        # Level A links always; --native adds B discovery (parity with Cursor).
+        checks.append(skill_link_check(root, "opencode", source_root=source))
         if native:
             checks.append(opencode_discovery_check(root, expected_skills))
-        else:
-            checks.append(skill_link_check(root, "opencode", source_root=source))
     return checks
 
 
@@ -340,6 +388,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Run native discovery checks when available",
     )
+    parser.add_argument(
+        "--home",
+        type=Path,
+        help="Inject home for legacy-runtime-home (tests / explicit opt-in)",
+    )
+    parser.add_argument(
+        "--check-home",
+        action="store_true",
+        help="Include legacy-runtime-home against real Path.home() (or --home)",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     root = args.target.resolve()
@@ -357,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
         native=args.native,
         source_root=source,
         full=args.full,
+        home=args.home.resolve() if args.home else None,
+        check_home=args.check_home,
     )
     package = _json_version(source / "package.json")
     report = build_report(

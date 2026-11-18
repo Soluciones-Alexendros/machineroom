@@ -64,6 +64,7 @@ python3 - "$TMP/native.json" "$native_rc" <<'PY'
 import json, sys
 report = json.load(open(sys.argv[1], encoding="utf-8"))
 by_id = {check["id"]: check for check in report["checks"]}
+assert by_id["opencode-skill-links"]["outcome"] == "pass", by_id
 assert by_id["opencode-native-discovery"]["outcome"] == "pass", by_id
 assert report["capabilities"].get("B") == "pass", report
 assert int(sys.argv[2]) == 0, sys.argv[2]
@@ -110,7 +111,7 @@ assert int(sys.argv[2]) == 3, sys.argv[2]
 print("OpenCode B without opt-in: not_run")
 PY
 
-# A broken link must fail the static gate.
+# A broken link must fail level A even when --native is requested.
 rm -f "$TMP/project/.opencode/skills/role-linux"
 set +e
 $DOCTOR --harness opencode --target "$TMP/project" --json >"$TMP/static-broken.json"
@@ -123,6 +124,20 @@ by_id = {check["id"]: check for check in report["checks"]}
 assert by_id["opencode-skill-links"]["outcome"] == "fail", by_id
 assert int(sys.argv[2]) == 1, sys.argv[2]
 print("OpenCode A broken link: fail")
+PY
+
+set +e
+MR_OPENCODE_NATIVE_OPT_IN=1 $DOCTOR --harness opencode --target "$TMP/project" --native --json \
+  >"$TMP/native-broken.json"
+native_broken_rc=$?
+set -e
+python3 - "$TMP/native-broken.json" "$native_broken_rc" <<'PY'
+import json, sys
+report = json.load(open(sys.argv[1], encoding="utf-8"))
+by_id = {check["id"]: check for check in report["checks"]}
+assert by_id["opencode-skill-links"]["outcome"] == "fail", by_id
+assert int(sys.argv[2]) == 1, sys.argv[2]
+print("OpenCode A+B with broken link: fail (links not skipped)")
 PY
 
 echo "OpenCode native A/B tests OK"

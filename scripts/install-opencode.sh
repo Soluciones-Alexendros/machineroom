@@ -7,33 +7,27 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HERE/.." && pwd)
 OPCODE_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 
-USER_MODE=0
 ARGS=()
 for arg in "$@"; do
-  if [ "$arg" = "--user" ]; then
-    USER_MODE=1
-  fi
   ARGS+=("$arg")
 done
 
-# An explicit `skills` config entry has higher precedence than ~/.config/opencode/skills.
+# An explicit `skills` config entry has higher precedence than linked skills dirs.
 # If it already registers a machineroom catalog, installing symlinks would create
 # duplicate ids with the config source winning. Refuse instead of shadowing silently.
-if [ "$USER_MODE" = 1 ]; then
-  check_config_conflict() {
-    python3 - "$ROOT" "$OPCODE_CONFIG_HOME" <<'PY' || exit 1
+# Runs for both project and --user installs (fail closed).
+check_config_conflict() {
+  python3 - "$ROOT" "$OPCODE_CONFIG_HOME" <<'PY' || exit 1
 import json
 import os
 import sys
 from pathlib import Path
 
 root, config_home = (Path(arg) for arg in sys.argv[1:3])
-# Compare against the versioned catalog ids regardless of scope: an existing
-# config entry shadows the installed links in both scopes.
 source = root / "skills"
 
 
-def strip_comments(text: str) -> str:
+def strip_jsonc(text: str) -> str:
     out: list[str] = []
     i, n = 0, len(text)
     in_string = False
@@ -65,7 +59,38 @@ def strip_comments(text: str) -> str:
             continue
         out.append(ch)
         i += 1
-    return "".join(out)
+    stripped = "".join(out)
+    cleaned: list[str] = []
+    in_string = False
+    escaped = False
+    i = 0
+    while i < len(stripped):
+        ch = stripped[i]
+        if in_string:
+            cleaned.append(ch)
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            i += 1
+            continue
+        if ch == '"':
+            in_string = True
+            cleaned.append(ch)
+            i += 1
+            continue
+        if ch == ",":
+            j = i + 1
+            while j < len(stripped) and stripped[j] in " \t\r\n":
+                j += 1
+            if j < len(stripped) and stripped[j] in "}]":
+                i += 1
+                continue
+        cleaned.append(ch)
+        i += 1
+    return "".join(cleaned)
 
 
 def skill_names(directory: Path) -> set[str]:
@@ -74,16 +99,21 @@ def skill_names(directory: Path) -> set[str]:
     return {p.name for p in directory.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()}
 
 
+def config_sources() -> list[Path]:
+    names = ("opencode.json", "opencode.jsonc")
+    candidates = [config_home / name for name in names]
+    candidates.extend(root / name for name in names)
+    candidates.extend(root / ".opencode" / name for name in names)
+    return [path for path in candidates if path.is_file()]
+
+
 expected = skill_names(source)
 if not expected:
     sys.exit(0)
 
-for name in ("opencode.json", "opencode.jsonc"):
-    path = config_home / name
-    if not path.is_file():
-        continue
+for path in config_sources():
     try:
-        data = json.loads(strip_comments(path.read_text(encoding="utf-8")))
+        data = json.loads(strip_jsonc(path.read_text(encoding="utf-8")))
     except (OSError, json.JSONDecodeError) as exc:
         print(f"ERROR: cannot parse OpenCode config {path}: {exc}", file=sys.stderr)
         sys.exit(1)
@@ -94,7 +124,8 @@ for name in ("opencode.json", "opencode.jsonc"):
         if not isinstance(entry, str):
             continue
         raw = os.path.expanduser(entry)
-        candidate = Path(raw) if os.path.isabs(raw) else (Path.cwd() / raw)
+        # Resolve relatives against the project/repo root (parity with harness.opencode).
+        candidate = Path(raw) if os.path.isabs(raw) else (root / raw)
         overlap = expected & skill_names(candidate.resolve())
         if overlap:
             print(
@@ -105,9 +136,8 @@ for name in ("opencode.json", "opencode.jsonc"):
             )
             sys.exit(1)
 PY
-  }
-  check_config_conflict "$@"
-fi
+}
+check_config_conflict
 
 exec bash "$HERE/lib/link-skills.sh" \
   --installer "scripts/install-opencode.sh" \

@@ -7,15 +7,21 @@ import hashlib
 import json
 import shutil
 import subprocess
-import sys
 import time
 import uuid
 from pathlib import Path
 from typing import Any
 
 TOOLS = Path(__file__).resolve().parents[1]
-if str(TOOLS) not in sys.path:
-    sys.path.insert(0, str(TOOLS))
+_boot_spec = __import__("importlib.util", fromlist=["util"]).spec_from_file_location(
+    "mr_tools_bootstrap",
+    TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {TOOLS / '_bootstrap.py'}")
+_boot = __import__("importlib.util", fromlist=["util"]).module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
 
 from execution.ops import OpResult  # noqa: E402
 from execution.registry import get_operation  # noqa: E402

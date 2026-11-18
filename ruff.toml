@@ -14,7 +14,12 @@ max-complexity = 10
 
 [lint.per-file-ignores]
 "tools/workspace-router/status_bump.py" = ["PLC0415"]
+"tools/workspace-router/phase_advance.py" = ["PLC0415"]
+"tools/workspace-router/task_lifecycle.py" = ["PLC0415"]
 "tools/workspace-router/run.py" = ["E402"]
+"tools/contracts/validate_contracts.py" = ["E402"]
+"tools/skill-index/load.py" = ["PLW0603"]
+"tools/structured_failure.py" = ["N818"]
 "tools/execution/registry.py" = ["E402"]
 "tools/harness/tests/test_doctor.py" = ["E402"]
 "tools/harness/tests/test_cursor_install.py" = ["E402"]

@@ -15,8 +15,10 @@ sys.path.insert(0, str(ROOT / "tools"))
 from harness.base import Check, build_report, report_exit_code  # noqa: E402
 from harness.cursor_install import install_full  # noqa: E402
 from harness.doctor import (  # noqa: E402
+    collect_checks,
     cursor_full_check,
     installer_version_check,
+    legacy_runtime_home_check,
     skill_link_check,
     version_coherence_checks,
 )
@@ -134,6 +136,62 @@ def test_real_checkout_version_coherence_passes() -> None:
     """Regression: the shipped installer must satisfy the doctor that verifies it."""
     checks = version_coherence_checks(ROOT, None)
     assert [check.outcome for check in checks] == ["pass"] * 3, [check.detail for check in checks]
+
+
+def test_legacy_runtime_home_fails_without_migrating(tmp_path: Path) -> None:
+    legacy = tmp_path / ".autoworkspace"
+    legacy.mkdir()
+    (legacy / "marker").write_text("keep\n", encoding="utf-8")
+    check = legacy_runtime_home_check(tmp_path)
+    assert check.outcome == "fail"
+    assert "migrate_legacy_runtime" in check.detail
+    assert legacy.is_dir()
+    assert (legacy / "marker").read_text(encoding="utf-8") == "keep\n"
+
+
+def test_legacy_runtime_home_pass_when_migrated(tmp_path: Path) -> None:
+    (tmp_path / ".machineroom").mkdir()
+    check = legacy_runtime_home_check(tmp_path)
+    assert check.outcome == "pass"
+
+
+def test_legacy_runtime_home_fails_when_both_exist(tmp_path: Path) -> None:
+    (tmp_path / ".machineroom").mkdir()
+    (tmp_path / ".autoworkspace").mkdir()
+    check = legacy_runtime_home_check(tmp_path)
+    assert check.outcome == "fail"
+    assert "two runtimes present" in check.detail
+    assert "migrate_legacy_runtime" in check.detail
+
+
+def test_collect_checks_skips_real_home_by_default(tmp_path: Path, monkeypatch: Any) -> None:
+    _versioned_repo(tmp_path)
+    destination = tmp_path / ".cursor" / "skills"
+    destination.mkdir(parents=True)
+    (destination / "fixture-skill").symlink_to(tmp_path / "skills" / "fixture-skill")
+
+    def boom() -> Path:
+        raise AssertionError("Path.home must not be called")
+
+    monkeypatch.setattr(Path, "home", boom)
+    monkeypatch.delenv("MR_CHECK_HOME_RUNTIME", raising=False)
+    checks = collect_checks(tmp_path, "cursor", "1.2.3")
+    assert not any(check.check_id == "legacy-runtime-home" for check in checks)
+
+
+def test_collect_checks_runs_home_when_injected(tmp_path: Path, monkeypatch: Any) -> None:
+    _versioned_repo(tmp_path)
+    destination = tmp_path / ".cursor" / "skills"
+    destination.mkdir(parents=True)
+    (destination / "fixture-skill").symlink_to(tmp_path / "skills" / "fixture-skill")
+    home = tmp_path / "fake-home"
+    home.mkdir()
+    (home / ".machineroom").mkdir()
+    monkeypatch.delenv("MR_CHECK_HOME_RUNTIME", raising=False)
+    checks = collect_checks(tmp_path, "cursor", "1.2.3", home=home)
+    home_checks = [check for check in checks if check.check_id == "legacy-runtime-home"]
+    assert len(home_checks) == 1
+    assert home_checks[0].outcome == "pass"
 
 
 def test_skill_links_must_resolve_to_catalog(tmp_path: Path) -> None:

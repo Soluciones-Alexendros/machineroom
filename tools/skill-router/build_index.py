@@ -4,20 +4,24 @@
 from __future__ import annotations
 
 import importlib.util
-import pathlib
+from pathlib import Path
 
-_PATH = pathlib.Path(__file__).resolve().parents[1] / "skill-index" / "generate.py"
-_spec = importlib.util.spec_from_file_location("skill_index_generate", _PATH)
-if _spec is None or _spec.loader is None:
-    raise RuntimeError(f"cannot load {_PATH}")
-_mod = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_mod)
+_TOOLS = Path(__file__).resolve().parents[1]
+_boot_spec = importlib.util.spec_from_file_location(
+    "mr_tools_bootstrap",
+    _TOOLS / "_bootstrap.py",
+)
+if _boot_spec is None or _boot_spec.loader is None:
+    raise RuntimeError(f"cannot load {_TOOLS / '_bootstrap.py'}")
+_boot = importlib.util.module_from_spec(_boot_spec)
+_boot_spec.loader.exec_module(_boot)
+_boot.ensure_tools_on_path()
 
-build_index = _mod.build_index
+from skill_index_load import get_generate_module  # noqa: E402
 
-
-def main(argv: list[str] | None = None) -> int:
-    return _mod.main(argv)
+_gen = get_generate_module()
+build_index = _gen.build_index
+main = _gen.main
 
 
 if __name__ == "__main__":

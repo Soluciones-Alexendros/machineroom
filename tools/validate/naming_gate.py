@@ -5,9 +5,9 @@ the match is not in an allowlisted file. History (plans, archives, ADRs,
 changelog, frozen snapshots) is excluded by path, and generated/caches are
 ignored, so the gate is about code and living docs.
 
-Allowlisted files carry the legacy name on purpose: the naming SSOT, the state
-fallback, the glossary, the migration tests and the scripts that must recognise
-the old paths. Adding a new file to ``ALLOWED_FILES`` is a reviewed decision.
+Allowlisted files carry the legacy name on purpose: the naming SSOT, explicit
+``migrate_state``, the glossary, the migration tests and the scripts that must
+recognise the old paths. Adding a new file to ``ALLOWED_FILES`` is a reviewed decision.
 
 Exit codes: 0 clean, 1 findings, 2 usage.
 """
@@ -80,12 +80,12 @@ SUFFIXES = frozenset(
 )
 
 ALLOWED_FILES = {
-    # Naming SSOT and state fallback: they must spell the old name.
+    # Naming SSOT and migrate_state: they must spell the old name.
     "tools/harness/naming.py",
     "tools/state_paths.py",
     # Glossary documents what is legacy.
     "docs/GLOSARIO.md",
-    # Migration and fallback must be tested against the old name.
+    # Migration must be tested against the old name.
     "tools/harness/tests/test_naming.py",
     "tools/harness/tests/test_runtime_migration.py",
     "tools/workspace-router/tests/test_legacy_state_migration.py",
@@ -118,6 +118,11 @@ ALLOWED_FILES = {
     "docs/harness-setup.md",
     # Runtime docstrings document the pre-8.0 path.
     "tools/harness/runtime.py",
+    # 9.2.0 legacy cut: living docs and doctor name the old path on purpose.
+    "ARCHITECTURE.md",
+    "tools/harness/doctor.py",
+    "tools/harness/tests/test_doctor.py",
+    "tools/workspace-router/project_load.py",
     # The embedded plan-block keyword of historical plans: renaming it would
     # invalidate every committed plan, so the parser keeps accepting it.
     "tools/contracts/plan.py",

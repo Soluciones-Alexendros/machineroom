@@ -226,4 +226,4 @@ typecheck` y `npm run lint` OK, `doctor --harness all` pass.
 
 ## Confirmación pendiente única
 
-- La absorción de release (D1) **implica dar de baja `project-publish`**. Si el operador prefería conservarlo con otro cometido, indicarlo antes de iniciar; el plan asume su eliminación.
+- Cerrado: `project-publish` quedó absorbido por `project-status` (D1); la skill ya no existe en el catálogo ni en el registry.

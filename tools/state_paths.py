@@ -1,44 +1,31 @@
-"""Project state directory (``.machineroom``) with legacy ``.autoworkspace`` fallback.
+"""Project state directory (``.machineroom``).
 
-D3/H2: new projects use ``.machineroom``. Repositories that still carry the
-legacy ``.autoworkspace`` directory keep working through the whole 8.x line with
-a deprecation warning; the fallback is removed in 9.0.0.
+D3/H2: new projects use ``.machineroom``. The silent ``.autoworkspace`` fallback
+was announced for removal in 9.0.0 and is removed in 9.2.0. Call
+``migrate_state`` (dry-run supported) to rename a legacy directory.
 
 Failure modes (``StateDirError``, fields ``component``/``function``/``detail``):
 
+- ``state_dir``: only the legacy directory is present (use ``migrate_state``).
 - ``migrate_state``: both directories present, or the legacy path is a symlink,
   or the move fails. Nothing is deleted on failure.
 """
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Any
 
-PROJECT_DIRNAME = ".machineroom"
-LEGACY_PROJECT_DIRNAME = ".autoworkspace"
+from harness.naming import LEGACY_PROJECT_DIRNAME, PROJECT_DIRNAME
+from structured_failure import StructuredFailure
+
 DEPRECATION_WINDOW = "8.x"
-REMOVAL_VERSION = "9.0.0"
+REMOVAL_VERSION = "9.2.0"
+ANNOUNCED_REMOVAL = "9.0.0"
 
-_WARNED: set[Path] = set()
 
-
-class StateDirError(ValueError):
+class StateDirError(StructuredFailure):
     """Structured state-directory failure: component + function + detail."""
-
-    def __init__(self, component: str, function: str, detail: str) -> None:
-        self.component = component
-        self.function = function
-        self.detail = detail
-        super().__init__(format_state_failure(component, function, detail))
-
-    def to_dict(self) -> dict[str, str]:
-        return {
-            "component": self.component,
-            "function": self.function,
-            "detail": self.detail,
-        }
 
 
 def format_state_failure(component: str, function: str, detail: str) -> str:
@@ -46,24 +33,25 @@ def format_state_failure(component: str, function: str, detail: str) -> str:
 
 
 def state_dir(repo: Path | str, *, warn: bool = True) -> Path:
-    """Return the state directory for ``repo``, falling back to the legacy name.
+    """Return the ``.machineroom`` state directory for ``repo``.
 
-    The path is not created. When only the legacy directory exists, a one-time
-    deprecation warning is written to stderr unless ``warn`` is false.
+    The path is not created. When only the legacy ``.autoworkspace`` directory
+    exists, raise ``StateDirError`` naming ``migrate_state``. ``warn`` is kept
+    for call-site compatibility and ignored.
     """
+    del warn  # API compatibility; fallback no longer warns
     root = Path(repo).resolve()
     current = root / PROJECT_DIRNAME
     if current.is_dir():
         return current
     legacy = root / LEGACY_PROJECT_DIRNAME
     if legacy.is_dir():
-        if warn and legacy not in _WARNED:
-            _WARNED.add(legacy)
-            print(
-                f"deprecation: {legacy} is legacy; rename it to {current.name} (fallback removed in {REMOVAL_VERSION})",
-                file=sys.stderr,
-            )
-        return legacy
+        raise StateDirError(
+            "state",
+            "state_dir",
+            f"legacy state at {legacy}; call migrate_state "
+            f"(fallback removed in {REMOVAL_VERSION}, announced {ANNOUNCED_REMOVAL})",
+        )
     return current
 
 
